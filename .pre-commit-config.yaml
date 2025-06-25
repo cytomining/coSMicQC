@@ -62,6 +62,10 @@ repos:
     rev: 'v2.14'
     hooks:
     -   id: vulture
+-   repo: https://github.com/software-gardening/almanack
+    rev: v0.1.4
+    hooks:
+    - id: almanack-check
 -   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     rev: v0.6.0
     hooks:
