@@ -20,7 +20,7 @@
             <link rel="top" title="coSMicQC  documentation" href="#" />
             <link rel="up" title="Examples" href="../examples.html" />
             <link rel="next" title="JUMP UMAP analysis with coSMicQC" href="jump_umap_analysis_with_cosmicqc.html" />
-            <link rel="prev" title="Examples" href="../examples.html" />
+            <link rel="prev" title="ContaminationDetector in action" href="contamination_detector_in_action.html" />
     <!-- line added for plotly compatibility in cosmicqc -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
 </head>
@@ -78,7 +78,13 @@
         <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contamination_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-a-path-for-the-parquet-based-dataset">set a path for the parquet-based dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#in-this-case-cellprofiler-sqlite-data-processed-by-cytotable">(in this case, CellProfiler SQLite data processed by CytoTable)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-a-context-directory-for-images-associated-with-the-dataset">set a context directory for images associated with the dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-cosmicqc-cytodataframe-single-cell-dataframe">create a cosmicqc CytoDataFrame (single-cell DataFrame)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#display-the-dataframe">display the dataframe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
 </ul>
 </li>
@@ -100,8 +106,8 @@
 </div>
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="../examples.html"
-                          title="previous chapter">Examples</a></p>
+    <p class="topless"><a href="contamination_detector_in_action.html"
+                          title="previous chapter"><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -228,335 +234,37 @@ For the latest released version, please have a look at <a href="../../v0.1.5/ind
     <section id="cosmicqc-in-a-nutshell">
 <h1><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell<a class="headerlink" href="#cosmicqc-in-a-nutshell" title="Link to this heading">¶</a></h1>
 <p>This notebook demonstrates various capabilities of <code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> using examples.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pathlib</span>
-
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">cytodataframe</span> <span class="kn">import</span> <span class="n">CytoDataFrame</span>
-
-<span class="kn">import</span> <span class="nn">cosmicqc</span>
-
-<span class="c1"># set a path for the parquet-based dataset</span>
-<span class="c1"># (in this case, CellProfiler SQLite data processed by CytoTable)</span>
-<span class="n">data_path</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;../../../tests/data/cytotable/NF1_cellpainting_data/&quot;</span>
-    <span class="s2">&quot;Plate_2_with_image_data.parquet&quot;</span>
-<span class="p">)</span>
-
-<span class="c1"># set a context directory for images associated with the dataset</span>
-<span class="n">image_context_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;Plate_2_images&quot;</span>
-<span class="n">mask_context_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;Plate_2_masks&quot;</span>
-
-<span class="c1"># create a cosmicqc CytoDataFrame (single-cell DataFrame)</span>
-<span class="n">scdf</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">data_path</span><span class="p">,</span>
-    <span class="n">data_context_dir</span><span class="o">=</span><span class="n">image_context_dir</span><span class="p">,</span>
-    <span class="n">data_mask_context_dir</span><span class="o">=</span><span class="n">mask_context_dir</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="c1"># display the dataframe</span>
-<span class="n">scdf</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Metadata_ImageNumber</th>
-      <th>Image_Metadata_Plate_x</th>
-      <th>Metadata_number_of_singlecells</th>
-      <th>Image_Metadata_Site_x</th>
-      <th>Image_Metadata_Well_x</th>
-      <th>Metadata_Cells_Number_Object_Number</th>
-      <th>Metadata_Cytoplasm_Parent_Cells</th>
-      <th>Metadata_Cytoplasm_Parent_Nuclei</th>
-      <th>Metadata_Nuclei_Number_Object_Number</th>
-      <th>Cytoplasm_AreaShape_Area</th>
-      <th>...</th>
-      <th>Image_Threshold_SumOfEntropies_Cells</th>
-      <th>Image_Threshold_SumOfEntropies_Nuclei</th>
-      <th>Image_Threshold_WeightedVariance_Cells</th>
-      <th>Image_Threshold_WeightedVariance_Nuclei</th>
-      <th>Image_URL_DAPI</th>
-      <th>Image_URL_GFP</th>
-      <th>Image_URL_RFP</th>
-      <th>Image_Width_DAPI</th>
-      <th>Image_Width_GFP</th>
-      <th>Image_Width_RFP</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1</td>
-      <td>Plate_2</td>
-      <td>44</td>
-      <td>1</td>
-      <td>A12</td>
-      <td>1</td>
-      <td>1</td>
-      <td>2</td>
-      <td>2</td>
-      <td>21024.0</td>
-      <td>...</td>
-      <td>-12.181288</td>
-      <td>-11.699993</td>
-      <td>0.992624</td>
-      <td>0.657791</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_1_1_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_2_1_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_3_1_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>Plate_2</td>
-      <td>44</td>
-      <td>1</td>
-      <td>A12</td>
-      <td>4</td>
-      <td>4</td>
-      <td>7</td>
-      <td>7</td>
-      <td>12754.0</td>
-      <td>...</td>
-      <td>-12.181288</td>
-      <td>-11.699993</td>
-      <td>0.992624</td>
-      <td>0.657791</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_1_1_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_2_1_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_3_1_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1</td>
-      <td>Plate_2</td>
-      <td>44</td>
-      <td>1</td>
-      <td>A12</td>
-      <td>7</td>
-      <td>7</td>
-      <td>10</td>
-      <td>10</td>
-      <td>23976.0</td>
-      <td>...</td>
-      <td>-12.181288</td>
-      <td>-11.699993</td>
-      <td>0.992624</td>
-      <td>0.657791</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_1_1_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_2_1_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_3_1_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1</td>
-      <td>Plate_2</td>
-      <td>44</td>
-      <td>1</td>
-      <td>A12</td>
-      <td>8</td>
-      <td>8</td>
-      <td>12</td>
-      <td>12</td>
-      <td>19374.0</td>
-      <td>...</td>
-      <td>-12.181288</td>
-      <td>-11.699993</td>
-      <td>0.992624</td>
-      <td>0.657791</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_1_1_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_2_1_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_3_1_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1</td>
-      <td>Plate_2</td>
-      <td>44</td>
-      <td>1</td>
-      <td>A12</td>
-      <td>9</td>
-      <td>9</td>
-      <td>13</td>
-      <td>13</td>
-      <td>27385.0</td>
-      <td>...</td>
-      <td>-12.181288</td>
-      <td>-11.699993</td>
-      <td>0.992624</td>
-      <td>0.657791</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_1_1_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_2_1_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/A12_01_3_1_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1709</th>
-      <td>128</td>
-      <td>Plate_2</td>
-      <td>59</td>
-      <td>4</td>
-      <td>H7</td>
-      <td>10</td>
-      <td>10</td>
-      <td>14</td>
-      <td>14</td>
-      <td>24942.0</td>
-      <td>...</td>
-      <td>-12.566582</td>
-      <td>-11.633043</td>
-      <td>1.624310</td>
-      <td>0.545186</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_1_4_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_2_4_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_3_4_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>1710</th>
-      <td>128</td>
-      <td>Plate_2</td>
-      <td>59</td>
-      <td>4</td>
-      <td>H7</td>
-      <td>11</td>
-      <td>11</td>
-      <td>15</td>
-      <td>15</td>
-      <td>6627.0</td>
-      <td>...</td>
-      <td>-12.566582</td>
-      <td>-11.633043</td>
-      <td>1.624310</td>
-      <td>0.545186</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_1_4_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_2_4_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_3_4_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>1711</th>
-      <td>128</td>
-      <td>Plate_2</td>
-      <td>59</td>
-      <td>4</td>
-      <td>H7</td>
-      <td>12</td>
-      <td>12</td>
-      <td>16</td>
-      <td>16</td>
-      <td>11216.0</td>
-      <td>...</td>
-      <td>-12.566582</td>
-      <td>-11.633043</td>
-      <td>1.624310</td>
-      <td>0.545186</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_1_4_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_2_4_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_3_4_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>1712</th>
-      <td>128</td>
-      <td>Plate_2</td>
-      <td>59</td>
-      <td>4</td>
-      <td>H7</td>
-      <td>13</td>
-      <td>13</td>
-      <td>17</td>
-      <td>17</td>
-      <td>15279.0</td>
-      <td>...</td>
-      <td>-12.566582</td>
-      <td>-11.633043</td>
-      <td>1.624310</td>
-      <td>0.545186</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_1_4_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_2_4_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_3_4_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-    <tr>
-      <th>1713</th>
-      <td>128</td>
-      <td>Plate_2</td>
-      <td>59</td>
-      <td>4</td>
-      <td>H7</td>
-      <td>14</td>
-      <td>14</td>
-      <td>20</td>
-      <td>20</td>
-      <td>7106.0</td>
-      <td>...</td>
-      <td>-12.566582</td>
-      <td>-11.633043</td>
-      <td>1.624310</td>
-      <td>0.545186</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_1_4_DAPI_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_2_4_GFP_001.tif</td>
-      <td>file:/home/jenna/nf1_cellpainting_data/1.cellprofiler_ic/Corrected_Images/Corrected_Plate_2/H7_01_3_4_RFP_001.tif</td>
-      <td>1224</td>
-      <td>1224</td>
-      <td>1224</td>
-    </tr>
-  </tbody>
-</table>
-<p>1714 rows × 2076 columns</p></div></div>
-</div>
+<p>import pathlib</p>
+<p>import pandas as pd
+from cytodataframe import CytoDataFrame</p>
+<p>import cosmicqc</p>
+</section>
+<section id="set-a-path-for-the-parquet-based-dataset">
+<h1>set a path for the parquet-based dataset<a class="headerlink" href="#set-a-path-for-the-parquet-based-dataset" title="Link to this heading">¶</a></h1>
+</section>
+<section id="in-this-case-cellprofiler-sqlite-data-processed-by-cytotable">
+<h1>(in this case, CellProfiler SQLite data processed by CytoTable)<a class="headerlink" href="#in-this-case-cellprofiler-sqlite-data-processed-by-cytotable" title="Link to this heading">¶</a></h1>
+<p>data_path = (
+“../../../tests/data/cytotable/NF1_cellpainting_data/”
+“Plate_2_with_image_data.parquet”
+)</p>
+</section>
+<section id="set-a-context-directory-for-images-associated-with-the-dataset">
+<h1>set a context directory for images associated with the dataset<a class="headerlink" href="#set-a-context-directory-for-images-associated-with-the-dataset" title="Link to this heading">¶</a></h1>
+<p>image_context_dir = pathlib.Path(data_path).parent / “Plate_2_images”
+mask_context_dir = pathlib.Path(data_path).parent / “Plate_2_masks”</p>
+</section>
+<section id="create-a-cosmicqc-cytodataframe-single-cell-dataframe">
+<h1>create a cosmicqc CytoDataFrame (single-cell DataFrame)<a class="headerlink" href="#create-a-cosmicqc-cytodataframe-single-cell-dataframe" title="Link to this heading">¶</a></h1>
+<p>scdf = CytoDataFrame(
+data=data_path,
+data_context_dir=image_context_dir,
+data_mask_context_dir=mask_context_dir,
+)</p>
+</section>
+<section id="display-the-dataframe">
+<h1>display the dataframe<a class="headerlink" href="#display-the-dataframe" title="Link to this heading">¶</a></h1>
+<p>scdf</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Identify which rows include outliers for a given threshold definition</span>
@@ -1258,14 +966,29 @@ Nuclei_AreaShape_Area Max: 1904.0
 
 </main>
                         <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
-    <a class="float-left" href="../examples.html" title="Previous">
-        <span aria-hidden="true">←&nbsp;</span>Examples
+    <a class="float-left" href="contamination_detector_in_action.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action
     </a>
     <a class="float-right" href="jump_umap_analysis_with_cosmicqc.html" title="Next">
         JUMP UMAP analysis with coSMicQC <span aria-hidden="true">&nbsp;→</span>
     </a>
 </nav>
                     </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li><a class="reference internal" href="#set-a-path-for-the-parquet-based-dataset">set a path for the parquet-based dataset</a></li>
+<li><a class="reference internal" href="#in-this-case-cellprofiler-sqlite-data-processed-by-cytotable">(in this case, CellProfiler SQLite data processed by CytoTable)</a></li>
+<li><a class="reference internal" href="#set-a-context-directory-for-images-associated-with-the-dataset">set a context directory for images associated with the dataset</a></li>
+<li><a class="reference internal" href="#create-a-cosmicqc-cytodataframe-single-cell-dataframe">create a cosmicqc CytoDataFrame (single-cell DataFrame)</a></li>
+<li><a class="reference internal" href="#display-the-dataframe">display the dataframe</a></li>
+</ul>
+
+                        </div>
+                    </nav>
                     
                 </div>
             </div>
