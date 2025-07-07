@@ -28,9 +28,14 @@ pyyaml = "^6.0.1"
 # used for CLI generation
 fire = ">=0.6,<0.8"
 # used for assisting single-cell profile and image analysis
-cytodataframe = ">=0.0.11"
+cytodataframe = [
+  { version =">=0.0.11", python = "<3.9" },
+  { version = ">=0.0.25", python = ">=3.9" },
+]
 seaborn = "^0.13.2"
 matplotlib = "^3.10.3"
+# sub-dependency which required lock for numpy installation with py313
+llvmlite = "0.43.0"
 
 [tool.poetry.group.dev.dependencies]
 # provides testing capabilities for project
@@ -95,7 +100,7 @@ cosmicqc = "cosmicqc.cli:cli_analyze"
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 style = "pep440"
 vcs = "git"
 
