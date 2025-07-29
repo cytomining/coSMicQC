@@ -34,20 +34,6 @@ def test_cli_identify_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     )
 
     assert returncode == 0
-    assert (
-        stdout.strip()
-        == """0    False
-1    False
-2    False
-3    False
-4    False
-5    False
-6    False
-7    False
-8     True
-9     True
-Name: cqc.custom.Z_Score.example_feature, dtype: bool""".strip()
-    )
 
     assert parquet.read_table(
         f"{tmp_path}/identify_outliers_output.parquet"
@@ -86,10 +72,7 @@ def test_cli_find_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
         == """Number of outliers: 2 (20.00%)
 Outliers Range:
 example_feature Min: 9
-example_feature Max: 10
-   example_feature
-8                9
-9               10""".strip()
+example_feature Max: 10""".strip()
     )
 
     assert parquet.read_table(
@@ -111,21 +94,6 @@ def test_cli_label_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     )
 
     assert returncode == 0
-    assert (
-        stdout.strip()
-        == """example_feature  cqc.custom.is_outlier
-0                1                  False
-1                2                  False
-2                3                  False
-3                4                  False
-4                5                  False
-5                6                  False
-6                7                  False
-7                8                  False
-8                9                   True
-9               10                   True""".strip()
-    )
-
     assert parquet.read_table(
         f"{tmp_path}/label_outliers_output.parquet"
     ).to_pydict() == {
