@@ -29,3 +29,13 @@ jobs:
       # run pre-commit
       - uses: pre-commit/action@v3.0.1
         id: pre_commit
+      - name: Run pre-commit and auto-commit fixes
+        run: |
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            if [ -n "$(git status --porcelain)" ]; then
+                git commit -am "chore: apply pre-commit fixes"
+                git push
+            else
+                echo "No changes to commit"
+            fi
