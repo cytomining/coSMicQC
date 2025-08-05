@@ -1,11 +1,11 @@
-name: dependabot-pre-commit
+name: dependabot jobs
 
 on:
   pull_request:
     types: [opened, reopened, synchronize]
 
 jobs:
-  dependabot-pre-commit:
+  pre-commit:
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-24.04
     steps:
