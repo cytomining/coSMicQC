@@ -10,7 +10,7 @@ on:
 
 jobs:
   pre_commit_checks:
-    # we avoid runnning duplicative
+    # we avoid running duplicative
     # pre-commit checks for dependabot PRs
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04
