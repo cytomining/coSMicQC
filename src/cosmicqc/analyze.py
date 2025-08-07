@@ -191,6 +191,14 @@ def find_outliers(
     # Interpret the df as CytoDataFrame
     df = CytoDataFrame(data=df)[required_columns]
 
+    # if we have nan's in our columns, emit a warning and drop them
+    if any(df[list(feature_thresholds.keys())].isna().any()):
+        print(
+            "Warning: NaN values found in the DataFrame. "
+            "These will be dropped before processing."
+        )
+        df = df.dropna(subset=list(feature_thresholds.keys()))
+
     # Filter DataFrame for outliers using identify_outliers
     outliers_mask = identify_outliers(
         # Select only the required columns from the DataFrame

@@ -2,6 +2,7 @@
 Tests cosmicqc analyze module
 """
 
+import numpy as np
 import pandas as pd
 import pytest
 from cytodataframe import CytoDataFrame
@@ -29,6 +30,39 @@ def test_find_outliers_basic_dataframe(basic_outlier_dataframe: pd.DataFrame):
     }
 
 
+def test_find_outliers_nan_dataframe(basic_outlier_dataframe: pd.DataFrame):
+    """
+    Testing find_outliers with basic/simulated data.
+    """
+
+    # add metadata to basic data
+    metadata_column_name = "Image_Metadata_Plate"
+    basic_outlier_dataframe[metadata_column_name] = "A"
+
+    # make the column include NaN's
+    basic_outlier_dataframe.loc[
+        basic_outlier_dataframe["example_feature"] > 6, "example_feature"
+    ] = np.nan
+
+    print(
+        analyze.find_outliers(
+            df=basic_outlier_dataframe,
+            feature_thresholds={"example_feature": 1},
+            metadata_columns=[metadata_column_name],
+        ).to_dict(orient="dict")
+    )
+
+    # assert that we have the output we expect
+    assert analyze.find_outliers(
+        df=basic_outlier_dataframe,
+        feature_thresholds={"example_feature": 1},
+        metadata_columns=[metadata_column_name],
+    ).to_dict(orient="dict") == {
+        "example_feature": {5: 6.0},
+        "Image_Metadata_Plate": {5: "A"},
+    }
+
+
 def test_find_outliers_basic_csv(basic_outlier_csv: str):
     """
     Testing find_outliers with csv data.
@@ -42,6 +76,7 @@ def test_find_outliers_basic_csv(basic_outlier_csv: str):
     ).to_dict(orient="dict") == {
         "example_feature": {8: 9, 9: 10},
     }
+
 
 def test_find_outliers_cfret(cytotable_CFReT_data_df: pd.DataFrame):
     """
@@ -452,12 +487,12 @@ def test_label_outliers(
         feature_thresholds="large_nuclei",
         include_threshold_scores=True,
     )
+
     pd.testing.assert_frame_equal(
         test_df,
         pd.read_parquet(
             path="tests/data/coSMicQC/output_data/test_label_outliers_output.parquet",
-            columns=test_df.columns.tolist(),
-        ),
+        )[test_df.columns.tolist()],
     )
 
     # test full dataset

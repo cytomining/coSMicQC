@@ -149,7 +149,7 @@ lint.per-file-ignores."docs/" = [ "E402", "F401" ]
 lint.per-file-ignores."docs/src/examples/*.ipynb" = [ "E501", "E703", "F821", "PLR0913" ]
 lint.per-file-ignores."docs/src/examples/*.py" = [ "E501", "E703", "PLR0913" ]
 # ignore typing rules for tests
-lint.per-file-ignores."tests/*" = [ "ANN201", "ANN202", "PLR0913" ]
+lint.per-file-ignores."tests/*" = [ "ANN201", "ANN202", "PLR0913", "PLR2004" ]
 
 [tool.isort]
 profile = "black"

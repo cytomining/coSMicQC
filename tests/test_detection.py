@@ -118,7 +118,7 @@ def test_find_texture_outliers(
     # Assert the outliers DataFrame is not empty and has the expected shape
     assert isinstance(outliers_df, pd.DataFrame)
     assert not outliers_df.empty
-    assert outliers_df.shape[0] == 242  # noqa: PLR2004
+    assert outliers_df.shape[0] == 242
 
 
 def test_get_outlier_proportion_per_well(
@@ -143,7 +143,7 @@ def test_get_outlier_proportion_per_well(
     # Assert the returned DataFrame is not empty
     assert isinstance(outlier_proportions_df, pd.DataFrame)
     assert not outlier_proportions_df.empty
-    assert outlier_proportions_df.shape[0] == 12  # noqa: PLR2004
+    assert outlier_proportions_df.shape[0] == 12
 
     # Assert the DataFrame contains the expected columns
     expected_columns = ["Well", "Proportion", "CellCount", "Image_Metadata_Well"]
