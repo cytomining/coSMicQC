@@ -412,6 +412,14 @@ For the latest released version, please have a look at <a href="../../../../v0.1
     <span class="c1"># Interpret the df as CytoDataFrame</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)[</span><span class="n">required_columns</span><span class="p">]</span>
 
+    <span class="c1"># if we have nan&#39;s in our columns, emit a warning and drop them</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Warning: NaN values found in the DataFrame. &quot;</span>
+            <span class="s2">&quot;These will be dropped before processing.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
     <span class="c1"># Filter DataFrame for outliers using identify_outliers</span>
     <span class="n">outliers_mask</span> <span class="o">=</span> <span class="n">identify_outliers</span><span class="p">(</span>
         <span class="c1"># Select only the required columns from the DataFrame</span>
