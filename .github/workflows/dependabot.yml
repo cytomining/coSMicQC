@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   pre-commit:
     if: github.actor == 'dependabot[bot]'
@@ -30,13 +34,29 @@ jobs:
       - uses: pre-commit/action@v3.0.1
         id: pre_commit
         continue-on-error: true
-      - name: Auto-commit any fixes
+      - name: Check for changes
+        if: ${{ steps.pre_commit.outcome == 'failure' }}
+        id: check_changes
         run: |
-            git config user.name 'github-actions[bot]'
-            git config user.email 'github-actions[bot]@users.noreply.github.com'
-            if [ -n "$(git status --porcelain)" ]; then
-                git commit -am "chore: apply pre-commit fixes"
-                git push --force-with-lease
-            else
-                echo "No changes to commit"
-            fi
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changes_detected=true" >> "$GITHUB_ENV"
+          else
+            echo "changes_detected=false" >> "$GITHUB_ENV"
+          fi
+      - name: Commit and push changes
+        if: ${{ env.changes_detected == 'true' &&
+          steps.pre_commit.outcome == 'failure' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email \
+            "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: auto-apply pre-commit fixes"
+          git push
+      # raise error if there were no changes and pre-commit failed
+      - name: Errors detected
+        if: ${{ env.changes_detected == 'false' &&
+          steps.pre_commit.outcome == 'failure' }}
+        run: |
+          echo 'Pre-commit failed and was unable to make changes'
+          exit 1
