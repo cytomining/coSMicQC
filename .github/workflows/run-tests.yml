@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # checks out the repo
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # fetch tags for versioning details
           fetch-depth: 0
@@ -48,7 +48,7 @@ jobs:
       OS: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
         # fetch tags for versioning details
           fetch-depth: 0
