@@ -52,7 +52,7 @@ jobs:
             "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "chore: auto-apply pre-commit fixes"
-          git push
+          git push origin HEAD:${{ github.head_ref }}
       # raise error if there were no changes and pre-commit failed
       - name: Errors detected
         if: ${{ env.changes_detected == 'false' &&
