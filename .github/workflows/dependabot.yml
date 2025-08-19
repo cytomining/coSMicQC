@@ -18,6 +18,10 @@ jobs:
         with:
           # fetch tags for versioning details
           fetch-depth: 0
+          # Check out the branch that Dependabot’s PR is coming from
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: true
       - name: Fetch tags
         run: git fetch --all --tags
       - name: Python setup
@@ -52,7 +56,7 @@ jobs:
             "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "chore: auto-apply pre-commit fixes"
-          git push origin HEAD:${{ github.head_ref }}
+          git push
       # raise error if there were no changes and pre-commit failed
       - name: Errors detected
         if: ${{ env.changes_detected == 'false' &&
