@@ -1,0 +1,188 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# ## Generate UMAP embeddings from no QC data and plot
+
+# In[1]:
+
+
+from pathlib import Path
+
+import pandas as pd
+from plotnine import *  # noqa: F403
+from plotnine.options import set_option
+
+import umap
+
+from pycytominer.cyto_utils import infer_cp_features
+
+
+# In[2]:
+
+
+# Set constants
+umap_random_seed = 0
+umap_n_components = 2
+
+# Set output directory
+output_dir = Path("./figures")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+# Load in no QC normalized dataframe for CFReT example plate
+no_QC_df = pd.read_parquet(
+    Path(
+        "/media/18tbdrive/1.Github_Repositories/cellpainting_predicts_cardiac_fibrosis/3.process_cfret_features/data/single_cell_profiles/localhost230405150001_sc_feature_selected_no_QC.parquet"
+    )
+)
+
+# Drop any NaN rows from columns that are not metadata (contain Metadata_ prefix)
+no_QC_df = no_QC_df.dropna(
+    subset=[col for col in no_QC_df.columns if not col.startswith("Metadata_")]
+).reset_index(drop=True)
+
+# Create new column for treatment cell type ID for each unique combo
+no_QC_df["Metadata_Treatment_CellType_ID"] = (
+    no_QC_df["Metadata_treatment"] + "_" + no_QC_df["Metadata_cell_type"]
+)
+
+# Print shape of the DataFrame
+print(no_QC_df.shape)
+no_QC_df.head()
+
+
+# In[3]:
+
+
+# Process cp_df to separate features and metadata
+cp_features = infer_cp_features(no_QC_df)
+meta_features = infer_cp_features(no_QC_df, metadata=True)
+
+# Make sure to reinitialize UMAP instance per plate
+umap_fit = umap.UMAP(
+    random_state=umap_random_seed, n_components=umap_n_components, n_jobs=1
+)
+
+# Fit UMAP and convert to pandas DataFrame
+embeddings = pd.DataFrame(
+    umap_fit.fit_transform(no_QC_df.loc[:, cp_features]),
+    columns=[f"UMAP{x}" for x in range(0, umap_n_components)],
+)
+print(f"{embeddings.shape} UMAP embeddings generated")
+
+# Combine with metadata
+cp_umap_with_metadata_df = pd.concat(
+    [no_QC_df.loc[:, meta_features], embeddings], axis=1
+)
+
+
+# In[4]:
+
+
+print(cp_umap_with_metadata_df.shape)
+cp_umap_with_metadata_df.head()
+
+
+# In[5]:
+
+
+# Add QC_status column and set all to "failed"
+cp_umap_with_metadata_df["QC_status"] = "failed"
+
+# Find matching rows and set QC_status to "passed"
+match_cols = [
+    "Metadata_Well",
+    "Metadata_Site",
+    "Metadata_Nuclei_Location_Center_X",
+    "Metadata_Nuclei_Location_Center_Y",
+]
+
+# Load in no QC normalized dataframe for CFReT example plate
+QC_df = pd.read_parquet(
+    Path(
+        "/media/18tbdrive/1.Github_Repositories/cellpainting_predicts_cardiac_fibrosis/3.process_cfret_features/data/single_cell_profiles/localhost230405150001_sc_feature_selected.parquet"
+    )
+)
+
+# Create a MultiIndex for fast lookup
+qc_index = QC_df.set_index(match_cols).index
+mask = cp_umap_with_metadata_df.set_index(match_cols).index.isin(qc_index)
+cp_umap_with_metadata_df.loc[mask, "QC_status"] = "passed"
+
+print(cp_umap_with_metadata_df.shape)
+cp_umap_with_metadata_df.head()
+
+
+# In[8]:
+
+
+# Set the figure size
+height = 8
+width = 9
+set_option("figure_size", (width, height))
+
+# Plot with custom color palette
+p = (
+    ggplot(
+        cp_umap_with_metadata_df,
+        aes(x="UMAP0", y="UMAP1", color="QC_status"),
+    )
+    + labs(
+        color="QC Status",
+    )
+    + geom_point(alpha=0.2, size=2)
+    + facet_wrap(
+        "Metadata_Treatment_CellType_ID",
+        ncol=2,
+        scales="fixed",
+    )
+    + theme_bw()
+    + theme(
+        axis_title=element_text(size=20),
+        axis_text=element_text(size=16),
+        legend_title=element_text(size=16),
+        legend_text=element_text(size=14),
+        legend_position="bottom",
+        strip_text=element_text(size=16),  # Adjust facet label size
+    )
+    + scale_color_manual(
+        values={"passed": "#0072B2", "failed": "#D55E00"}
+    )  # Blue for passed, orange for failed (colorblind-friendly)
+)
+# Save the plot
+p.save(output_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
+
+p.show()
+
+
+# In[7]:
+
+
+# Set the figure size
+height = 6
+width = 6
+set_option("figure_size", (width, height))
+
+# Plot with custom color palette
+p = (
+    ggplot(
+        cp_umap_with_metadata_df,
+        aes(x="UMAP0", y="UMAP1", color="Metadata_Treatment_CellType_ID"),
+    )
+    + labs(
+        color="Cell type\nand treatment",
+    )
+    + geom_point(alpha=0.2, size=2)
+    + theme_bw()
+    + theme(
+        axis_title=element_text(size=13),
+        axis_text=element_text(size=11),
+        plot_title=element_text(
+            size=14,
+        ),
+        legend_position="bottom",
+    )
+    + scale_color_brewer(type="qual", palette="Dark2")  # Change palette as needed
+)
+
+p.show()
+
