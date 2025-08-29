@@ -437,7 +437,7 @@ proportion_df = proportion_above_below_y_eq_x(merged_map)
 proportion_df
 
 
-# In[22]:
+# In[30]:
 
 
 # Rank independently within each dose
@@ -455,14 +455,14 @@ merged_map_sorted["rank_diff"] = (
     merged_map_sorted["postQC_rank"] - merged_map_sorted["preQC_rank"]
 )
 
-# Keep top 20 compounds per dose based on preQC ranking
+# Keep top compounds per dose based on preQC ranking
 merged_map_top = (
     merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False)
     .apply(lambda df: df.nsmallest(20, "preQC_rank"))
     .copy()
 )
 
-# Renumber x-axis 1–20 within each dose for plotting
+# Renumber x-axis 1–100 within each dose for plotting
 merged_map_top["preQC_rank_filtered"] = (
     merged_map_top.groupby("Metadata_dose_recode").cumcount() + 1
 )
@@ -513,10 +513,61 @@ fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 p.show()
 
 
-# In[23]:
+# In[31]:
 
 
-merged_map_top
+# Rank independently within each dose
+merged_map_sorted = merged_map.groupby("Metadata_dose_recode", group_keys=False).apply(
+    lambda df: df.sort_values("mean_average_precision_postQC", ascending=False).assign(
+        postQC_rank=lambda d: np.arange(1, len(d) + 1)
+    )
+)
+
+# Calculate rank pre-QC within each dose
+merged_map_sorted["preQC_rank"] = merged_map_sorted.groupby("Metadata_dose_recode")[
+    "mean_average_precision_preQC"
+].rank(ascending=False, method="first")
+
+# Keep top 20 compounds per dose based on preQC ranking
+merged_map_top = (
+    merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False)
+    .apply(lambda df: df.nsmallest(20, "preQC_rank"))
+    .copy()
+)
+
+# Plot: scatter pre-QC vs post-QC rank
+p = (
+    ggplot(
+        merged_map_top,
+        aes(
+            x="preQC_rank",
+            y="postQC_rank",
+            color="Metadata_avg_prop_failed_single_cells",
+        ),
+    )
+    + geom_point(size=3, alpha=0.8)
+    + geom_abline(
+        intercept=0, slope=1, linetype="--", color="blue", size=1
+    )  # y=x reference
+    + scale_color_cmap(
+        name="Avg. proportion\nfailed QC", cmap_name="cool", limits=(0, 1)
+    )
+    + labs(
+        x="Rank (pre-QC, 1 = highest)",
+        y="Rank (post-QC, 1 = highest)",
+        color="Avg prop failed cells",
+    )
+    + facet_wrap("~Metadata_dose_recode", nrow=1, scales="free")  # one row of plots
+    + theme_bw()
+    + theme(
+        figure_size=(12, 4),
+        legend_position="bottom",
+        legend_title=element_text(size=10),
+        legend_text=element_text(size=9),
+    )
+)
+
+p.show()
 
 
 # In[14]:
