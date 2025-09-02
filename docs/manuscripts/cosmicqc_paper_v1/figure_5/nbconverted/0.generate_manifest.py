@@ -3,18 +3,20 @@
 
 # # Generate manifest file with paths to SQLite files for CytoTable processing
 # 
+# A manifest file is a simple CSV that tracks the plate names in the dataset with the correct path to their respective SQLite file (CellProfiler output of morphology profiles) that will be processed.
+# 
 # Code derived from the `JUMP-single-cell` repository.
 
-# In[1]:
+# In[ ]:
 
+
+import pathlib
 
 import boto3
+import pandas as pd
+import s3fs
 from botocore import UNSIGNED
 from botocore.config import Config
-import pathlib
-import s3fs
-
-import pandas as pd
 
 
 # In[2]:

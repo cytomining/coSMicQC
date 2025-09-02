@@ -3,7 +3,7 @@
 
 # # Generate distribution plots of the features used in the contamination detector to identify contaminated single cells
 
-# In[1]:
+# In[ ]:
 
 
 from pathlib import Path
@@ -11,7 +11,20 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from cytodataframe import CytoDataFrame
-from plotnine import *  # noqa: F403
+from plotnine import (
+    aes,
+    element_text,
+    facet_wrap,
+    geom_bar,
+    geom_density,
+    ggplot,
+    labs,
+    scale_fill_gradientn,
+    scale_fill_manual,
+    theme,
+    theme_bw,
+    ylim,
+)
 from plotnine.options import set_option
 
 from cosmicqc import find_outliers

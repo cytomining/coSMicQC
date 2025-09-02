@@ -26,11 +26,13 @@ from plotnine import (
     guides,
     guide_legend,
     theme_bw,
+    scale_color_gradientn,
     scale_size_manual,
     scale_alpha_manual,
     scale_color_manual,
     scale_color_gradient,
     scale_shape_manual,
+    scale_color_brewer,
 )
 
 
@@ -91,19 +93,9 @@ print(f"Pre-QC df shape: {pre_qc_df.shape}")
 pre_qc_df.head()
 
 
-# In[5]:
-
-
-# Confirm both dataframes have the single cell count columns
-assert "Metadata_sc_count_failed_qc" in pre_qc_df.columns
-assert "Metadata_sc_count" in pre_qc_df.columns
-assert "Metadata_sc_count_failed_qc" in post_qc_df.columns
-assert "Metadata_sc_count" in post_qc_df.columns
-
-
 # ## Pre-QC UMAPs (Panels A and B)
 
-# In[6]:
+# In[5]:
 
 
 cp_features = infer_cp_features(pre_qc_df)
@@ -116,6 +108,9 @@ meta_features = [
 ]
 
 # Transform PCA to top 50 components
+# This is performed in the original LINCS Cell Painting paper to generate
+# Figure 2 of the paper at this GitHub link:
+# https://github.com/broadinstitute/lincs-profiling-complementarity/blob/5091585bde14c33d6819fa6b494e352a064fbeb4/1.Data-exploration/Profiles_level4/cell_painting/scripts/nbconverted/10.cellpainting_manifold.py#L12
 n_components = 50
 pca = PCA(n_components=n_components)
 
@@ -127,7 +122,7 @@ print(pre_qc_pca_df.shape)
 pre_qc_pca_df.head()
 
 
-# In[7]:
+# In[6]:
 
 
 # Fit UMAP directly on CellProfiler features
@@ -145,7 +140,7 @@ pre_qc_embedding_df = pd.concat(
 pre_qc_embedding_df.head()
 
 
-# In[8]:
+# In[7]:
 
 
 # --- Select MOA targets (key = lowercase name, value = display label) ---
@@ -161,12 +156,6 @@ moa_targets = {
     "other": "Other",
 }
 
-# Add DMSO label to dataframe
-pre_qc_embedding_df = pre_qc_embedding_df.assign(dmso_label="DMSO")
-pre_qc_embedding_df.loc[
-    pre_qc_embedding_df.Metadata_broad_sample != "DMSO", "dmso_label"
-] = "compound"
-
 # --- Create compounds to highlight ---
 # Use display labels directly (values of the dict)
 moa_labels = list(moa_targets.values())
@@ -176,6 +165,16 @@ moa_targets_size_values[moa_labels[-1]] = 0.1
 
 moa_targets_alpha_values = dict.fromkeys(moa_labels[:-1], 0.5)
 moa_targets_alpha_values[moa_labels[-1]] = 0.1
+
+
+# In[8]:
+
+
+# Add DMSO label to dataframe
+pre_qc_embedding_df = pre_qc_embedding_df.assign(dmso_label="DMSO")
+pre_qc_embedding_df.loc[
+    pre_qc_embedding_df.Metadata_broad_sample != "DMSO", "dmso_label"
+] = "compound"
 
 # --- Add highlight_moa column ---
 pre_qc_embedding_df = pre_qc_embedding_df.assign(
@@ -255,19 +254,40 @@ p.show()
 # In[10]:
 
 
+# Compute proportion failed
 pre_qc_embedding_df["prop_failed_qc"] = (
     pre_qc_embedding_df["Metadata_sc_count_failed_qc"]
     / pre_qc_embedding_df["Metadata_sc_count"]
 )
+
 # Drop any rows with NaN in the proportion column
 pre_qc_embedding_df = pre_qc_embedding_df.dropna(subset=["prop_failed_qc"])
 
+# Clip to [0, 1] just in case any weird negatives or >1 sneak in
+pre_qc_embedding_df["prop_failed_qc"] = pre_qc_embedding_df["prop_failed_qc"].clip(0, 1)
+
+# Define fixed bins from 0-1
+bins = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+labels = ["0-0.2", "0.2-0.4", "0.4-0.6", "0.6-0.8", "0.8-1.0"]
+
+pre_qc_embedding_df["prop_failed_qc_bin"] = pd.cut(
+    pre_qc_embedding_df["prop_failed_qc"], bins=bins, labels=labels, include_lowest=True
+)
+manual_colors = [
+    "#91bfdb",  # light blue
+    "#4575b4",  # dark blue
+    "#8979cf",  # purple
+    "#fc8d59",  # orange-red
+    "#d73027",  # red
+]
+
 p_failed_qc = (
-    ggplot(pre_qc_embedding_df, aes(x="UMAP_0", y="UMAP_1", color="prop_failed_qc"))
-    + geom_point(size=1, alpha=0.5)
+    ggplot(pre_qc_embedding_df, aes(x="UMAP_0", y="UMAP_1", color="prop_failed_qc_bin"))
+    + geom_point(size=1, alpha=0.3)
     + xlab("UMAP_0")
     + ylab("UMAP_1")
-    + scale_color_gradient(name="Proportion\nFailed QC", low="#56B1F7", high="#CA0020")
+    + scale_color_manual(values=manual_colors, name="Proportion cells\nfailed QC")
+    + guides(color=guide_legend(override_aes={"size": 3}))  # increases legend dot size
     + theme_bw()
 )
 p_failed_qc.save(filename=figure_output_dir / "pre_qc_failed_qc_umap.png", dpi=600)
@@ -321,34 +341,11 @@ post_qc_embedding_df.head()
 # In[13]:
 
 
-# --- Select MOA targets (key = lowercase name, value = display label) ---
-moa_targets = {
-    "aurora kinase inhibitor": "Aurora kinase inhibitor",
-    "plk inhibitor": "PLK inhibitor",
-    "proteasome inhibitor": "Proteasome inhibitor",
-    "exportin antagonist": "Exportin antagonist",
-    "maternal embryonic leucine zipper kinase inhibitor": "MELK inhibitor",
-    "tubulin inhibitor": "Tubulin inhibitor",
-    "hsp inhibitor": "HSP inhibitor",
-    "xiap inhibitor": "XIAP inhibitor",
-    "other": "Other",
-}
-
 # Add DMSO label to dataframe
 post_qc_embedding_df = post_qc_embedding_df.assign(dmso_label="DMSO")
 post_qc_embedding_df.loc[
     post_qc_embedding_df.Metadata_broad_sample != "DMSO", "dmso_label"
 ] = "compound"
-
-# --- Create compounds to highlight ---
-# Use display labels directly (values of the dict)
-moa_labels = list(moa_targets.values())
-
-moa_targets_size_values = dict.fromkeys(moa_labels[:-1], 1)
-moa_targets_size_values[moa_labels[-1]] = 0.1
-
-moa_targets_alpha_values = dict.fromkeys(moa_labels[:-1], 0.5)
-moa_targets_alpha_values[moa_labels[-1]] = 0.1
 
 # --- Add highlight_moa column ---
 post_qc_embedding_df = post_qc_embedding_df.assign(

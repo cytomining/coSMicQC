@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# activate the cosmicqc poetry environment
-poetry shell
+#########################################################################
+# This script runs single cell quality control using papermill
+# on all plate folders found in the specified parent directory.
+#########################################################################
 
 # Define the path to the parent folder to generate list of plate IDs
 PARENT_FOLDER="/media/NVME_4TB/LINCS_cytotable_output/data/"
@@ -14,7 +16,7 @@ echo "Number of plates found: ${#plates[@]}"
 
 # Using papermill, run single cell quality control on all plates
 for plate in "${plates[@]}"; do
-    papermill \
+    poetry run papermill \
     2.single_cell_qc.ipynb \
     2.single_cell_qc.ipynb \
     -p plate_id $plate

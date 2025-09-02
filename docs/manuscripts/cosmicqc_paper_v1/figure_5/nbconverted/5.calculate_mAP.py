@@ -338,8 +338,21 @@ scatter.set_cmap("coolwarm")
 plt.show()
 
 
-# In[11]:
+# In[36]:
 
+
+import pandas as pd
+from plotnine import (
+    ggplot,
+    aes,
+    geom_point,
+    geom_abline,
+    facet_wrap,
+    scale_color_gradientn,
+    labs,
+    theme_bw,
+    theme,
+)
 
 # Merge (as before)
 merged_map = pd.merge(
@@ -360,6 +373,15 @@ height = 4
 width = 14
 set_option("figure_size", (width, height))
 
+# Define the custom coSMic QC palette (lighter pink to purple to cyan)
+cosmicqc_palette = [
+    "#f8b3d3",  # Light pink
+    "#ff5ca7",  # Vibrant pink
+    "#8f30c9",  # Medium purple
+    "#3b0085",  # Deep purple
+    "#00cafd",  # Cyan accent
+]
+
 # Make the plotnine plot
 p = (
     ggplot(
@@ -372,9 +394,11 @@ p = (
     )
     + geom_point(alpha=0.5, size=0.8)
     + geom_abline(slope=1, intercept=0, linetype="dashed", color="blue")
-    + facet_wrap("~Metadata_dose_recode", nrow=1)  # <-- Single row of facets
-    + scale_color_cmap(
-        name="Avg. proportion\nfailed QC", cmap_name="cool", limits=(0, 1)
+    + facet_wrap("~Metadata_dose_recode", nrow=1)
+    + scale_color_gradientn(
+        name="Avg. proportion\nfailed QC",
+        colors=cosmicqc_palette,
+        limits=(0, 1),
     )
     + labs(
         x="Pre-QC mAP Score",
@@ -382,9 +406,11 @@ p = (
     )
     + theme_bw()
     + theme(
-        legend_position="bottom",  # <-- Legend at the bottom
+        legend_position="bottom",
     )
 )
+
+# Save as PNG
 p.save("figures/mAP_preQC_vs_postQC_by_dose.png", dpi=400)
 fig = p.draw()
 
@@ -394,8 +420,8 @@ for ax in fig.axes:
         coll.set_rasterized(True)
     # keep lines and legend as vectors
 
+# Save as SVG
 fig.savefig("figures/mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
-
 
 # To show the plot:
 p.show()
@@ -437,83 +463,7 @@ proportion_df = proportion_above_below_y_eq_x(merged_map)
 proportion_df
 
 
-# In[30]:
-
-
-# Rank independently within each dose
-merged_map_sorted = merged_map.groupby("Metadata_dose_recode", group_keys=False).apply(
-    lambda df: df.sort_values("mean_average_precision_postQC", ascending=False).assign(
-        postQC_rank=lambda d: np.arange(1, len(d) + 1)
-    )
-)
-
-# Calculate rank difference within each dose
-merged_map_sorted["preQC_rank"] = merged_map_sorted.groupby("Metadata_dose_recode")[
-    "mean_average_precision_preQC"
-].rank(ascending=False, method="first")
-merged_map_sorted["rank_diff"] = (
-    merged_map_sorted["postQC_rank"] - merged_map_sorted["preQC_rank"]
-)
-
-# Keep top compounds per dose based on preQC ranking
-merged_map_top = (
-    merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False)
-    .apply(lambda df: df.nsmallest(20, "preQC_rank"))
-    .copy()
-)
-
-# Renumber x-axis 1–100 within each dose for plotting
-merged_map_top["preQC_rank_filtered"] = (
-    merged_map_top.groupby("Metadata_dose_recode").cumcount() + 1
-)
-
-# Plot
-p = (
-    ggplot(
-        merged_map_top,
-        aes(
-            x="preQC_rank_filtered",
-            y="rank_diff",
-            fill="Metadata_avg_prop_failed_single_cells",
-        ),
-    )
-    + geom_bar(stat="identity", width=0.8)
-    + geom_hline(yintercept=0, linetype="--", color="red", size=1)
-    + scale_fill_cmap(
-        name="Avg. proportion\nfailed QC", cmap_name="cool", limits=(0, 1)
-    )
-    + labs(
-        x="Top 20 compounds per dose (pre-QC rank)",
-        y="Rank difference\n(post-QC - pre-QC)",
-        fill="Avg prop failed cells",
-    )
-    + facet_wrap("~Metadata_dose_recode", nrow=1, scales="free_x")  # one row of plots
-    + theme_bw()
-    + theme(
-        axis_text_x=element_text(rotation=45, hjust=1),
-        figure_size=(12, 4),
-        legend_position="bottom",
-        legend_title=element_text(size=10),
-        legend_text=element_text(size=9),
-    )
-)
-
-# Save plots
-p.save("figures/rank_mAP_preQC_vs_postQC_by_dose.png", dpi=400)
-fig = p.draw()
-
-for ax in fig.axes:
-    # rasterize scatter points only
-    for coll in ax.collections:
-        coll.set_rasterized(True)
-    # keep lines and legend as vectors
-
-fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
-
-p.show()
-
-
-# In[31]:
+# In[37]:
 
 
 # Rank independently within each dose
@@ -535,7 +485,7 @@ merged_map_top = (
     .copy()
 )
 
-# Plot: scatter pre-QC vs post-QC rank
+# Use the custom palette
 p = (
     ggplot(
         merged_map_top,
@@ -546,18 +496,18 @@ p = (
         ),
     )
     + geom_point(size=3, alpha=0.8)
-    + geom_abline(
-        intercept=0, slope=1, linetype="--", color="blue", size=1
-    )  # y=x reference
-    + scale_color_cmap(
-        name="Avg. proportion\nfailed QC", cmap_name="cool", limits=(0, 1)
+    + geom_abline(intercept=0, slope=1, linetype="--", color="blue", size=1)
+    + scale_color_gradientn(
+        name="Avg. proportion\nfailed QC",
+        colors=cosmicqc_palette,
+        limits=(0, 1),
     )
     + labs(
         x="Rank (pre-QC, 1 = highest)",
         y="Rank (post-QC, 1 = highest)",
         color="Avg prop failed cells",
     )
-    + facet_wrap("~Metadata_dose_recode", nrow=1, scales="free")  # one row of plots
+    + facet_wrap("~Metadata_dose_recode", nrow=1, scales="free")
     + theme_bw()
     + theme(
         figure_size=(12, 4),
@@ -566,6 +516,16 @@ p = (
         legend_text=element_text(size=9),
     )
 )
+
+# Save plots
+p.save("figures/rank_mAP_preQC_vs_postQC_by_dose.png", dpi=400)
+fig = p.draw()
+
+for ax in fig.axes:
+    for coll in ax.collections:
+        coll.set_rasterized(True)
+
+fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
 
