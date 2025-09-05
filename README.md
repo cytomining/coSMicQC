@@ -22,7 +22,7 @@ However, technical outliers in the data can obscure these biological insights, c
 By utilizing specific morphological features extracted with CellProfiler, particularly AreaShape features, you can identify technically incorrect segmentations.
 These can then be labeled or removed before further preprocessing steps, such as those performed with pycytominer.
 
-> 🌟 Check out our [blog post](https://cytomininglab.com/2024/12/20/cosmicqc.html) on this for a greater understanding of the background and how coSMicQC can help you!
+> 🌟 Check out our [blog post](https://waysciencelab.com/2024/12/20/cosmicqc.html) on this for a greater understanding of the background and how coSMicQC can help you!
 
 ## Installation
 
