@@ -5,7 +5,7 @@
 # 
 # A manifest file is a simple CSV that tracks the plate names in the dataset with the correct path to their respective SQLite file (CellProfiler output of morphology profiles) that will be processed.
 # 
-# Code derived from the `JUMP-single-cell` repository.
+# Code derived from the `JUMP-single-cell` repository, which can be found [here](https://github.com/WayScience/JUMP-single-cell/blob/main/0.download_data/0.generate_jump_dataset_manifest.ipynb).
 
 # In[ ]:
 

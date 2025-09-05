@@ -3,7 +3,7 @@
 
 # # Preprocess the features into two sets of data per plate: Post- or Pre-QC
 # 
-# The features will be preprocessed using pycytominer (aggregate, annotate, normalize w/ MAD robustize) for each plates then merged together as one batch for feature selection and spherization.
+# The features will be preprocessed using [Pycytominer](https://github.com/cytomining/pycytominer) (aggregate, annotate, normalize w/ MAD robustize) for each plates then merged together as one batch for feature selection and spherization.
 # 
 # To determine the impact of QC on the dataset, we will have to generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).
 
@@ -18,9 +18,9 @@ from pycytominer import aggregate, annotate, feature_select, normalize
 from pycytominer.cyto_utils import output
 
 
-# ## Helper function
+# ## Helper functions
 # 
-# This function comes from the LINCS profiling repository.
+# These functions comes from the LINCS profiling repository.
 
 # In[2]:
 
@@ -42,6 +42,86 @@ def recode_dose(x: float, doses: list[float], return_level: bool = False) -> flo
         return 0.0
     closest_index = np.argmin([np.abs(dose - x) for dose in doses])
     return float(closest_index + 1) if return_level else float(doses[closest_index])
+
+
+def feature_selection(df_lvl4: pd.DataFrame, qc_status: str) -> pd.DataFrame:
+    """
+    Perform feature selection by dropping columns with null values
+    (greater than 384 i.e. equivalent to one plate worth of cell profiles)
+    and highly correlated values from the data.
+    """
+    metadata_columns = [x for x in df_lvl4.columns if (x.startswith("Metadata_"))]
+    df_lvl4_metadata = df_lvl4[metadata_columns].copy()
+    df_lvl4_features = df_lvl4.drop(metadata_columns, axis=1)
+    null_cols = [
+        col
+        for col in df_lvl4_features.columns
+        if df_lvl4_features[col].isnull().sum() > 384
+    ]
+    df_lvl4_features.drop(null_cols, axis=1, inplace=True)
+
+    for col in df_lvl4_features.columns:
+        if df_lvl4_features[col].isnull().sum():
+            df_lvl4_features[col].fillna(
+                value=df_lvl4_features[col].mean(), inplace=True
+            )
+
+    if qc_status == "pre":
+        meta_cols = [
+            "Metadata_broad_sample",
+            "Metadata_pert_id",
+            "Metadata_Plate",
+            "Metadata_Well",
+            "Metadata_broad_id",
+            "Metadata_moa",
+            "Metadata_dose_recode",
+            "Metadata_sc_count",
+        ]
+    else:  # "post"
+        meta_cols = [
+            "Metadata_broad_sample",
+            "Metadata_pert_id",
+            "Metadata_Plate",
+            "Metadata_Well",
+            "Metadata_broad_id",
+            "Metadata_moa",
+            "Metadata_dose_recode",
+            "Metadata_sc_count",
+            "Metadata_sc_count_failed_qc",
+            "Metadata_sc_count_passed_qc",
+        ]
+    df_meta_info = df_lvl4_metadata[meta_cols].copy()
+    df_lvl4_new = pd.concat([df_meta_info, df_lvl4_features], axis=1)
+
+    return df_lvl4_new
+
+
+def merge_dataframe(
+    df: pd.DataFrame, pertinfo_file: pathlib.Path
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    This function merge aligned L1000 and Cell painting Metadata information dataframe
+    with the Level-4 data, change the values of the Metadata_dose_recode column
+    and create a new column 'replicate_name' that represents each replicate in the
+    dataset.
+    """
+    df_pertinfo = pd.read_csv(pertinfo_file)
+    df_lvl4_new = df.merge(df_pertinfo, on="Metadata_broad_sample", how="outer")
+    no_cpds_df = (
+        df_lvl4_new[df_lvl4_new["pert_iname"].isnull()].copy().reset_index(drop=True)
+    )
+    df_lvl4_new.drop(
+        df_lvl4_new[df_lvl4_new["pert_iname"].isnull()].index, inplace=True
+    )
+    df_lvl4_new.reset_index(drop=True, inplace=True)
+    df_lvl4_new["Metadata_dose_recode"] = df_lvl4_new["Metadata_dose_recode"].map(
+        {0.0: 0, 0.04: 1, 0.12: 2, 0.37: 3, 1.11: 4, 3.33: 5, 10.0: 6, 20.0: 7}
+    )
+    df_lvl4_new["replicate_name"] = [
+        "replicate_" + str(x) for x in range(df_lvl4_new.shape[0])
+    ]
+
+    return df_lvl4_new, no_cpds_df
 
 
 # ## Set constants
@@ -115,6 +195,22 @@ all_post_qc = []
 for profile_file in profile_files:
     plate_name = profile_file.stem.split("_")[0]
     print(f"Processing {plate_name}...")
+
+    # Define all expected output files for this plate
+    expected_outputs = [
+        output_dir / f"{plate_name}_pre_qc_agg.parquet",
+        output_dir / f"{plate_name}_post_qc_agg.parquet",
+        output_dir / f"{plate_name}_pre_qc_agg_annotated.parquet",
+        output_dir / f"{plate_name}_post_qc_agg_annotated.parquet",
+        output_dir / f"{plate_name}_pre_qc_agg_normalized.parquet",
+        output_dir / f"{plate_name}_post_qc_agg_normalized.parquet",
+    ]
+
+    # Skip plate if all outputs already exist
+    if all(f.exists() for f in expected_outputs):
+        print(f"Skipping {plate_name}, all outputs already exist.")
+        continue
+
     # Load the profile data
     print("Loading profile data...")
     df = pd.read_parquet(profile_file, engine="pyarrow")
@@ -279,23 +375,26 @@ for profile_file in profile_files:
 
 
 # --- Merge all plates into single DataFrames for the batch ---
-batch_pre_qc_df = pd.concat(all_pre_qc, ignore_index=True)
-batch_post_qc_df = pd.concat(all_post_qc, ignore_index=True)
+if all_pre_qc and all_post_qc:  # only run if both lists have data
+    batch_pre_qc_df = pd.concat(all_pre_qc, ignore_index=True)
+    batch_post_qc_df = pd.concat(all_post_qc, ignore_index=True)
 
-# Save the merged batch-level DataFrames
-output(
-    df=batch_pre_qc_df,
-    output_filename=output_dir / "whole_batch_pre_qc_norm.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
-output(
-    df=batch_post_qc_df,
-    output_filename=output_dir / "whole_batch_post_qc_norm.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
-print("Finished merging all plates into one batch.")
+    # Save the merged batch-level DataFrames
+    output(
+        df=batch_pre_qc_df,
+        output_filename=output_dir / "whole_batch_pre_qc_norm.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
+    output(
+        df=batch_post_qc_df,
+        output_filename=output_dir / "whole_batch_post_qc_norm.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
+    print("Finished merging all plates into one batch.")
+else:
+    print("No new plates were processed. Skipping batch merge.")
 
 
 # ## Perform preprocessing on merged data pre and post QC
@@ -303,68 +402,75 @@ print("Finished merging all plates into one batch.")
 # In[6]:
 
 
-# --- Perform feature selection for whole batches ---
-batch_pre_qc_fs_df = feature_select(
-    profiles=batch_pre_qc_df,
-    operation=feature_select_ops,
-    na_cutoff=na_cut,
-    corr_threshold=corr_threshold,
-    blocklist_file=full_blocklist_file,
-)
+# --- Perform feature selection and spherization for whole batches ---
+if all_pre_qc and all_post_qc:  # only run if both lists had data merged
+    batch_pre_qc_fs_df = feature_select(
+        profiles=batch_pre_qc_df,
+        operation=feature_select_ops,
+        na_cutoff=na_cut,
+        corr_threshold=corr_threshold,
+        blocklist_file=full_blocklist_file,
+    )
 
-output(
-    df=batch_pre_qc_fs_df,
-    output_filename=output_dir / "whole_batch_pre_qc_agg_norm_fs.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
+    output(
+        df=batch_pre_qc_fs_df,
+        output_filename=output_dir / "whole_batch_pre_qc_agg_norm_fs.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
 
-batch_post_qc_fs_df = feature_select(
-    profiles=batch_post_qc_df,
-    operation=feature_select_ops,
-    na_cutoff=na_cut,
-    corr_threshold=corr_threshold,
-    blocklist_file=full_blocklist_file,
-)
+    batch_post_qc_fs_df = feature_select(
+        profiles=batch_post_qc_df,
+        operation=feature_select_ops,
+        na_cutoff=na_cut,
+        corr_threshold=corr_threshold,
+        blocklist_file=full_blocklist_file,
+    )
 
-output(
-    df=batch_post_qc_fs_df,
-    output_filename=output_dir / "whole_batch_post_qc_agg_norm_fs.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
+    output(
+        df=batch_post_qc_fs_df,
+        output_filename=output_dir / "whole_batch_post_qc_agg_norm_fs.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
 
-# --- Perform spherization for whole batches ---
-batch_pre_qc_spherized_df = normalize(
-    profiles=batch_pre_qc_fs_df,
-    features="infer",
-    meta_features="infer",
-    samples="Metadata_broad_sample == 'DMSO'",
-    method="spherize",
-)
+    # --- Perform spherization for whole batches ---
+    batch_pre_qc_spherized_df = normalize(
+        profiles=batch_pre_qc_fs_df,
+        features="infer",
+        meta_features="infer",
+        samples="Metadata_broad_sample == 'DMSO'",
+        method="spherize",
+    )
 
-output(
-    df=batch_pre_qc_spherized_df,
-    output_filename=output_dir / "whole_batch_pre_qc_agg_norm_fs_spherized.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
+    output(
+        df=batch_pre_qc_spherized_df,
+        output_filename=output_dir / "whole_batch_pre_qc_agg_norm_fs_spherized.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
 
-batch_post_qc_spherized_df = normalize(
-    profiles=batch_post_qc_fs_df,
-    features="infer",
-    meta_features="infer",
-    samples="Metadata_broad_sample == 'DMSO'",
-    method="spherize",
-)
+    batch_post_qc_spherized_df = normalize(
+        profiles=batch_post_qc_fs_df,
+        features="infer",
+        meta_features="infer",
+        samples="Metadata_broad_sample == 'DMSO'",
+        method="spherize",
+    )
 
-output(
-    df=batch_post_qc_spherized_df,
-    output_filename=output_dir / "whole_batch_post_qc_agg_norm_fs_spherized.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
-print("Finished processing batch-level data.")
+    output(
+        df=batch_post_qc_spherized_df,
+        output_filename=output_dir
+        / "whole_batch_post_qc_agg_norm_fs_spherized.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
+
+    print("Finished processing batch-level data.")
+else:
+    print(
+        "No batch-level data to process. Skipping feature selection and spherization."
+    )
 
 
 # ## Output one dataframe to inspect
@@ -372,124 +478,55 @@ print("Finished processing batch-level data.")
 # In[7]:
 
 
-print(batch_post_qc_spherized_df.shape)
-batch_post_qc_spherized_df.head()
+# Path to the spherized file we want to inspect
+spherized_file = output_dir / "whole_batch_post_qc_agg_norm_fs_spherized.parquet"
+
+if spherized_file.exists():
+    print("Spherized batch file already exists. Loading for inspection...")
+    batch_post_qc_spherized_df = pd.read_parquet(spherized_file, engine="pyarrow")
+    print(batch_post_qc_spherized_df.shape)
+    display(batch_post_qc_spherized_df.head())
+elif all_pre_qc and all_post_qc:  # only print after processing if new data exists
+    print(batch_post_qc_spherized_df.shape)
+    display(batch_post_qc_spherized_df.head())
+else:
+    print("No spherized batch data available to inspect.")
 
 
 # ## Final preprocessing steps
 
-# In[13]:
+# In[8]:
 
 
-# Helper functions
-def feature_selection(df_lvl4: pd.DataFrame, qc_status: str) -> pd.DataFrame:
-    """
-    Perform feature selection by dropping columns with null values
-    (greater than 384 i.e. equivalent to one plate worth of cell profiles)
-    and highly correlated values from the data.
-    """
-    metadata_columns = [x for x in df_lvl4.columns if (x.startswith("Metadata_"))]
-    df_lvl4_metadata = df_lvl4[metadata_columns].copy()
-    df_lvl4_features = df_lvl4.drop(metadata_columns, axis=1)
-    null_cols = [
-        col
-        for col in df_lvl4_features.columns
-        if df_lvl4_features[col].isnull().sum() > 384
-    ]
-    df_lvl4_features.drop(null_cols, axis=1, inplace=True)
+# Paths to the final merged files
+pre_merged_file = output_dir / "whole_batch_pre_qc_cpd_replicates.parquet"
+post_merged_file = output_dir / "whole_batch_post_qc_cpd_replicates.parquet"
 
-    for col in df_lvl4_features.columns:
-        if df_lvl4_features[col].isnull().sum():
-            df_lvl4_features[col].fillna(
-                value=df_lvl4_features[col].mean(), inplace=True
-            )
-
-    if qc_status == "pre":
-        meta_cols = [
-            "Metadata_broad_sample",
-            "Metadata_pert_id",
-            "Metadata_Plate",
-            "Metadata_Well",
-            "Metadata_broad_id",
-            "Metadata_moa",
-            "Metadata_dose_recode",
-            "Metadata_sc_count",
-        ]
-    else:  # "post"
-        meta_cols = [
-            "Metadata_broad_sample",
-            "Metadata_pert_id",
-            "Metadata_Plate",
-            "Metadata_Well",
-            "Metadata_broad_id",
-            "Metadata_moa",
-            "Metadata_dose_recode",
-            "Metadata_sc_count",
-            "Metadata_sc_count_failed_qc",
-            "Metadata_sc_count_passed_qc",
-        ]
-    df_meta_info = df_lvl4_metadata[meta_cols].copy()
-    df_lvl4_new = pd.concat([df_meta_info, df_lvl4_features], axis=1)
-
-    return df_lvl4_new
-
-
-def merge_dataframe(
-    df: pd.DataFrame, pertinfo_file: pathlib.Path
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    This function merge aligned L1000 and Cell painting Metadata information dataframe
-    with the Level-4 data, change the values of the Metadata_dose_recode column
-    and create a new column 'replicate_name' that represents each replicate in the
-    dataset.
-    """
-    df_pertinfo = pd.read_csv(pertinfo_file)
-    df_lvl4_new = df.merge(df_pertinfo, on="Metadata_broad_sample", how="outer")
-    no_cpds_df = (
-        df_lvl4_new[df_lvl4_new["pert_iname"].isnull()].copy().reset_index(drop=True)
+# --- Perform feature selection and merge for pre-QC spherized batch ---
+if pre_merged_file.exists():
+    print("Pre-QC merged batch file already exists. Skipping processing.")
+else:
+    pre_selected_df = feature_selection(batch_pre_qc_spherized_df, qc_status="pre")
+    pre_qc_cpd_replicates_merged_df, _ = merge_dataframe(pre_selected_df, pertinfo_file)
+    output(
+        df=pre_qc_cpd_replicates_merged_df,
+        output_filename=pre_merged_file,
+        float_format=float_format,
+        output_type="parquet",
     )
-    df_lvl4_new.drop(
-        df_lvl4_new[df_lvl4_new["pert_iname"].isnull()].index, inplace=True
+
+# --- Perform feature selection and merge for post-QC spherized batch ---
+if post_merged_file.exists():
+    print("Post-QC merged batch file already exists. Skipping processing.")
+else:
+    post_selected_df = feature_selection(batch_post_qc_spherized_df, qc_status="post")
+    post_qc_cpd_replicates_merged_df, _ = merge_dataframe(
+        post_selected_df, pertinfo_file
     )
-    df_lvl4_new.reset_index(drop=True, inplace=True)
-    df_lvl4_new["Metadata_dose_recode"] = df_lvl4_new["Metadata_dose_recode"].map(
-        {0.0: 0, 0.04: 1, 0.12: 2, 0.37: 3, 1.11: 4, 3.33: 5, 10.0: 6, 20.0: 7}
+    output(
+        df=post_qc_cpd_replicates_merged_df,
+        output_filename=post_merged_file,
+        float_format=float_format,
+        output_type="parquet",
     )
-    df_lvl4_new["replicate_name"] = [
-        "replicate_" + str(x) for x in range(df_lvl4_new.shape[0])
-    ]
-
-    return df_lvl4_new, no_cpds_df
-
-
-# In[15]:
-
-
-# Perform feature selection and merge for pre-QC spherized batch
-pre_selected_df = feature_selection(batch_pre_qc_spherized_df, qc_status="pre")
-pre_qc_cpd_replicates_merged_df, _ = merge_dataframe(pre_selected_df, pertinfo_file)
-
-output(
-    df=pre_qc_cpd_replicates_merged_df,
-    output_filename=output_dir / "whole_batch_pre_qc_cpd_replicates.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
-
-# Perform feature selection and merge for post-QC spherized batch
-post_selected_df = feature_selection(batch_post_qc_spherized_df, qc_status="post")
-post_qc_cpd_replicates_merged_df, _ = merge_dataframe(post_selected_df, pertinfo_file)
-
-output(
-    df=post_qc_cpd_replicates_merged_df,
-    output_filename=output_dir / "whole_batch_post_qc_cpd_replicates.parquet",
-    float_format=float_format,
-    output_type="parquet",
-)
-
-
-# In[ ]:
-
-
-
 

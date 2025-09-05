@@ -200,7 +200,7 @@ moa_colors = {
     "Tubulin inhibitor": "#CC6677",
     "HSP inhibitor": "#FF9A00",
     "XIAP inhibitor": "#882255",
-    "Other": "grey",
+    "Other": "#B1B1B1",
 }
 
 # 1. Create columns for plotting
