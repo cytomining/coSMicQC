@@ -4,9 +4,12 @@ Tests cosmicqc contamination detector module
 
 from unittest.mock import patch
 
+import matplotlib
 import pandas as pd
 
 from cosmicqc import detection as cd
+
+matplotlib.use("Agg")  # non-GUI backend for headless environments
 
 
 def test_skewness_cytoplasm_texture(cytotable_NF1_contamination_data_df: pd.DataFrame):
