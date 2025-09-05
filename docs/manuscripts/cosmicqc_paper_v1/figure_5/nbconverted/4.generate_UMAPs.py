@@ -2,39 +2,31 @@
 # coding: utf-8
 
 # # Generate UMAP embeddings and plots
-# 
+#
 # We replicate the same process of generating UMAP embeddings that was done in the original LINCS paper, but with and without QC.
 
 # In[1]:
 
 
 import pathlib
+
 import numpy as np
 import pandas as pd
 import umap
-
-from sklearn.decomposition import PCA
-from pycytominer.cyto_utils import infer_cp_features
-
 from plotnine import (
-    ggplot,
     aes,
     geom_point,
-    ggtitle,
+    ggplot,
+    guide_legend,
+    guides,
+    scale_color_manual,
+    scale_shape_manual,
+    theme_bw,
     xlab,
     ylab,
-    guides,
-    guide_legend,
-    theme_bw,
-    scale_color_gradientn,
-    scale_size_manual,
-    scale_alpha_manual,
-    scale_color_manual,
-    scale_color_gradient,
-    scale_shape_manual,
-    scale_color_brewer,
 )
-
+from pycytominer.cyto_utils import infer_cp_features
+from sklearn.decomposition import PCA
 
 # In[2]:
 
@@ -405,4 +397,3 @@ p = (
 )
 p.save(filename=figure_output_dir / "post_qc_moa_umap.png", dpi=600)
 p.show()
-

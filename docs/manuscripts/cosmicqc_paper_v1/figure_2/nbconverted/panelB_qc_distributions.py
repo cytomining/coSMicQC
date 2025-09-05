@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # ## Generate plots to show the distributions of the failed versus passing single-cells in the data
-# 
+#
 # We use the `PCCMA optimization` dataset.
 
 # In[1]:
@@ -14,31 +14,24 @@ import pandas as pd
 from plotnine import (
     aes,
     element_text,
+    geom_bin2d,
     geom_histogram,
     geom_hline,
     geom_point,
-    geom_jitter,
-    geom_bin2d,
-    facet_wrap,
     geom_vline,
     ggplot,
     ggtitle,
     guides,
     labs,
     scale_color_manual,
-    scale_fill_manual,
-    geom_density_2d,
     scale_fill_gradient,
+    scale_fill_manual,
     theme,
     theme_light,
-    theme_bw,
-    scale_fill_cmap,
 )
 from plotnine.options import set_option
 
-
 from cosmicqc import identify_outliers
-
 
 # In[2]:
 
@@ -232,4 +225,3 @@ p.save(
 )
 
 p.show()
-

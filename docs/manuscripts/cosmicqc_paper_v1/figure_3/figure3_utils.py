@@ -2,6 +2,7 @@
 This function were derived from the `cellpainting_predicts_cardiac_fibrois`
 GitHub repository.
 """
+
 from typing import Tuple, Union
 
 import numpy as np
@@ -11,6 +12,7 @@ from sklearn.utils import resample
 
 # set numpy seed to make random operations (shuffling data) reproducible
 np.random.seed(0)
+
 
 def get_X_y_data(
     df: pd.DataFrame, label: str, shuffle: bool = False

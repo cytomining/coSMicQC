@@ -29,7 +29,6 @@ from plotnine.options import set_option
 
 from cosmicqc import find_outliers
 
-
 # In[2]:
 
 
@@ -327,7 +326,11 @@ plot_df["Metadata_genotype"] = plot_df["Column"].apply(
     lambda col: (
         "WT"
         if 1 <= col <= 4
-        else "HET" if 5 <= col <= 8 else "Null" if 9 <= col <= 12 else "Unknown"
+        else "HET"
+        if 5 <= col <= 8
+        else "Null"
+        if 9 <= col <= 12
+        else "Unknown"
     )
 )
 
@@ -380,4 +383,3 @@ p.save(
 )
 
 p.show()
-

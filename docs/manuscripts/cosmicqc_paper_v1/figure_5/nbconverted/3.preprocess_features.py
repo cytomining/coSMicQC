@@ -2,9 +2,9 @@
 # coding: utf-8
 
 # # Preprocess the features into two sets of data per plate: Post- or Pre-QC
-# 
+#
 # The features will be preprocessed using [Pycytominer](https://github.com/cytomining/pycytominer) (aggregate, annotate, normalize w/ MAD robustize) for each plates then merged together as one batch for feature selection and spherization.
-# 
+#
 # To determine the impact of QC on the dataset, we will have to generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).
 
 # In[1]:
@@ -17,9 +17,8 @@ import pandas as pd
 from pycytominer import aggregate, annotate, feature_select, normalize
 from pycytominer.cyto_utils import output
 
-
 # ## Helper functions
-# 
+#
 # These functions comes from the LINCS profiling repository.
 
 # In[2]:
@@ -177,7 +176,7 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 
 # ## First, perform operations on each individual plate first
-# 
+#
 # 1. Aggregate (median)
 # 2. Annotate
 # 3. Normalize (MAD robustize) -> whole plate
@@ -529,4 +528,3 @@ else:
         float_format=float_format,
         output_type="parquet",
     )
-

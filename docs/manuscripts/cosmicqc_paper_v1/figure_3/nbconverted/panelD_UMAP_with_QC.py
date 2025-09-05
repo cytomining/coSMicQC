@@ -9,13 +9,10 @@
 from pathlib import Path
 
 import pandas as pd
+import umap
 from plotnine import *  # noqa: F403
 from plotnine.options import set_option
-
-import umap
-
 from pycytominer.cyto_utils import infer_cp_features
-
 
 # In[2]:
 
@@ -143,4 +140,3 @@ p = (
 p.save(output_dir / "facet_umap_with_QC_plot.png", dpi=400, width=width, height=height)
 
 p.show()
-
