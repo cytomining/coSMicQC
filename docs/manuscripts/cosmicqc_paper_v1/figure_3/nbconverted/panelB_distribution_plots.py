@@ -173,6 +173,7 @@ p = (
     + scale_fill_manual(values=fill_colors)
     + labs(x="Log10(Cells area)", y="Density", fill="Single-cell QC status")
     + theme_bw()
+    + xlim(2.5, 5.5)
     + theme(
         legend_position=(0.97, 0.96),
         legend_text=element_text(size=11),

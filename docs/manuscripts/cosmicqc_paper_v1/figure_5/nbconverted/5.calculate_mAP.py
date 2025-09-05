@@ -3,40 +3,37 @@
 
 # # Calculate mAP scores comparing the compounds at an MOA level to the control (DMSO)
 
-# In[15]:
+# In[1]:
 
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import pathlib
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from copairs import map
 from copairs.matching import assign_reference_index
 from plotnine import (
-    ggplot,
     aes,
-    geom_point,
-    labs,
-    theme_bw,
-    theme,
     element_text,
-    geom_hline,
-    scale_fill_gradient,
     facet_wrap,
-    scale_color_cmap,
-    scale_fill_cmap,
     geom_abline,
-    geom_bar,
+    geom_point,
+    ggplot,
+    labs,
+    scale_color_gradientn,
+    theme,
+    theme_bw,
 )
 from plotnine.options import set_option
 
 
-# ## Helper function to perform mAP
+# ## Helper functions
 
-# In[2]:
+# In[ ]:
 
 
+# Perform mean average precision calculation
 def get_mean_average_precision(  # noqa: ANN201, PLR0913
     activity_df: pd.DataFrame,
     pos_sameby: list,
@@ -44,7 +41,20 @@ def get_mean_average_precision(  # noqa: ANN201, PLR0913
     neg_sameby: list,
     neg_diffby: list,
     seed: int = 0,
-):
+) -> pd.DataFrame:
+    """Calculate mean average precision for activity data.
+
+    Args:
+        activity_df (pd.DataFrame): Activity data.
+        pos_sameby (list): Positive samples to compare.
+        pos_diffby (list): Positive samples to compare.
+        neg_sameby (list): Negative samples to compare.
+        neg_diffby (list): Negative samples to compare.
+        seed (int, optional): Random seed for reproducibility. Defaults to 0.
+
+    Returns:
+        pd.DataFrame: Mean average precision results.
+    """
     metadata = activity_df.filter(regex="^Metadata")
     profiles = activity_df.filter(regex="^(?!Metadata)").values
 
@@ -58,6 +68,42 @@ def get_mean_average_precision(  # noqa: ANN201, PLR0913
     )
     activity_map["-log10(p-value)"] = -activity_map["corrected_p_value"].apply(np.log10)
     return activity_map
+
+# Calculate proportion of points above, below, and equal to y=x per dose
+def proportion_above_below_y_eq_x(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate the proportion of points above, below, and equal to the y=x line.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing the activity data.
+
+    Returns:
+        pd.DataFrame: Dataframe with proportions and counts per dose.
+    """
+    results = []
+    for dose, group in df.groupby("Metadata_dose_recode"):
+        above = (
+            group["mean_average_precision_postQC"]
+            > group["mean_average_precision_preQC"]
+        ).sum()
+        below = (
+            group["mean_average_precision_postQC"]
+            < group["mean_average_precision_preQC"]
+        ).sum()
+        equal = (
+            group["mean_average_precision_postQC"]
+            == group["mean_average_precision_preQC"]
+        ).sum()
+        total = len(group)
+        results.append(
+            {
+                "Metadata_dose_recode": dose,
+                "proportion_above": above / total if total > 0 else np.nan,
+                "proportion_below": below / total if total > 0 else np.nan,
+                "proportion_equal": equal / total if total > 0 else np.nan,
+                "n_points": total,
+            }
+        )
+    return pd.DataFrame(results)
 
 
 # ## Load in the data for pre and post QC
@@ -338,21 +384,8 @@ scatter.set_cmap("coolwarm")
 plt.show()
 
 
-# In[36]:
+# In[11]:
 
-
-import pandas as pd
-from plotnine import (
-    ggplot,
-    aes,
-    geom_point,
-    geom_abline,
-    facet_wrap,
-    scale_color_gradientn,
-    labs,
-    theme_bw,
-    theme,
-)
 
 # Merge (as before)
 merged_map = pd.merge(
@@ -394,7 +427,9 @@ p = (
     )
     + geom_point(alpha=0.5, size=0.8)
     + geom_abline(slope=1, intercept=0, linetype="dashed", color="blue")
-    + facet_wrap("~Metadata_dose_recode", nrow=1)
+    + facet_wrap(
+        "~Metadata_dose_recode", nrow=1, labeller=lambda x: f"Dose recode: {x}"
+    )
     + scale_color_gradientn(
         name="Avg. proportion\nfailed QC",
         colors=cosmicqc_palette,
@@ -427,43 +462,15 @@ fig.savefig("figures/mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 p.show()
 
 
-# In[12]:
+# In[ ]:
 
 
-# Calculate proportion of points above, below, and equal to y=x per dose
-def proportion_above_below_y_eq_x(df):
-    results = []
-    for dose, group in df.groupby("Metadata_dose_recode"):
-        above = (
-            group["mean_average_precision_postQC"]
-            > group["mean_average_precision_preQC"]
-        ).sum()
-        below = (
-            group["mean_average_precision_postQC"]
-            < group["mean_average_precision_preQC"]
-        ).sum()
-        equal = (
-            group["mean_average_precision_postQC"]
-            == group["mean_average_precision_preQC"]
-        ).sum()
-        total = len(group)
-        results.append(
-            {
-                "Metadata_dose_recode": dose,
-                "proportion_above": above / total if total > 0 else np.nan,
-                "proportion_below": below / total if total > 0 else np.nan,
-                "proportion_equal": equal / total if total > 0 else np.nan,
-                "n_points": total,
-            }
-        )
-    return pd.DataFrame(results)
-
-
+# Get proportion of points above and below y=x line
 proportion_df = proportion_above_below_y_eq_x(merged_map)
 proportion_df
 
 
-# In[37]:
+# In[13]:
 
 
 # Rank independently within each dose
@@ -507,7 +514,12 @@ p = (
         y="Rank (post-QC, 1 = highest)",
         color="Avg prop failed cells",
     )
-    + facet_wrap("~Metadata_dose_recode", nrow=1, scales="free")
+    + facet_wrap(
+        "~Metadata_dose_recode",
+        nrow=1,
+        scales="free",
+        labeller=lambda x: f"Dose recode: {x}",
+    )
     + theme_bw()
     + theme(
         figure_size=(12, 4),
@@ -528,18 +540,4 @@ for ax in fig.axes:
 fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
-
-
-# In[14]:
-
-
-# Calculate average rank change when QC improved or lowered the rank
-improved = merged_map_sorted[merged_map_sorted["rank_diff"] < 0]["rank_diff"].abs()
-lowered = merged_map_sorted[merged_map_sorted["rank_diff"] > 0]["rank_diff"]
-
-avg_improved = improved.mean() if not improved.empty else float("nan")
-avg_lowered = lowered.mean() if not lowered.empty else float("nan")
-
-print(f"Average rank improvement (QC improved rank): {avg_improved:.2f}")
-print(f"Average rank lowering (QC lowered rank): {avg_lowered:.2f}")
 

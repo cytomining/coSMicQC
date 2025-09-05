@@ -57,7 +57,7 @@ no_QC_df.head()
 cp_features = infer_cp_features(no_QC_df)
 meta_features = infer_cp_features(no_QC_df, metadata=True)
 
-# Make sure to reinitialize UMAP instance per plate
+# Initialize UMAP instance
 umap_fit = umap.UMAP(
     random_state=umap_random_seed, n_components=umap_n_components, n_jobs=1
 )
@@ -112,7 +112,7 @@ print(cp_umap_with_metadata_df.shape)
 cp_umap_with_metadata_df.head()
 
 
-# In[8]:
+# In[6]:
 
 
 # Set the figure size
@@ -120,7 +120,8 @@ height = 8
 width = 9
 set_option("figure_size", (width, height))
 
-# Plot with custom color palette
+# Plot UMAP of non-QC profiles labelled with QC status and
+# faceted by treatment and cell type
 p = (
     ggplot(
         cp_umap_with_metadata_df,

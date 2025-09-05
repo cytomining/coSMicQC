@@ -17,21 +17,28 @@ from plotnine import (
     geom_histogram,
     geom_hline,
     geom_point,
+    geom_jitter,
+    geom_bin2d,
+    facet_wrap,
     geom_vline,
     ggplot,
     ggtitle,
+    guides,
     labs,
     scale_color_manual,
     scale_fill_manual,
+    geom_density_2d,
+    scale_fill_gradient,
     theme,
     theme_light,
+    theme_bw,
+    scale_fill_cmap,
 )
 from plotnine.options import set_option
 
+
 from cosmicqc import identify_outliers
 
-
-# ## Set paths and variables
 
 # In[2]:
 
@@ -108,44 +115,50 @@ df = identify_nuclei_clustered_outliers.rename(
     }
 )
 
-# Make sure 'is_outlier' is a string or category (for coloring)
+# Make sure 'is_outlier' is a string or category
 df["is_outlier"] = df["is_outlier"].map({True: "Outlier", False: "Not Outlier"})
 
 # Set the figure size
-height = 5
-width = 8
+height = 6
+width = 10  # a little wider for facets
 set_option("figure_size", (width, height))
 
-# Plot
+# Plot scatterplot with thresholds for over-segmented nuclei
 p = (
     ggplot(df, aes(x="zscore_intensity", y="zscore_displacement", color="is_outlier"))
-    + geom_point(alpha=0.3, size=2)
+    + geom_point(alpha=0.3, size=0)
+    + geom_bin2d(aes(fill="..count.."), bins=50, alpha=1.0, size=0.8)
+    + scale_fill_gradient(
+        name="Log10\n(Cell count)", trans="log10", low="#1b0064", high="#f8d125"
+    )
     + geom_vline(xintercept=1.5, linetype="--", color="#800080", size=1.0)
     + geom_hline(yintercept=0.05, linetype="--", color="#800080", size=1.0)
     + scale_color_manual(values={"Outlier": "#A658A6", "Not Outlier": "#5C8F5C"})
     + labs(
         x="Z-score (nuclei intensity)",
         y="Z-score\n(nuclei mass displacement)",
-        color="Outlier status",
+        fill="Log10(Cell count)",
     )
+    + guides(color=False)  # 🔹 drop outlier/not outlier legend
     + ggtitle("Over-segmented nuclei detection")
     + theme_light()
     + theme(
         legend_title=element_text(size=16),
         legend_text=element_text(size=14),
-        legend_position=(0.97, 0.97),
-        axis_title=element_text(size=18),
+        legend_position="right",
+        legend_direction="vertical",
+        axis_title=element_text(size=20),
         axis_text=element_text(size=15),
-        plot_title=element_text(size=18),
+        plot_title=element_text(size=20),
         axis_title_y=element_text(
             angle=90,
             vjust=0.5,
             ha="center",
-            size=18,
         ),
         plot_margin_left=0.03,
     )
 )
+
 # Save the plot
 p.save(
     output_dir / "over_segmented_nuclei_plot.png", dpi=600, width=width, height=height
@@ -187,6 +200,7 @@ df["is_outlier"] = df["is_outlier"].map({True: "Outlier", False: "Not Outlier"})
 # Set the figure size
 set_option("figure_size", (width, height))
 
+# Plot histogram for poorly-segmented nuclei
 p = (
     ggplot(df, aes(x="zscore_solidity", fill="is_outlier"))
     + geom_histogram(position="stack", bins=45, color="black")
@@ -197,24 +211,24 @@ p = (
         color="#800080",
         size=1.0,
     )
-    + labs(x="Z-score (nuclei solidity)", y="Single-cell count", fill="Outlier Status")
+    + labs(x="Z-score (nuclei solidity)", y="Single-cell count", fill="Outlier status")
     + ggtitle("Poorly-segmented nuclei detection")
     + theme_light()
     + theme(
         legend_title=element_text(size=16),
         legend_text=element_text(size=14),
-        legend_position=(0.07, 0.97),
-        axis_title=element_text(size=18),
+        legend_position="right",
+        axis_title=element_text(size=20),
         axis_text=element_text(size=15),
         plot_title=element_text(
-            size=18,
+            size=20,
         ),
     )
 )
 
 # Save the plot
 p.save(
-    output_dir / "pooly_segmented_nuclei_plot.png", dpi=600, width=width, height=height
+    output_dir / "poorly_segmented_nuclei_plot.png", dpi=600, width=width, height=height
 )
 
 p.show()

@@ -8,15 +8,15 @@
 # In[1]:
 
 
-import pandas as pd
-import pathlib
-import cv2
-from skimage import io
-import numpy as np
-import matplotlib.pyplot as plt
-
 import os
+import pathlib
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import PyQt5
+from skimage import io
 
 os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(
     pathlib.Path(PyQt5.__file__).parent / "Qt" / "plugins" / "platforms"
@@ -26,6 +26,30 @@ import napari
 
 
 # In[2]:
+
+
+# Helper function to apply gamma correction
+def apply_gamma(image: np.ndarray, gamma: float = 0.6) -> np.ndarray:
+    """
+    Apply gamma correction to an image for visualization of background.
+
+    Args:
+        image (np.ndarray): Input image array (any numeric type).
+        gamma (float, optional): Gamma correction value. Defaults to 0.6.
+
+    Returns:
+        np.ndarray: Gamma-corrected image as float32 with values normalized
+            between 0 and 1.
+    """
+    image = image.astype(np.float32)
+    max_val = image.max()
+    if max_val == 0:
+        return image  # Avoid division by zero; return original image if max is 0
+    image /= max_val
+    return np.power(image, gamma)
+
+
+# In[3]:
 
 
 # Load in no QC normalized dataframe for CFReT example plate
@@ -55,7 +79,7 @@ print("no QC dataframe shape:", no_QC_df.shape[0])
 print("cleaned dataframe shape:", cleaned_df.shape[0])
 
 
-# In[3]:
+# In[4]:
 
 
 # Create QC_status column with default value 'Failed'
@@ -78,24 +102,24 @@ matching = no_QC_index.isin(cleaned_index)
 
 # Set QC_status to 'Passed' where matches are found
 no_QC_df.loc[matching, "QC_status"] = "Passed QC"
-
-
-# In[4]:
-
-
 no_QC_df["QC_status"].value_counts()
 
 
 # In[5]:
 
 
+# Select a well and site to visualize after running `whole_FOV_outlines.cppipe`
+# CellProfiler pipeline
 well = "D10"
 site = "f12"
 
+# Select the outline to apply to the FOV
 compartment = "Cells"
 
+# Select the gamma correction value
 gamma = 0.6
 
+# Filter the no_QC_df for the selected well and site
 filtered_df = no_QC_df[
     (no_QC_df["Metadata_Well"] == well) & (no_QC_df["Metadata_Site"] == site)
 ]
@@ -176,27 +200,7 @@ viewer.add_labels(
 napari.run()
 
 
-# In[9]:
-
-
-def apply_gamma(image: np.ndarray, gamma: float = 0.6) -> np.ndarray:
-    """
-    Apply gamma correction to an image for visualization of background.
-
-    Args:
-        image (np.ndarray): Input image array (any numeric type).
-        gamma (float, optional): Gamma correction value. Defaults to 0.6.
-
-    Returns:
-        np.ndarray: Gamma-corrected image as float32 with values normalized
-            between 0 and 1.
-    """
-    image = image.astype(np.float32)
-    max_val = image.max()
-    if max_val == 0:
-        return image  # Avoid division by zero; return original image if max is 0
-    image /= max_val
-    return np.power(image, gamma)
+# In[ ]:
 
 
 # Apply gamma correction to background
@@ -216,7 +220,7 @@ overlay = np.zeros((*green_channel.shape, 4), dtype=np.uint8)
 overlay[green_channel == 44] = [221, 102, 102, 90]  # Soft red
 overlay[green_channel == 55] = [102, 187, 102, 90]  # Soft green
 
-# Plot
+# Plot the labelled FOV and save
 plt.figure(figsize=(6, 6), dpi=600)
 plt.imshow(base_img)
 plt.imshow(overlay, interpolation="none")

@@ -3,7 +3,7 @@
 
 # # Using the manifest, convert all plate SQLite files into parquet files for processing
 # 
-# This code is derived from the `JUMP-single-cell` repository.
+# This code is derived from the `JUMP-single-cell` repository, which can be found [here](https://github.com/WayScience/JUMP-single-cell/blob/main/0.download_data/1.process_JUMP_plates_with_CytoTable.py).
 
 # In[1]:
 
@@ -26,7 +26,7 @@ data_dir = pathlib.Path("/media/NVME_4TB/LINCS_cytotable_output/data")
 data_dir.mkdir(parents=True, exist_ok=True)
 
 
-# In[3]:
+# In[ ]:
 
 
 preset = "cellprofiler_sqlite_cpg0016_jump"
@@ -34,20 +34,20 @@ preset = "cellprofiler_sqlite_cpg0016_jump"
 # Start from the preset join string
 joins = presets.config[preset]["CONFIG_JOINS"]
 
-# Replace Metadata_Well and Metadata_Plate with Image_ prefix
-joins = joins.replace("image.Metadata_Well,", "image.Image_Metadata_Well,")
-joins = joins.replace("image.Metadata_Plate,", "image.Image_Metadata_Plate,")
-
-# Update preset to include Image_Metadata_Col and Image_Count_Cells
-joins = joins.replace(
-    "Image_TableNumber,",
-    "Image_TableNumber, Image_Metadata_Col, Image_Count_Cells, ",
-)
-
-# Add the PathName columns
-joins = joins.replace(
-    "COLUMNS('Image_FileName_.*'),",
-    "COLUMNS('Image_FileName_.*'),\n COLUMNS('Image_PathName_.*'),",
+# Replace Metadata_Well and Metadata_Plate with Image_ prefix,
+# include Image_Metadata_Col and Image_Count_Cells and
+# add PathName columns
+joins = (
+    joins.replace("image.Metadata_Well,", "image.Image_Metadata_Well,")
+    .replace("image.Metadata_Plate,", "image.Image_Metadata_Plate,")
+    .replace(
+        "Image_TableNumber,",
+        "Image_TableNumber, Image_Metadata_Col, Image_Count_Cells, ",
+    )
+    .replace(
+        "COLUMNS('Image_FileName_.*'),",
+        "COLUMNS('Image_FileName_.*'),\n COLUMNS('Image_PathName_.*'),",
+    )
 )
 
 
