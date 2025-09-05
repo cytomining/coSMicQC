@@ -14,7 +14,6 @@ from plotnine.options import set_option
 
 from cosmicqc import identify_outliers
 
-
 # ## Set paths and variables
 
 # In[2]:
@@ -202,4 +201,3 @@ p.save(
 )
 
 p.show()
-

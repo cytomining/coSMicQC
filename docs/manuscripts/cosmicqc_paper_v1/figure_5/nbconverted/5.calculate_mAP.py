@@ -27,14 +27,13 @@ from plotnine import (
 )
 from plotnine.options import set_option
 
-
 # ## Helper functions
 
 # In[2]:
 
 
 # Perform mean average precision calculation
-def get_mean_average_precision(  # noqa: ANN201, PLR0913
+def get_mean_average_precision(  # noqa: PLR0913
     activity_df: pd.DataFrame,
     pos_sameby: list,
     pos_diffby: list,
@@ -540,4 +539,3 @@ for ax in fig.axes:
 fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
-

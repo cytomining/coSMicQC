@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Find FOVs that are good examples of nucleus staining with contamination and not
-# 
+#
 # We will be used the NF1 project for this example.
 
 # In[1]:
@@ -152,7 +152,3 @@ plt.show()
 
 
 # In[ ]:
-
-
-
-
