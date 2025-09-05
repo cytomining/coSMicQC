@@ -5,7 +5,7 @@
 # 
 # To keep the code cells ran in sequential order, you must not use `Run All` because we need to make manual changes in some images prior to running the last code cell.
 
-# In[1]:
+# In[ ]:
 
 
 import os
@@ -18,6 +18,7 @@ import pandas as pd
 import PyQt5
 from skimage import io
 
+# Must set the PyQt5 plugin path before importing napari to avoid plugin errors
 os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(
     pathlib.Path(PyQt5.__file__).parent / "Qt" / "plugins" / "platforms"
 )

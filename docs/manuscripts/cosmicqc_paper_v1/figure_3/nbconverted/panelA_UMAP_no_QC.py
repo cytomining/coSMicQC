@@ -9,11 +9,22 @@
 from pathlib import Path
 
 import pandas as pd
-from plotnine import *  # noqa: F403
-from plotnine.options import set_option
-
 import umap
-
+from plotnine import (
+    aes,
+    element_text,
+    facet_wrap,
+    geom_point,
+    ggplot,
+    guide_legend,
+    guides,
+    labs,
+    scale_color_brewer,
+    scale_color_manual,
+    theme,
+    theme_bw,
+)
+from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
 
 
@@ -148,6 +159,14 @@ p = (
     + scale_color_manual(
         values={"passed": "#0072B2", "failed": "#D55E00"}
     )  # Blue for passed, orange for failed (colorblind-friendly)
+    + guides(
+        color=guide_legend(
+            override_aes={
+                "alpha": 1,  # fully opaque in legend
+                "size": 5,  # bigger points in legend
+            }
+        )
+    )
 )
 # Save the plot
 p.save(output_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
