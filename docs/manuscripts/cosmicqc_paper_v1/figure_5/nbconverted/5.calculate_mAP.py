@@ -30,7 +30,7 @@ from plotnine.options import set_option
 
 # ## Helper functions
 
-# In[ ]:
+# In[2]:
 
 
 # Perform mean average precision calculation
@@ -68,6 +68,7 @@ def get_mean_average_precision(  # noqa: ANN201, PLR0913
     )
     activity_map["-log10(p-value)"] = -activity_map["corrected_p_value"].apply(np.log10)
     return activity_map
+
 
 # Calculate proportion of points above, below, and equal to y=x per dose
 def proportion_above_below_y_eq_x(df: pd.DataFrame) -> pd.DataFrame:
@@ -425,8 +426,8 @@ p = (
             color="Metadata_avg_prop_failed_single_cells",
         ),
     )
-    + geom_point(alpha=0.5, size=0.8)
-    + geom_abline(slope=1, intercept=0, linetype="dashed", color="blue")
+    + geom_point(alpha=0.3, size=2)
+    + geom_abline(slope=1, intercept=0, linetype="dashed", color="black")
     + facet_wrap(
         "~Metadata_dose_recode", nrow=1, labeller=lambda x: f"Dose recode: {x}"
     )
@@ -462,7 +463,7 @@ fig.savefig("figures/mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 p.show()
 
 
-# In[ ]:
+# In[12]:
 
 
 # Get proportion of points above and below y=x line
@@ -503,7 +504,7 @@ p = (
         ),
     )
     + geom_point(size=3, alpha=0.8)
-    + geom_abline(intercept=0, slope=1, linetype="--", color="blue", size=1)
+    + geom_abline(intercept=0, slope=1, linetype="--", color="black", size=1)
     + scale_color_gradientn(
         name="Avg. proportion\nfailed QC",
         colors=cosmicqc_palette,
@@ -517,7 +518,6 @@ p = (
     + facet_wrap(
         "~Metadata_dose_recode",
         nrow=1,
-        scales="free",
         labeller=lambda x: f"Dose recode: {x}",
     )
     + theme_bw()
