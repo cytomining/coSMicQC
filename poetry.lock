@@ -1436,14 +1436,14 @@ zarr = [
 
 [[package]]
 name = "dask"
-version = "2025.7.0"
+version = "2025.9.0"
 description = "Parallel PyData with Task Scheduling"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "dask-2025.7.0-py3-none-any.whl", hash = "sha256:073c29c4e99c2400a39a8a67874f35c1d15bf7af9ae3d0c30af3c7c1199f24ae"},
-    {file = "dask-2025.7.0.tar.gz", hash = "sha256:c3a0d4e78882e85ea81dbc71e6459713e45676e2d17e776c2f3f19848039e4cf"},
+    {file = "dask-2025.9.0-py3-none-any.whl", hash = "sha256:cb8d74476dda10c558234c02d1639386cc5c9cef0252245cf77043fb1f2495d1"},
+    {file = "dask-2025.9.0.tar.gz", hash = "sha256:37a3e73f3bba43e2b9de38a33b315c18a881d2108aba078685bab8e5c2cff7a0"},
 ]
 
 [package.dependencies]
@@ -1464,7 +1464,7 @@ array = ["numpy (>=1.24)"]
 complete = ["dask[array,dataframe,diagnostics,distributed]", "lz4 (>=4.3.2)", "pyarrow (>=14.0.1)"]
 dataframe = ["dask[array]", "pandas (>=2.0)", "pyarrow (>=14.0.1)"]
 diagnostics = ["bokeh (>=3.1.0)", "jinja2 (>=2.10.3)"]
-distributed = ["distributed (==2025.7.0)"]
+distributed = ["distributed (==2025.9.0)"]
 test = ["pandas[test]", "pre-commit", "pytest", "pytest-cov", "pytest-mock", "pytest-rerunfailures", "pytest-timeout", "pytest-xdist"]
 
 [[package]]
