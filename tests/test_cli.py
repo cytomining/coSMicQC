@@ -15,7 +15,7 @@ def test_cli_util():
     """
 
     command = """echo 'hello world'"""
-    stdout, stderr, returncode = run_cli_command(command)
+    _, _, returncode = run_cli_command(command)
 
     assert returncode == 0
 
@@ -25,7 +25,7 @@ def test_cli_identify_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     Test the `identify_outliers` function of the CLI.
     """
 
-    stdout, stderr, returncode = run_cli_command(
+    _, _, returncode = run_cli_command(
         (
             f"""cosmicqc identify_outliers --df {basic_outlier_csv}"""
             """ --feature_thresholds {"example_feature":1.0}"""
@@ -58,7 +58,7 @@ def test_cli_find_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     Test the `find_outliers` function of the CLI.
     """
 
-    stdout, stderr, returncode = run_cli_command(
+    stdout, _, returncode = run_cli_command(
         (
             f"""cosmicqc find_outliers --df {basic_outlier_csv}"""
             """ --metadata_columns [] --feature_thresholds {"example_feature":1.0}"""
@@ -85,7 +85,7 @@ def test_cli_label_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     Test the `label_outliers` function of the CLI.
     """
 
-    stdout, stderr, returncode = run_cli_command(
+    _, _, returncode = run_cli_command(
         (
             f"""cosmicqc label_outliers --df {basic_outlier_csv}"""
             """ --feature_thresholds {"example_feature":1.0}"""
