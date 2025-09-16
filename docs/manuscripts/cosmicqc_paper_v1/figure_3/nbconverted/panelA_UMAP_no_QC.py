@@ -19,13 +19,13 @@ from plotnine import (
     guide_legend,
     guides,
     labs,
-    scale_color_brewer,
     scale_color_manual,
     theme,
     theme_bw,
 )
 from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
+
 
 # In[2]:
 
@@ -35,8 +35,10 @@ umap_random_seed = 0
 umap_n_components = 2
 
 # Set output directory
-output_dir = Path("./figures")
+figure_dir = Path("./figures")
+output_dir = Path("./umap_embeddings")
 output_dir.mkdir(parents=True, exist_ok=True)
+figure_dir.mkdir(parents=True, exist_ok=True)
 
 # Load in no QC normalized dataframe for CFReT example plate
 no_QC_df = pd.read_parquet(
@@ -84,15 +86,11 @@ cp_umap_with_metadata_df = pd.concat(
     [no_QC_df.loc[:, meta_features], embeddings], axis=1
 )
 
+# Save UMAP with metadata DataFrame
+cp_umap_with_metadata_df.to_parquet(output_dir / "pre_QC_umap_embeddings.parquet")
+
 
 # In[4]:
-
-
-print(cp_umap_with_metadata_df.shape)
-cp_umap_with_metadata_df.head()
-
-
-# In[5]:
 
 
 # Add QC_status column and set all to "failed"
@@ -122,7 +120,7 @@ print(cp_umap_with_metadata_df.shape)
 cp_umap_with_metadata_df.head()
 
 
-# In[6]:
+# In[5]:
 
 
 # Set the figure size
@@ -168,39 +166,7 @@ p = (
     )
 )
 # Save the plot
-p.save(output_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
+p.save(figure_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
 
 p.show()
 
-
-# In[7]:
-
-
-# Set the figure size
-height = 6
-width = 6
-set_option("figure_size", (width, height))
-
-# Plot with custom color palette
-p = (
-    ggplot(
-        cp_umap_with_metadata_df,
-        aes(x="UMAP0", y="UMAP1", color="Metadata_Treatment_CellType_ID"),
-    )
-    + labs(
-        color="Cell type\nand treatment",
-    )
-    + geom_point(alpha=0.2, size=2)
-    + theme_bw()
-    + theme(
-        axis_title=element_text(size=13),
-        axis_text=element_text(size=11),
-        plot_title=element_text(
-            size=14,
-        ),
-        legend_position="bottom",
-    )
-    + scale_color_brewer(type="qual", palette="Dark2")  # Change palette as needed
-)
-
-p.show()
