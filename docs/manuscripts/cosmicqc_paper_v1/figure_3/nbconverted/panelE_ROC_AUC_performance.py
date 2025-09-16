@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Generate ROC AUC plot to demonstrate improvement in `performance` when QC is performed
-# 
+#
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 
 # In[1]:
@@ -16,16 +16,16 @@ import numpy as np
 import pandas as pd
 from joblib import load
 from plotnine import (
-    ggplot,
     aes,
+    element_line,
+    element_text,
     geom_histogram,
     geom_vline,
-    scale_fill_manual,
+    ggplot,
     labs,
-    theme_bw,
+    scale_fill_manual,
     theme,
-    element_text,
-    element_line,
+    theme_bw,
 )
 from plotnine.options import set_option
 from scipy.stats import ttest_ind
@@ -33,7 +33,6 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.append("./")
 from figure3_utils import bootstrap_roc_auc, get_X_y_data
-
 
 # In[2]:
 
@@ -137,7 +136,7 @@ y_probs_modelQC = QC_model.predict_proba(X)[:, 1]
 
 
 # ## Calculate ROC AUC score by applying the model to their respective dataset
-# 
+#
 # e.g., QC model applyied on QC dataset and vice versa.
 
 # In[6]:
@@ -152,7 +151,7 @@ print(f"AUC Model 2: {aucQC}")
 
 
 # ## Apply bootstrapping method (using replacement) for 1000 iterations to evaluate performance between models applied to respective datasets
-# 
+#
 # T-Test is used to see if the distributions are significantly different.
 
 # In[7]:
@@ -219,4 +218,3 @@ p = (
 # Save and show
 p.save(f"{figure_path}/bootstrap_ROC_AUC_QC_versus_no_QC.png", dpi=600)
 p.show()
-

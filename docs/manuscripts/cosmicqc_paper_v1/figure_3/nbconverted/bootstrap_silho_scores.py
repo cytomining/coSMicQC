@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Calculate Silhouette scores with bootstrapping method
-# 
+#
 # This will determine if there is a significant improvement in clustering when dropping poor quality segmentations.
 
 # In[ ]:
@@ -180,4 +180,3 @@ t_stat, p_value = stats.ttest_ind(
 )
 print("T-statistic:", t_stat)
 print("P-value:", p_value)
-

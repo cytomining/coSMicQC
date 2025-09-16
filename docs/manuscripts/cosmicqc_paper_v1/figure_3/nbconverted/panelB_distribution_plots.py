@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Generate distribution plots for the features used to detect poor quality segmentations
-# 
+#
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 
 # In[1]:
@@ -16,7 +16,6 @@ from plotnine import *
 from plotnine.options import set_option
 
 from cosmicqc import find_outliers
-
 
 # In[2]:
 
@@ -189,4 +188,3 @@ p.save(
 
 # Show plot
 p.show()
-

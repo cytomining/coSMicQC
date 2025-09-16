@@ -26,7 +26,6 @@ from plotnine import (
 from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
 
-
 # In[2]:
 
 
@@ -169,4 +168,3 @@ p = (
 p.save(figure_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
 
 p.show()
-

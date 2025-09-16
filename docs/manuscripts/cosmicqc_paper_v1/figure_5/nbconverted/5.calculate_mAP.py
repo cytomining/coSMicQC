@@ -28,7 +28,6 @@ from plotnine import (
 )
 from plotnine.options import set_option
 
-
 # ## Helper functions
 
 # In[2]:
@@ -552,7 +551,3 @@ p.show()
 
 
 # In[ ]:
-
-
-
-
