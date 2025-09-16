@@ -1,0 +1,26 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "napari-env"
+version = "0.1.0"
+description = "Standalone Poetry environment for napari figures"
+authors = ["Way Science Community"]
+license = "BSD-3-Clause"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+
+# core scientific packages (numpy pinned <2.0 for napari compatibility)
+numpy = "<2.0"
+pandas = "^2.2"
+matplotlib = "^3.9"
+scikit-image = "^0.24"
+opencv-python = "^4.10"
+pyarrow = "^12.0"
+
+# GUI / viewer stack
+PyQt5 = "^5.15"
+napari = { version = "^0.4.19", extras = ["all"] }

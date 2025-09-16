@@ -2,10 +2,10 @@
 # coding: utf-8
 
 # ## Generate labelled FOVs for failing or passing single-cells
-#
+# 
 # To keep the code cells ran in sequential order, you must not use `Run All` because we need to make manual changes in some images prior to running the last code cell.
 
-# In[ ]:
+# In[1]:
 
 
 import os
@@ -24,6 +24,7 @@ os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(
 )
 
 import napari
+
 
 # In[2]:
 
@@ -207,7 +208,8 @@ napari.run()
 gamma_corrected = apply_gamma(cells_image, gamma)
 
 # Convert to RGB if grayscale
-if gamma_corrected.ndim == 2:
+correction_value = 2
+if gamma_corrected.ndim == correction_value:
     base_img = np.stack([gamma_corrected] * 3, axis=-1)
 else:
     base_img = gamma_corrected
@@ -217,8 +219,11 @@ base_img = (base_img * 255).astype(np.uint8)
 
 # Create a semi-transparent RGBA overlay (Napari style)
 overlay = np.zeros((*green_channel.shape, 4), dtype=np.uint8)
-overlay[green_channel == 44] = [221, 102, 102, 90]  # Soft red
-overlay[green_channel == 55] = [102, 187, 102, 90]  # Soft green
+# Define colors for QC statuses
+failed_qc_color = 44
+passed_qc_color = 55
+overlay[green_channel == failed_qc_color] = [221, 102, 102, 90]  # Soft red
+overlay[green_channel == passed_qc_color] = [102, 187, 102, 90]  # Soft green
 
 # Plot the labelled FOV and save
 plt.figure(figsize=(6, 6), dpi=600)
@@ -230,3 +235,4 @@ plt.savefig(
     f"figures/{well}{site}_{compartment}.png", bbox_inches="tight", pad_inches=0
 )
 plt.close()
+

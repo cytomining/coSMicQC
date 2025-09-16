@@ -10,9 +10,21 @@ from pathlib import Path
 
 import pandas as pd
 import umap
-from plotnine import *  # noqa: F403
+from plotnine import (
+    aes,
+    element_text,
+    geom_point,
+    ggplot,
+    guide_legend,
+    guides,
+    labs,
+    scale_color_brewer,
+    theme,
+    theme_bw,
+)
 from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
+
 
 # In[2]:
 
@@ -21,9 +33,11 @@ from pycytominer.cyto_utils import infer_cp_features
 umap_random_seed = 0
 umap_n_components = 2
 
-# Set output directory
-output_dir = Path("./figures")
+# Set output directories
+figure_dir = Path("./figures")
+output_dir = Path("./umap_embeddings")
 output_dir.mkdir(parents=True, exist_ok=True)
+figure_dir.mkdir(parents=True, exist_ok=True)
 
 # Load in no QC normalized dataframe for CFReT example plate
 QC_df = pd.read_parquet(
@@ -69,45 +83,11 @@ print(f"{embeddings.shape} UMAP embeddings generated")
 # Combine with metadata
 cp_umap_with_metadata_df = pd.concat([QC_df.loc[:, meta_features], embeddings], axis=1)
 
+# Save UMAP with metadata DataFrame
+cp_umap_with_metadata_df.to_parquet(output_dir / "post_QC_umap_embeddings.parquet")
+
 
 # In[4]:
-
-
-# Set the figure size
-height = 5
-width = 7
-set_option("figure_size", (width, height))
-
-# Plot with custom color palette
-p = (
-    ggplot(
-        cp_umap_with_metadata_df,
-        aes(x="UMAP0", y="UMAP1"),
-    )
-    + labs(
-        color="Cell type\nand treatment",
-    )
-    + geom_point(color="steelblue", alpha=0.2, size=2)
-    + facet_wrap(
-        "Metadata_Treatment_CellType_ID",
-        ncol=2,
-        scales="fixed",
-    )
-    + theme_bw()
-    + theme(
-        axis_title=element_text(size=13),
-        axis_text=element_text(size=11),
-        plot_title=element_text(
-            size=14,
-        ),
-    )
-    + scale_color_brewer(type="qual", palette="Dark2")  # Change palette as needed
-)
-
-p.show()
-
-
-# In[5]:
 
 
 # Set the figure size
@@ -134,9 +114,18 @@ p = (
         legend_text=element_text(size=14),
     )
     + scale_color_brewer(type="qual", palette="Dark2")  # Change palette as needed
+    + guides(
+        color=guide_legend(
+            override_aes={
+                "alpha": 1,  # fully opaque in legend
+                "size": 5,  # bigger points in legend
+            }
+        )
+    )
 )
 
 # Save the plot
-p.save(output_dir / "facet_umap_with_QC_plot.png", dpi=400, width=width, height=height)
+p.save(figure_dir / "facet_umap_with_QC_plot.png", dpi=400, width=width, height=height)
 
 p.show()
+

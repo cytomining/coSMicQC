@@ -6,6 +6,7 @@
 # In[1]:
 
 
+import os
 import pathlib
 
 import matplotlib.pyplot as plt
@@ -26,6 +27,7 @@ from plotnine import (
     theme_bw,
 )
 from plotnine.options import set_option
+
 
 # ## Helper functions
 
@@ -225,58 +227,63 @@ neg_diffby = ["Metadata_broad_sample", reference_col]
 # In[8]:
 
 
-list_of_dfs_map_preQC = []
-for treatment in pre_qc_df_activity["Metadata_broad_sample"].unique():
-    if treatment == "DMSO":
-        continue
-    treatment_plates = pre_qc_df_activity.loc[
-        pre_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
-    ].unique()
-    treatment_df = pre_qc_df_activity[
-        (
-            (pre_qc_df_activity["Metadata_broad_sample"] == treatment)
-            | (pre_qc_df_activity["Metadata_broad_sample"] == "DMSO")
+preqc_map_file = f"{output_dir}/final_map_scores_preQC.parquet"
+if os.path.exists(preqc_map_file):
+    final_map_preQC = pd.read_parquet(preqc_map_file)
+    print("Loaded preQC mAP results from file.")
+else:
+    list_of_dfs_map_preQC = []
+    for treatment in pre_qc_df_activity["Metadata_broad_sample"].unique():
+        if treatment == "DMSO":
+            continue
+        treatment_plates = pre_qc_df_activity.loc[
+            pre_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
+        ].unique()
+        treatment_df = pre_qc_df_activity[
+            (
+                (pre_qc_df_activity["Metadata_broad_sample"] == treatment)
+                | (pre_qc_df_activity["Metadata_broad_sample"] == "DMSO")
+            )
+            & (pre_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
+        ]
+        # Check if there are at least two replicates for positive pairing
+        n_replicates = treatment_df[
+            treatment_df["Metadata_broad_sample"] == treatment
+        ].shape[0]
+        unique_pos_diffby = treatment_df[
+            treatment_df["Metadata_broad_sample"] == treatment
+        ][pos_diffby].drop_duplicates()
+        if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
+            print(
+                f"Skipping treatment {treatment}: not enough replicates or "
+                f"not enough unique '{pos_diffby}' values for positive pairs."
+            )
+            continue
+        # Calculate average proportion of failed single cells per dose
+        failed_cells = (
+            treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
+            .assign(
+                Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
+                / x["Metadata_sc_count"]
+            )
+            .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
+            .mean()
         )
-        & (pre_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
-    ]
-    # Check if there are at least two replicates for positive pairing
-    n_replicates = treatment_df[
-        treatment_df["Metadata_broad_sample"] == treatment
-    ].shape[0]
-    unique_pos_diffby = treatment_df[
-        treatment_df["Metadata_broad_sample"] == treatment
-    ][pos_diffby].drop_duplicates()
-    if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
-        print(
-            f"Skipping treatment {treatment}: not enough replicates or "
-            f"not enough unique '{pos_diffby}' values for positive pairs."
+        # Perform mAP calculation per treatment (use defaults)
+        treatment_map = get_mean_average_precision(
+            treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
         )
-        continue
-    # Calculate average proportion of failed single cells per dose
-    failed_cells = (
-        treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
-        .assign(
-            Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
-            / x["Metadata_sc_count"]
-        )
-        .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
-        .mean()
-    )
-    # Perform mAP calculation per treatment (use defaults)
-    treatment_map = get_mean_average_precision(
-        treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
-    )
-    # Map average failed cells to treatment_map
-    treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
-        "Metadata_dose_recode"
-    ].map(failed_cells)
-    list_of_dfs_map_preQC.append(treatment_map)
+        # Map average failed cells to treatment_map
+        treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
+            "Metadata_dose_recode"
+        ].map(failed_cells)
+        list_of_dfs_map_preQC.append(treatment_map)
 
-# Concatenate all treatment mAP results
-final_map_preQC = pd.concat(list_of_dfs_map_preQC, ignore_index=True)
-final_map_preQC["QC_status"] = "pre-QC"
-# Save final mAP results to file
-final_map_preQC.to_parquet(f"{output_dir}/final_map_scores_preQC.parquet", index=False)
+    # Concatenate all treatment mAP results
+    final_map_preQC = pd.concat(list_of_dfs_map_preQC, ignore_index=True)
+    final_map_preQC["QC_status"] = "pre-QC"
+    # Save final mAP results to file
+    final_map_preQC.to_parquet(preqc_map_file, index=False)
 
 
 # ### Post-QC dataframe
@@ -284,60 +291,63 @@ final_map_preQC.to_parquet(f"{output_dir}/final_map_scores_preQC.parquet", index
 # In[9]:
 
 
-list_of_dfs_map_postQC = []
-for treatment in post_qc_df_activity["Metadata_broad_sample"].unique():
-    if treatment == "DMSO":
-        continue
-    treatment_plates = post_qc_df_activity.loc[
-        post_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
-    ].unique()
-    treatment_df = post_qc_df_activity[
-        (
-            (post_qc_df_activity["Metadata_broad_sample"] == treatment)
-            | (post_qc_df_activity["Metadata_broad_sample"] == "DMSO")
+postqc_map_file = f"{output_dir}/final_map_scores_postQC.parquet"
+if os.path.exists(postqc_map_file):
+    final_map_postQC = pd.read_parquet(postqc_map_file)
+    print("Loaded postQC mAP results from file.")
+else:
+    list_of_dfs_map_postQC = []
+    for treatment in post_qc_df_activity["Metadata_broad_sample"].unique():
+        if treatment == "DMSO":
+            continue
+        treatment_plates = post_qc_df_activity.loc[
+            post_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
+        ].unique()
+        treatment_df = post_qc_df_activity[
+            (
+                (post_qc_df_activity["Metadata_broad_sample"] == treatment)
+                | (post_qc_df_activity["Metadata_broad_sample"] == "DMSO")
+            )
+            & (post_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
+        ]
+        # Check if there are at least two replicates for positive pairing
+        n_replicates = treatment_df[
+            treatment_df["Metadata_broad_sample"] == treatment
+        ].shape[0]
+        unique_pos_diffby = treatment_df[
+            treatment_df["Metadata_broad_sample"] == treatment
+        ][pos_diffby].drop_duplicates()
+        if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
+            print(
+                f"Skipping treatment {treatment}: not enough replicates or "
+                f"not enough unique '{pos_diffby}' values for positive pairs."
+            )
+            continue
+        # Calculate average proportion of failed single cells per dose
+        failed_cells = (
+            treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
+            .assign(
+                Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
+                / x["Metadata_sc_count"]
+            )
+            .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
+            .mean()
         )
-        & (post_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
-    ]
-    # Check if there are at least two replicates for positive pairing
-    n_replicates = treatment_df[
-        treatment_df["Metadata_broad_sample"] == treatment
-    ].shape[0]
-    unique_pos_diffby = treatment_df[
-        treatment_df["Metadata_broad_sample"] == treatment
-    ][pos_diffby].drop_duplicates()
-    if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
-        print(
-            f"Skipping treatment {treatment}: not enough replicates or "
-            f"not enough unique '{pos_diffby}' values for positive pairs."
+        # Perform mAP calculation per treatment (use defaults)
+        treatment_map = get_mean_average_precision(
+            treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
         )
-        continue
-    # Calculate average proportion of failed single cells per dose
-    failed_cells = (
-        treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
-        .assign(
-            Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
-            / x["Metadata_sc_count"]
-        )
-        .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
-        .mean()
-    )
-    # Perform mAP calculation per treatment (use defaults)
-    treatment_map = get_mean_average_precision(
-        treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
-    )
-    # Map average failed cells to treatment_map
-    treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
-        "Metadata_dose_recode"
-    ].map(failed_cells)
-    list_of_dfs_map_postQC.append(treatment_map)
+        # Map average failed cells to treatment_map
+        treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
+            "Metadata_dose_recode"
+        ].map(failed_cells)
+        list_of_dfs_map_postQC.append(treatment_map)
 
-# Concatenate all treatment mAP results
-final_map_postQC = pd.concat(list_of_dfs_map_postQC, ignore_index=True)
-final_map_postQC["QC_status"] = "post-QC"
-# Save final mAP results to file
-final_map_postQC.to_parquet(
-    f"{output_dir}/final_map_scores_postQC.parquet", index=False
-)
+    # Concatenate all treatment mAP results
+    final_map_postQC = pd.concat(list_of_dfs_map_postQC, ignore_index=True)
+    final_map_postQC["QC_status"] = "post-QC"
+    # Save final mAP results to file
+    final_map_postQC.to_parquet(postqc_map_file, index=False)
 
 
 # In[10]:
@@ -384,7 +394,7 @@ scatter.set_cmap("coolwarm")
 plt.show()
 
 
-# In[11]:
+# In[18]:
 
 
 # Merge (as before)
@@ -425,8 +435,8 @@ p = (
             color="Metadata_avg_prop_failed_single_cells",
         ),
     )
-    + geom_point(alpha=0.3, size=2)
-    + geom_abline(slope=1, intercept=0, linetype="dashed", color="black")
+    + geom_point(alpha=0.3, size=1.0)
+    + geom_abline(slope=1, intercept=0, linetype="dashed", color="black", size=0.5)
     + facet_wrap(
         "~Metadata_dose_recode", nrow=1, labeller=lambda x: f"Dose recode: {x}"
     )
@@ -470,7 +480,7 @@ proportion_df = proportion_above_below_y_eq_x(merged_map)
 proportion_df
 
 
-# In[13]:
+# In[20]:
 
 
 # Rank independently within each dose
@@ -503,7 +513,7 @@ p = (
         ),
     )
     + geom_point(size=3, alpha=0.8)
-    + geom_abline(intercept=0, slope=1, linetype="--", color="black", size=1)
+    + geom_abline(intercept=0, slope=1, linetype="--", color="black", size=0.7)
     + scale_color_gradientn(
         name="Avg. proportion\nfailed QC",
         colors=cosmicqc_palette,
@@ -521,7 +531,7 @@ p = (
     )
     + theme_bw()
     + theme(
-        figure_size=(12, 4),
+        figure_size=(14, 4),
         legend_position="bottom",
         legend_title=element_text(size=10),
         legend_text=element_text(size=9),
@@ -539,3 +549,10 @@ for ax in fig.axes:
 fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
+
+
+# In[ ]:
+
+
+
+
