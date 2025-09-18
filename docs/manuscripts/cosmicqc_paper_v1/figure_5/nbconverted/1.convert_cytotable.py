@@ -25,7 +25,7 @@ data_dir = pathlib.Path("/media/NVME_4TB/LINCS_cytotable_output/data")
 data_dir.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[3]:
 
 
 preset = "cellprofiler_sqlite_cpg0016_jump"
@@ -50,7 +50,7 @@ joins = (
 )
 
 
-# In[ ]:
+# In[4]:
 
 
 # process each plate from the manifest individually
@@ -101,5 +101,11 @@ for _, plate_name, plate_s3_path in pd.read_csv(
         ").",
     )
 
-# remove the SQLite plates
-shutil.rmtree("./lincs_sqlite_s3_cache/")
+# remove the SQLite plates only if at least one plate was processed
+if not all(
+    pathlib.Path(f"{data_dir}/{plate_name}/{plate_name}.parquet").is_file()
+    for _, plate_name, _ in pd.read_csv(
+        "./manifest/lincs_cp_output_location_manifest.csv", header=0
+    ).to_records()
+):
+    shutil.rmtree("./lincs_sqlite_s3_cache/")

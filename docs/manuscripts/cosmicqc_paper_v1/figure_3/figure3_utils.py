@@ -77,11 +77,12 @@ def bootstrap_roc_auc(
     # list for the scores to be appended to
     bootstrapped_scores = []
 
+    MIN_CLASSES_REQUIRED = 2
     # loop through and create the amount of bootstrap samples and calculate ROC scores
     for i in range(n_bootstraps):
         indices = resample(np.arange(len(y_true)), replace=True)
         # evaluate if the subsample has both classes
-        if len(np.unique(y_true[indices])) < 2:
+        if len(np.unique(y_true[indices])) < MIN_CLASSES_REQUIRED:
             # skip this subsample if it doesn't have both classes
             continue
         # if there are both classes, then calculate the score

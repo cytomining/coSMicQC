@@ -3,11 +3,12 @@
 
 # # Generate manifest file with paths to SQLite files for CytoTable processing
 #
-# A manifest file is a simple CSV that tracks the plate names in the dataset with the correct path to their respective SQLite file (CellProfiler output of morphology profiles) that will be processed.
+# A manifest file is a simple CSV that tracks the plate names in the dataset.
+# It contains the correct paths to their respective SQLite file.
 #
 # Code derived from the `JUMP-single-cell` repository, which can be found [here](https://github.com/WayScience/JUMP-single-cell/blob/main/0.download_data/0.generate_jump_dataset_manifest.ipynb).
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -76,11 +77,14 @@ manifest_df.to_csv(output_path / "lincs_cp_output_location_manifest.csv", index=
 
 # ## Download platemap files for downstream use
 
-# In[5]:
+# In[ ]:
 
 
 bucket = "cellpainting-gallery"
-prefix = "cpg0004-lincs/broad/workspace/metadata/platemaps/2016_04_01_a549_48hr_batch1/platemap/"
+prefix = (
+    "cpg0004-lincs/broad/workspace/metadata/platemaps/"
+    "2016_04_01_a549_48hr_batch1/platemap/"
+)
 local_dir = pathlib.Path("platemaps")
 local_dir.mkdir(exist_ok=True)
 

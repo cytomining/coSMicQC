@@ -3,7 +3,7 @@
 
 # # Calculate Silhouette scores with bootstrapping method
 #
-# This will determine if there is a significant improvement in clustering when dropping poor quality segmentations.
+# Determine if there is a significant improvement in clustering after QC.
 
 # In[ ]:
 
@@ -15,6 +15,7 @@ import hdbscan
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
+from scipy import stats
 from sklearn.metrics import silhouette_score
 
 # Ignore warning about deprecated argument name in sklearn
@@ -107,7 +108,7 @@ post_QC_umap_df = pd.read_parquet(
 )
 
 
-# ## Compute individual Silhouette scores for pre-QC and post-QC datasets
+# ## Compute individual Silhouette scores
 
 # In[4]:
 
@@ -153,7 +154,10 @@ post_QC_score = silhouette_score(post_X_clustered, labels_clustered)
 print("Silhouette score (excluding noise):", post_QC_score)
 
 
-# ## Perform bootstrapping method (with replacement) to compute Silhouette scores for pre-QC and post_QC dataset to evaluate significance in difference
+# ## Perform bootstrapping method to compute Silhouette scores
+#
+# Bootstrap method uses replacement over 1000 iterations.
+# Applied to pre-QC and post_QC datasets to evaluate significance in difference.
 
 # In[6]:
 
@@ -170,10 +174,8 @@ print("Before QC:", pre_bootstrap_scores.mean(), "+/-", pre_bootstrap_scores.std
 print("After QC:", post_bootstrap_scores.mean(), "+/-", post_bootstrap_scores.std())
 
 
-# In[7]:
+# In[ ]:
 
-
-from scipy import stats
 
 t_stat, p_value = stats.ttest_ind(
     pre_bootstrap_scores, post_bootstrap_scores, equal_var=False

@@ -1,18 +1,30 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Generate distribution plots for the features used to detect poor quality segmentations
+# # Generate distribution plots for features used to detect poor quality segmentations
 #
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
 
 import numpy as np
 import pandas as pd
-from plotnine import *
+from plotnine import (
+    aes,
+    element_text,
+    geom_density,
+    geom_point,
+    ggplot,
+    labs,
+    scale_color_manual,
+    scale_fill_manual,
+    theme,
+    theme_bw,
+    xlim,
+)
 from plotnine.options import set_option
 
 from cosmicqc import find_outliers

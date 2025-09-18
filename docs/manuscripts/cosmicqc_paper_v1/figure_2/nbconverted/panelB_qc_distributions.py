@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Generate plots to show the distributions of the failed versus passing single-cells in the data
+# ## Generate plots to show the distributions of the failed versus passing cells
 #
 # We use the `PCCMA optimization` dataset.
 
@@ -102,8 +102,8 @@ pd.DataFrame(identify_nuclei_clustered_outliers).head()
 # Rename for easier access
 df = identify_nuclei_clustered_outliers.rename(
     columns={
-        "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",
-        "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",
+        "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",  # noqa: E501
+        "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",  # noqa: E501
         "cqc.custom.is_outlier": "is_outlier",
     }
 )

@@ -3,7 +3,8 @@
 
 # ## Generate labelled FOVs for failing or passing single-cells
 #
-# To keep the code cells ran in sequential order, you must not use `Run All` because we need to make manual changes in some images prior to running the last code cell.
+# Do not use `Run All` if you want to run in sequential order.
+# We make manual changes in some images prior to running the last code cell.
 
 # In[1]:
 

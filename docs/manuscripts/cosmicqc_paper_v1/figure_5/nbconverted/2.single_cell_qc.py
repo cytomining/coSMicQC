@@ -3,9 +3,10 @@
 
 # ## Perform single cell quality control on the profiles
 #
-# We utilize the conditions used in the ALSF project repository to detect poor quality nuclei segmentations.
+# We utilize the conditions used in the ALSF project repository.
+# We detect poor quality nuclei segmentations.
 #
-# NOTE: We run this notebook via `papermill` through this bash script:
+# NOTE: We run this notebook via `papermill` through this [bash script](./run_single_cell_qc.sh).  # noqa: E501
 # We found it was easier to run through all 136 plates in this format over a for loop.
 
 # In[1]:
@@ -14,7 +15,8 @@
 import pathlib
 import time
 
-# Ignore FutureWarnings from cytodataframe due to skimage deprecation (does not affect functionality)
+# Ignore FutureWarnings from cytodataframe due to skimage deprecation
+# (does not affect functionality)
 import warnings
 
 import pandas as pd
@@ -108,7 +110,7 @@ print("Filtered plate DataFrame shape:", filtered_plate_df.shape)
 filtered_plate_df.head()
 
 
-# In[7]:
+# In[ ]:
 
 
 # Find large nuclei outliers for the current plate
@@ -116,8 +118,10 @@ nuclei_clustered_outliers = find_outliers(
     df=filtered_plate_df,
     metadata_columns=metadata_columns,
     feature_thresholds={
-        "Nuclei_Intensity_MassDisplacement_DNA": 0.05,  # Set very low as to detect all instances of clustering nuclei
-        "Nuclei_Intensity_IntegratedIntensity_DNA": 1.5,  # Set higher than displacement to avoid false positives
+        # Set very low as to detect all instances of clustering nuclei
+        "Nuclei_Intensity_MassDisplacement_DNA": 0.05,
+        # Set higher than displacement to avoid false positives
+        "Nuclei_Intensity_IntegratedIntensity_DNA": 1.5,
     },
 )
 
@@ -130,7 +134,7 @@ nuclei_clustered_outliers.sort_values(
 ).head(2)
 
 
-# In[8]:
+# In[ ]:
 
 
 # Find low nuclei solidity outliers for the current plate
@@ -138,7 +142,8 @@ solidity_nuclei_outliers = find_outliers(
     df=filtered_plate_df,
     metadata_columns=metadata_columns,
     feature_thresholds={
-        "Nuclei_AreaShape_Solidity": -1.6,  # Set at this point where it looks like it starts to detect good quality nuclei
+        # Set at this point where it looks like it starts to detect good quality nuclei
+        "Nuclei_AreaShape_Solidity": -1.6,
     },
 )
 
@@ -176,7 +181,7 @@ filtered_plate_df = plate_df[metadata_columns + qc_features]
 filtered_plate_df = filtered_plate_df.dropna(subset=qc_features)
 
 
-# In[10]:
+# In[ ]:
 
 
 # Find cell outliers for the current plate
@@ -184,7 +189,8 @@ cell_outliers = find_outliers(
     df=filtered_plate_df,
     metadata_columns=metadata_columns,
     feature_thresholds={
-        # Set low to attempt to detect all instances of abnormally high int in nuclei for whole cells
+        # Set low to attempt to detect all instances of abnormally high int in nuclei
+        # for whole cells
         "Cells_Intensity_IntegratedIntensity_DNA": 0.5,
     },
 )

@@ -12,7 +12,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from copairs import map
+from copairs import map  # noqa: A004
 from copairs.matching import assign_reference_index
 from plotnine import (
     aes,
@@ -149,7 +149,7 @@ pre_qc_df["Metadata_sc_count_failed_qc"] = pre_qc_df[
 ].fillna(0)
 
 
-# In[4]:
+# In[ ]:
 
 
 # Compute percentage of failed QC single-cell across all plates in post_qc_df
@@ -157,7 +157,8 @@ total_failed = post_qc_df["Metadata_sc_count_failed_qc"].sum()
 total_cells = post_qc_df["Metadata_sc_count"].sum()
 failed_qc_percentage = (total_failed / total_cells) * 100
 print(
-    f"Percentage of failed QC single-cell across all plates: {failed_qc_percentage:.2f}%"
+    f"Percentage of failed QC single-cell across all plates: "
+    f"{failed_qc_percentage:.2f}%"
 )
 
 
@@ -185,21 +186,21 @@ print(f"Mean failed proportion (DMSO): {dmso_failed.mean():.4f}")
 
 # ## Assign reference index
 
-# In[6]:
+# In[ ]:
 
 
 reference_col = "Metadata_reference_index"
 
 pre_qc_df_activity = assign_reference_index(
     pre_qc_df,
-    "Metadata_broad_sample == 'DMSO'",  # condition to get reference profiles (neg controls)
+    "Metadata_broad_sample == 'DMSO'",  # condition to get reference profiles
     reference_col=reference_col,
     default_value=-1,
 )
 
 post_qc_df_activity = assign_reference_index(
     post_qc_df,
-    "Metadata_broad_sample == 'DMSO'",  # condition to get reference profiles (neg controls)
+    "Metadata_broad_sample == 'DMSO'",  # condition to get reference profiles
     reference_col=reference_col,
     default_value=-1,
 )
@@ -223,7 +224,7 @@ neg_diffby = ["Metadata_broad_sample", reference_col]
 
 # ### Pre-QC dataframe
 
-# In[8]:
+# In[ ]:
 
 
 preqc_map_file = f"{output_dir}/final_map_scores_preQC.parquet"
@@ -252,7 +253,8 @@ else:
         unique_pos_diffby = treatment_df[
             treatment_df["Metadata_broad_sample"] == treatment
         ][pos_diffby].drop_duplicates()
-        if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
+        MIN_REPLICATES = 2  # Minimum number of replicates required
+        if n_replicates < MIN_REPLICATES or unique_pos_diffby.shape[0] < MIN_REPLICATES:
             print(
                 f"Skipping treatment {treatment}: not enough replicates or "
                 f"not enough unique '{pos_diffby}' values for positive pairs."
@@ -287,7 +289,7 @@ else:
 
 # ### Post-QC dataframe
 
-# In[9]:
+# In[ ]:
 
 
 postqc_map_file = f"{output_dir}/final_map_scores_postQC.parquet"
@@ -316,7 +318,7 @@ else:
         unique_pos_diffby = treatment_df[
             treatment_df["Metadata_broad_sample"] == treatment
         ][pos_diffby].drop_duplicates()
-        if n_replicates < 2 or unique_pos_diffby.shape[0] < 2:
+        if n_replicates < MIN_REPLICATES or unique_pos_diffby.shape[0] < MIN_REPLICATES:
             print(
                 f"Skipping treatment {treatment}: not enough replicates or "
                 f"not enough unique '{pos_diffby}' values for positive pairs."
@@ -548,6 +550,3 @@ for ax in fig.axes:
 fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
-
-
-# In[ ]:

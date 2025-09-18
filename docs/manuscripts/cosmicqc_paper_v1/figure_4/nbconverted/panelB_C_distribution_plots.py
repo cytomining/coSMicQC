@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Generate distribution plots of the features used in the contamination detector to identify contaminated single cells
+# # Generate distribution plots of the features used in the contamination detector
 
-# In[ ]:
+# In[1]:
 
 
 from pathlib import Path
@@ -26,6 +26,7 @@ from plotnine import (
     ylim,
 )
 from plotnine.options import set_option
+from sklearn.preprocessing import StandardScaler
 
 from cosmicqc import find_outliers
 
@@ -157,12 +158,10 @@ plate_df.loc[list(irregular_nuclei_outliers.index), "QC_status"] = (
 )
 
 
-# In[7]:
+# In[ ]:
 
 
 # Z-score normalize the cytoplasm texture for plotting
-from sklearn.preprocessing import StandardScaler
-
 scaler = StandardScaler()
 plate_df[["Cytoplasm_Texture_InfoMeas1_DAPI_3_02_256"]] = scaler.fit_transform(
     plate_df[["Cytoplasm_Texture_InfoMeas1_DAPI_3_02_256"]]
@@ -318,18 +317,18 @@ plot_df["Image_Metadata_Well"] = pd.Categorical(
 )
 
 
-# In[11]:
+# In[ ]:
 
 
 # Assign genotype based on column number directly
 plot_df["Metadata_genotype"] = plot_df["Column"].apply(
     lambda col: (
         "WT"
-        if 1 <= col <= 4
+        if 1 <= col <= 4  # noqa: PLR2004
         else "HET"
-        if 5 <= col <= 8
+        if 5 <= col <= 8  # noqa: PLR2004
         else "Null"
-        if 9 <= col <= 12
+        if 9 <= col <= 12  # noqa: PLR2004
         else "Unknown"
     )
 )

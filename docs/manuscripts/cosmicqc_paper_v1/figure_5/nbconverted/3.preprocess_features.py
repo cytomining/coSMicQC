@@ -3,9 +3,11 @@
 
 # # Preprocess the features into two sets of data per plate: Post- or Pre-QC
 #
-# The features will be preprocessed using [Pycytominer](https://github.com/cytomining/pycytominer) (aggregate, annotate, normalize w/ MAD robustize) for each plates then merged together as one batch for feature selection and spherization.
+# The features will be preprocessed using [Pycytominer](https://github.com/cytomining/pycytominer).
+# We use aggregate, annotate, normalize w/ MAD robustize for each plate.
+# Then all plates are  merged together as one batch for feature selection and spherization.  # noqa: E501
 #
-# To determine the impact of QC on the dataset, we will have to generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).
+# We generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).  # noqa: E501
 
 # In[1]:
 
@@ -49,13 +51,14 @@ def feature_selection(df_lvl4: pd.DataFrame, qc_status: str) -> pd.DataFrame:
     (greater than 384 i.e. equivalent to one plate worth of cell profiles)
     and highly correlated values from the data.
     """
+    PLATE_WELL_COUNT_THRESHOLD = 384  # Number of wells per plate
     metadata_columns = [x for x in df_lvl4.columns if (x.startswith("Metadata_"))]
     df_lvl4_metadata = df_lvl4[metadata_columns].copy()
     df_lvl4_features = df_lvl4.drop(metadata_columns, axis=1)
     null_cols = [
         col
         for col in df_lvl4_features.columns
-        if df_lvl4_features[col].isnull().sum() > 384
+        if df_lvl4_features[col].isnull().sum() > PLATE_WELL_COUNT_THRESHOLD
     ]
     df_lvl4_features.drop(null_cols, axis=1, inplace=True)
 
@@ -484,10 +487,10 @@ if spherized_file.exists():
     print("Spherized batch file already exists. Loading for inspection...")
     batch_post_qc_spherized_df = pd.read_parquet(spherized_file, engine="pyarrow")
     print(batch_post_qc_spherized_df.shape)
-    display(batch_post_qc_spherized_df.head())
+    display(batch_post_qc_spherized_df.head())  # noqa: F821
 elif all_pre_qc and all_post_qc:  # only print after processing if new data exists
     print(batch_post_qc_spherized_df.shape)
-    display(batch_post_qc_spherized_df.head())
+    display(batch_post_qc_spherized_df.head())  # noqa: F821
 else:
     print("No spherized batch data available to inspect.")
 

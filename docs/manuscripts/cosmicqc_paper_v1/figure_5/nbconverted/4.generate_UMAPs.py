@@ -3,7 +3,7 @@
 
 # # Generate UMAP embeddings and plots
 #
-# We replicate the same process of generating UMAP embeddings that was done in the original LINCS paper, but with and without QC.
+# We replicate the same process of generating UMAP embeddings that was done in the original LINCS paper, but with and without QC.  # noqa: E501
 
 # In[1]:
 

@@ -2,8 +2,6 @@
 # coding: utf-8
 
 # # Find FOVs that are good examples of nucleus staining with contamination and not
-#
-# We will be used the NF1 project for this example.
 
 # In[1]:
 
@@ -49,7 +47,7 @@ filtered_profile = plate3_profile[
 filtered_profile.head()
 
 
-# In[4]:
+# In[ ]:
 
 
 # For each well, randomly select one Image_Metadata_Site
@@ -59,7 +57,10 @@ for well in selected_wells:
         filtered_profile["Image_Metadata_Well"].astype(str) == str(well)
     ]
     # Filter for rows with at least 10 cells
-    well_rows = well_rows[well_rows["Metadata_number_of_singlecells"] >= 10]
+    cell_count_threshold = 10
+    well_rows = well_rows[
+        well_rows["Metadata_number_of_singlecells"] >= cell_count_threshold
+    ]
     if not well_rows.empty:
         site = np.random.choice(well_rows["Image_Metadata_Site"].unique())
         cell_row = well_rows[well_rows["Image_Metadata_Site"] == site].iloc[0]
@@ -88,7 +89,7 @@ fovs_df = pd.DataFrame(fovs)
 fovs_df.head()
 
 
-# In[11]:
+# In[ ]:
 
 
 # Set pixel-to-micron conversion
@@ -108,7 +109,8 @@ for ax, (_, fov_row) in zip(axes, fovs_df.iterrows()):
     img = Image.open(full_path)
     img_arr = np.array(img)
 
-    if img_arr.ndim == 2:  # grayscale
+    GRAYSCALE_DIM = 2
+    if img_arr.ndim == GRAYSCALE_DIM:  # grayscale
         img_arr = img_arr.astype(np.float32)
 
         # Contrast stretch using 1st and 99th percentiles
@@ -141,7 +143,7 @@ for ax, (_, fov_row) in zip(axes, fovs_df.iterrows()):
     save_name = f"Well_{fov_row['well']}_Site_{fov_row['site']}.png"
     fov_dir = pathlib.Path("./panelA_FOVs")
     fov_dir.mkdir(exist_ok=True)
-    if img_arr.ndim == 2:
+    if img_arr.ndim == GRAYSCALE_DIM:
         Image.fromarray(cyan_img).save(f"{fov_dir}/{save_name}")
 
     ax.set_title(f"Well {fov_row['well']}, Site {fov_row['site']}")
@@ -149,6 +151,3 @@ for ax, (_, fov_row) in zip(axes, fovs_df.iterrows()):
 
 plt.tight_layout()
 plt.show()
-
-
-# In[ ]:

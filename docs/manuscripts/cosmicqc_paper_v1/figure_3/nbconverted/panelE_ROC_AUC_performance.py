@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Generate ROC AUC plot to demonstrate improvement in `performance` when QC is performed
+# # Generate ROC AUC plot demonstrating improvement in `performance` after QC
 #
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 
@@ -57,7 +57,7 @@ le = load(
 
 # ## Load in no-QC model and dataset
 
-# In[4]:
+# In[ ]:
 
 
 # Load the trained model
@@ -77,12 +77,14 @@ plate_4_no_QC = pd.read_parquet(
 # Filter the test_data to only include rows where:
 # - Metadata_heart_number == 7 and Metadata_treatment == "DMSO"
 # - OR Metadata_heart_number == 29
+healthy_heart_number = 7
+failing_heart_number = 29
 holdout_no_QC_data = plate_4_no_QC[
     (
-        (plate_4_no_QC["Metadata_heart_number"] == 7)
+        (plate_4_no_QC["Metadata_heart_number"] == healthy_heart_number)
         & (plate_4_no_QC["Metadata_treatment"] == "DMSO")
     )
-    | (plate_4_no_QC["Metadata_heart_number"] == 29)
+    | (plate_4_no_QC["Metadata_heart_number"] == failing_heart_number)
 ]
 
 # Load in X and y data from dataset
@@ -97,7 +99,7 @@ y_probs_modelNoQC = no_QC_model.predict_proba(X)[:, 1]
 
 # ## Load in QC model and dataset
 
-# In[5]:
+# In[ ]:
 
 
 # Load the trained model
@@ -119,10 +121,10 @@ plate_4_QC = pd.read_parquet(
 # - OR Metadata_heart_number == 29
 holdout_QC_data = plate_4_QC[
     (
-        (plate_4_QC["Metadata_heart_number"] == 7)
+        (plate_4_QC["Metadata_heart_number"] == healthy_heart_number)
         & (plate_4_QC["Metadata_treatment"] == "DMSO")
     )
-    | (plate_4_QC["Metadata_heart_number"] == 29)
+    | (plate_4_QC["Metadata_heart_number"] == failing_heart_number)
 ]
 
 # Load in X and y data from dataset
@@ -150,8 +152,10 @@ print(f"AUC Model 1: {aucNoQC}")
 print(f"AUC Model 2: {aucQC}")
 
 
-# ## Apply bootstrapping method (using replacement) for 1000 iterations to evaluate performance between models applied to respective datasets
+# ## Apply bootstrapping method to evaluate performance between models
 #
+# We use replacement and 1000 iterations for the bootstapping method.
+# Models are applied to their respective datasets.
 # T-Test is used to see if the distributions are significantly different.
 
 # In[7]:
