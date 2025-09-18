@@ -100,13 +100,16 @@ pd.DataFrame(identify_nuclei_clustered_outliers).head()
 
 
 # Rename for easier access
-df = identify_nuclei_clustered_outliers.rename(
-    columns={
-        "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",  # noqa: E501
-        "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",  # noqa: E501
-        "cqc.custom.is_outlier": "is_outlier",
-    }
-)
+rename_map = {
+    (
+        "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA"
+    ): "zscore_intensity",
+    (
+        "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA"
+    ): "zscore_displacement",
+    "cqc.custom.is_outlier": "is_outlier",
+}
+df = identify_nuclei_clustered_outliers.rename(columns=rename_map)
 
 # Make sure 'is_outlier' is a string or category
 df["is_outlier"] = df["is_outlier"].map({True: "Outlier", False: "Not Outlier"})
