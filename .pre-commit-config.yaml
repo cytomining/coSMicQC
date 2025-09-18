@@ -32,7 +32,8 @@ repos:
               .*\.lock |
               .*\.json |
               .*\.ipynb |
-              .*\.cppipe
+              .*\.cppipe |
+              cosmicqc_paper_v1/.*   # skip everything inside this folder
           )$
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.18

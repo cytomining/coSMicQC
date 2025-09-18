@@ -154,7 +154,7 @@ print(f"AUC Model 2: {aucQC}")
 
 # ## Apply bootstrapping method to evaluate performance between models
 #
-# We use replacement and 1000 iterations for the bootstapping method.
+# We use replacement and 1000 iterations for the bootstrapping method.
 # Models are applied to their respective datasets.
 # T-Test is used to see if the distributions are significantly different.
 
