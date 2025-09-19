@@ -26,7 +26,6 @@ from plotnine.options import set_option
 
 from cosmicqc import find_outliers
 
-
 # In[2]:
 
 
@@ -258,4 +257,3 @@ p.save(
 )
 
 p.show()
-

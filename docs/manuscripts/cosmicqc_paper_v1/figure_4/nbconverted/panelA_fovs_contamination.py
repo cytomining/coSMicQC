@@ -151,4 +151,3 @@ for ax, (_, fov_row) in zip(axes, fovs_df.iterrows()):
 
 plt.tight_layout()
 plt.show()
-
