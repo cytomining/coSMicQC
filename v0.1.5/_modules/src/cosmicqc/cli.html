@@ -204,17 +204,17 @@ window.onload = setDefaultSelection;
 <span class="sd">Setup coSMicQC CLI through python-fire</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="kn">import</span> <span class="nn">fire</span>
-<span class="kn">from</span> <span class="nn">fire</span> <span class="kn">import</span> <span class="n">helptext</span><span class="p">,</span> <span class="n">inspectutils</span><span class="p">,</span> <span class="n">value_types</span>
-<span class="kn">from</span> <span class="nn">fire.core</span> <span class="kn">import</span> <span class="n">Display</span><span class="p">,</span> <span class="n">FireError</span><span class="p">,</span> <span class="n">_DictAsString</span><span class="p">,</span> <span class="n">_OneLineResult</span>
-<span class="kn">from</span> <span class="nn">fire.trace</span> <span class="kn">import</span> <span class="n">FireTrace</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fire</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fire</span><span class="w"> </span><span class="kn">import</span> <span class="n">helptext</span><span class="p">,</span> <span class="n">inspectutils</span><span class="p">,</span> <span class="n">value_types</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fire.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Display</span><span class="p">,</span> <span class="n">FireError</span><span class="p">,</span> <span class="n">_DictAsString</span><span class="p">,</span> <span class="n">_OneLineResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fire.trace</span><span class="w"> </span><span class="kn">import</span> <span class="n">FireTrace</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">analyze</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">analyze</span>
 
 
 <span class="c1"># used to avoid bugs with python-fire and pandas string-based repr compatibility.</span>
@@ -222,7 +222,7 @@ window.onload = setDefaultSelection;
 <span class="c1"># to be removed after python-fire merges changes (uncertain of timeline)</span>
 <div class="viewcode-block" id="HasCustomRepr">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.cli.HasCustomRepr">[docs]</a>
-<span class="k">def</span> <span class="nf">HasCustomRepr</span><span class="p">(</span><span class="n">component</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">HasCustomRepr</span><span class="p">(</span><span class="n">component</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reproduces above HasCustomStr function to determine if component has a</span>
 <span class="sd">    custom __repr__ method.</span>
 
@@ -248,7 +248,7 @@ window.onload = setDefaultSelection;
 <span class="c1"># ignore rule below added to help avoid triggering ruff linting checks on temporary fix.</span>
 <div class="viewcode-block" id="_PrintResult">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.cli._PrintResult">[docs]</a>
-<span class="k">def</span> <span class="nf">_PrintResult</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_PrintResult</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="n">component_trace</span><span class="p">:</span> <span class="n">FireTrace</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">serialize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prints the result of the Fire call to stdout in a human readable way.&quot;&quot;&quot;</span>
@@ -300,7 +300,7 @@ window.onload = setDefaultSelection;
 
 <div class="viewcode-block" id="cli_analyze">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.cli.cli_analyze">[docs]</a>
-<span class="k">def</span> <span class="nf">cli_analyze</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cli_analyze</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the analyze module functions through python-fire CLI</span>
 
