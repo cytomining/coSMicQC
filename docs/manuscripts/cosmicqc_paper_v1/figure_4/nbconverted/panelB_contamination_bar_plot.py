@@ -26,7 +26,6 @@ from plotnine.options import set_option
 
 from cosmicqc import find_outliers
 
-
 # In[2]:
 
 
@@ -202,7 +201,9 @@ plot_df["Metadata_genotype"] = plot_df["Column"].apply(
         else (
             "HET"
             if 5 <= col <= 8  # noqa: PLR2004
-            else "Null" if 9 <= col <= 12 else "Unknown"  # noqa: PLR2004
+            else "Null"
+            if 9 <= col <= 12
+            else "Unknown"
         )
     )
 )
@@ -256,4 +257,3 @@ p.save(
 )
 
 p.show()
-

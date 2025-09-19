@@ -26,7 +26,6 @@ from sklearn.preprocessing import StandardScaler
 
 from cosmicqc import find_outliers
 
-
 # In[2]:
 
 
@@ -256,4 +255,3 @@ p.save(
 
 # Show plot
 p.show()
-
