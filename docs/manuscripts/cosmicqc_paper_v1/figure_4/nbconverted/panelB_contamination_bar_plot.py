@@ -26,6 +26,7 @@ from plotnine.options import set_option
 
 from cosmicqc import find_outliers
 
+
 # In[2]:
 
 
@@ -190,7 +191,7 @@ plot_df["Image_Metadata_Well"] = pd.Categorical(
 )
 
 
-# In[7]:
+# In[ ]:
 
 
 # Assign genotype based on column number directly
@@ -202,7 +203,7 @@ plot_df["Metadata_genotype"] = plot_df["Column"].apply(
             "HET"
             if 5 <= col <= 8  # noqa: PLR2004
             else "Null"
-            if 9 <= col <= 12
+            if 9 <= col <= 12  # noqa: PLR2004
             else "Unknown"
         )
     )
@@ -257,3 +258,4 @@ p.save(
 )
 
 p.show()
+
