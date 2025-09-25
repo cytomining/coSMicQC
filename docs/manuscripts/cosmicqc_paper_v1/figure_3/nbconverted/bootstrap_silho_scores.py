@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Calculate Silhouette scores with bootstrapping method
-# 
+#
 # Determine if there is a significant improvement in clustering after QC.
 
 # In[1]:
@@ -136,7 +136,7 @@ print("Silhouette score (excluding noise):", pre_QC_score)
 
 
 # # Output which cells go with which cluster (plot bar plot proportion of cells removed on y and the x is the cluster label)
-# 
+#
 # Is there a way to show that the cluster cells that did not get removed moved to a different cluster?
 
 # In[5]:
@@ -213,7 +213,7 @@ print("Silhouette score (excluding noise):", post_QC_score)
 
 
 # ## Perform bootstrapping method to compute Silhouette scores
-# 
+#
 # Bootstrap method uses replacement over 1000 iterations.
 # Applied to pre-QC and post_QC datasets to evaluate significance in difference.
 
@@ -240,4 +240,3 @@ t_stat, p_value = stats.ttest_ind(
 )
 print("T-statistic:", t_stat)
 print("P-value:", p_value)
-
