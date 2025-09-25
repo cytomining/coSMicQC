@@ -2,10 +2,10 @@
 # coding: utf-8
 
 # # Calculate Silhouette scores with bootstrapping method
-#
+# 
 # Determine if there is a significant improvement in clustering after QC.
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -107,6 +107,9 @@ post_QC_umap_df = pd.read_parquet(
     "../figure_3/umap_embeddings/post_QC_umap_embeddings.parquet"
 )
 
+# Set min cluster size for HDBSCAN
+min_cluster_size = 100
+
 
 # ## Compute individual Silhouette scores
 
@@ -117,7 +120,7 @@ post_QC_umap_df = pd.read_parquet(
 pre_X = pre_QC_umap_df[["UMAP0", "UMAP1"]].values
 
 # Run HDBSCAN
-clusterer = hdbscan.HDBSCAN(min_cluster_size=50)
+clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size)
 pre_cluster_labels = clusterer.fit_predict(pre_X)
 
 # Info about clusters
@@ -132,14 +135,69 @@ pre_QC_score = silhouette_score(X_clustered, labels_clustered)
 print("Silhouette score (excluding noise):", pre_QC_score)
 
 
+# # Output which cells go with which cluster (plot bar plot proportion of cells removed on y and the x is the cluster label)
+# 
+# Is there a way to show that the cluster cells that did not get removed moved to a different cluster?
+
 # In[5]:
+
+
+import matplotlib.pyplot as plt
+
+# Attach cluster labels to full dataframe
+pre_QC_clusters_df = pre_QC_umap_df.copy()
+pre_QC_clusters_df["cluster"] = pre_cluster_labels
+
+# Drop noise
+pre_QC_clusters_df = pre_QC_clusters_df[pre_QC_clusters_df["cluster"] != -1]
+
+# Convert labels to string for nicer plotting
+pre_QC_clusters_df["cluster"] = pre_QC_clusters_df["cluster"].astype(str)
+
+# Print number of cells in each cluster
+print(pre_QC_clusters_df["cluster"].value_counts().sort_index())
+
+# Calculate proportions for each cluster
+cluster_counts = (
+    pre_QC_clusters_df.groupby(["cluster", "Metadata_QC_status"])
+    .size()
+    .unstack(fill_value=0)
+)
+cluster_props = cluster_counts.div(cluster_counts.sum(axis=1), axis=0)
+
+# Plot
+ax = cluster_props.plot(
+    kind="bar", stacked=True, color=["tomato", "mediumseagreen"], figsize=(8, 5)
+)
+ax.set_ylabel("Proportion of Cells")
+ax.set_xlabel("Cluster Label")
+ax.set_title("Proportion of Cells Passed/Failed QC by Cluster")
+ax.legend(["Failed QC", "Passed QC"], title="QC Status")
+plt.tight_layout()
+plt.savefig(output_dir / "pre_QC_cluster_qc_status_proportions.png", dpi=300)
+plt.show()
+
+
+# In[6]:
+
+
+# Quantify number of failed vs passed cells in pre-QC cluster 0
+cluster0_df = pre_QC_clusters_df[pre_QC_clusters_df["cluster"] == "0"]
+failed_count = (cluster0_df["Metadata_QC_status"] == "failed").sum()
+passed_count = (cluster0_df["Metadata_QC_status"] == "passed").sum()
+
+print(f"Cluster 0 - Failed cells: {failed_count}")
+print(f"Cluster 0 - Passed cells: {passed_count}")
+
+
+# In[7]:
 
 
 # Calculate and print silhouette scores for post-QC datasets
 post_X = post_QC_umap_df[["UMAP0", "UMAP1"]].values
 
 # Run HDBSCAN
-clusterer = hdbscan.HDBSCAN(min_cluster_size=50)
+clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size)
 post_cluster_labels = clusterer.fit_predict(post_X)
 
 # Info about clusters
@@ -155,26 +213,26 @@ print("Silhouette score (excluding noise):", post_QC_score)
 
 
 # ## Perform bootstrapping method to compute Silhouette scores
-#
+# 
 # Bootstrap method uses replacement over 1000 iterations.
 # Applied to pre-QC and post_QC datasets to evaluate significance in difference.
 
-# In[6]:
+# In[8]:
 
 
 # Perform bootstrapping on pre-QC and post-QC datasets
 pre_bootstrap_scores = bootstrap_silhouette(
-    pre_X, n_bootstraps=1000, min_cluster_size=50
+    pre_X, n_bootstraps=1000, min_cluster_size=min_cluster_size
 )
 post_bootstrap_scores = bootstrap_silhouette(
-    post_X, n_bootstraps=1000, min_cluster_size=50
+    post_X, n_bootstraps=1000, min_cluster_size=min_cluster_size
 )
 
 print("Before QC:", pre_bootstrap_scores.mean(), "+/-", pre_bootstrap_scores.std())
 print("After QC:", post_bootstrap_scores.mean(), "+/-", post_bootstrap_scores.std())
 
 
-# In[ ]:
+# In[9]:
 
 
 t_stat, p_value = stats.ttest_ind(
@@ -182,3 +240,4 @@ t_stat, p_value = stats.ttest_ind(
 )
 print("T-statistic:", t_stat)
 print("P-value:", p_value)
+
