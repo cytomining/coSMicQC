@@ -139,4 +139,3 @@ passed_count = (cluster0_df["Metadata_QC_status"] == "passed").sum()
 
 print(f"Cluster 0 - Failed cells: {failed_count}")
 print(f"Cluster 0 - Passed cells: {passed_count}")
-
