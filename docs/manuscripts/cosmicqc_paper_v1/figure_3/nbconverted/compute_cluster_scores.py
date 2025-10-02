@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Calculate Silhouette scores with bootstrapping method
-# 
+#
 # Determine if there is a significant improvement in clustering after QC.
 
 # In[1]:
@@ -14,9 +14,9 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import fisher_exact
 from sklearn.cluster import HDBSCAN
 from sklearn.decomposition import PCA
-from scipy.stats import fisher_exact
 from sklearn.metrics import silhouette_score
 
 # Ignore warning about deprecated argument name in sklearn
@@ -312,4 +312,3 @@ ax.legend(["Failed QC", "Passed QC"], title="QC Status")
 plt.tight_layout()
 plt.savefig(output_dir / "pre_QC_cluster_qc_status_proportions.png", dpi=300)
 plt.show()
-
