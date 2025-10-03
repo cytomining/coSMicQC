@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Calculate Silhouette scores with bootstrapping method
-#
+# 
 # Determine if there is a significant improvement in clustering after QC.
 
 # In[1]:
@@ -312,3 +312,32 @@ ax.legend(["Failed QC", "Passed QC"], title="QC Status")
 plt.tight_layout()
 plt.savefig(output_dir / "pre_QC_cluster_qc_status_proportions.png", dpi=300)
 plt.show()
+
+
+# ## Compute Davies Bouldin score and Calinski Harabasz scores and show differences
+# 
+# Davies Bouldin Index (DBI) and Calinski Harabasz Index (CHI) are both measurements of compactness and separation of clusters. Lower DBI and higher CHI indicate better separation and compactness of clusters.
+# 
+
+# In[10]:
+
+
+from sklearn.metrics import davies_bouldin_score, calinski_harabasz_score
+
+# Get labels without noise for score calculations
+pre_labels = pre_cluster_labels[pre_cluster_labels != -1]
+post_labels = post_cluster_labels[post_cluster_labels != -1]
+pre_X = pre_QC_pca[pre_cluster_labels != -1]
+post_X = post_QC_pca[post_cluster_labels != -1]
+
+# Pre-QC
+dbi_pre = davies_bouldin_score(pre_X, pre_labels)
+chi_pre = calinski_harabasz_score(pre_X, pre_labels)
+
+# Post-QC
+dbi_post = davies_bouldin_score(post_X, post_labels)
+chi_post = calinski_harabasz_score(post_X, post_labels)
+
+print("Pre-QC -> DBI:", dbi_pre, "CHI:", chi_pre)
+print("Post-QC -> DBI:", dbi_post, "CHI:", chi_post)
+
