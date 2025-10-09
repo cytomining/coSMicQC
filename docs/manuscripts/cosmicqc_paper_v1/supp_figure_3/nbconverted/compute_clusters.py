@@ -313,4 +313,3 @@ p = (
 
 p.save(output_dir / "post_QC_cluster_treatment_celltype.png", dpi=300)
 p
-
