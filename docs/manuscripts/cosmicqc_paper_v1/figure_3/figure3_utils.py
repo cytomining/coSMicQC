@@ -54,8 +54,8 @@ def bootstrap_roc_auc(
     Perform bootstrapping to compute the distribution of ROC AUC scores.
 
     This function generates a bootstrapped distribution of ROC AUC scores by
-    resampling the provided true labels and predicted probabilities with
-    replacement.
+    resampling the provided true labels and predicted probabilities without
+    replacement, using 20% of the dataset each time.
 
     Parameters:
     ----------
@@ -74,20 +74,20 @@ def bootstrap_roc_auc(
         An array of bootstrapped ROC AUC scores. Each element represents the
         ROC AUC computed for a resampled dataset.
     """
-    # list for the scores to be appended to
+    # Initialize list to store bootstrapped ROC AUC scores
     bootstrapped_scores = []
 
     MIN_CLASSES_REQUIRED = 2
-    # loop through and create the amount of bootstrap samples and calculate ROC scores
     for i in range(n_bootstraps):
-        indices = resample(np.arange(len(y_true)), replace=True)
-        # evaluate if the subsample has both classes
+        indices = resample(
+            np.arange(len(y_true)),
+            replace=False,
+            n_samples=int(0.20 * len(y_true))
+        )
         if len(np.unique(y_true[indices])) < MIN_CLASSES_REQUIRED:
-            # skip this subsample if it doesn't have both classes
             continue
-        # if there are both classes, then calculate the score
-        else:
-            score = roc_auc_score(y_true[indices], y_pred[indices])
-            bootstrapped_scores.append(score)
+        score = roc_auc_score(y_true[indices], y_pred[indices])
+        bootstrapped_scores.append(score)
 
     return np.array(bootstrapped_scores)
+
