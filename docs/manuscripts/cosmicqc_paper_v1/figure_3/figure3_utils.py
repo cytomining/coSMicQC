@@ -80,9 +80,7 @@ def bootstrap_roc_auc(
     MIN_CLASSES_REQUIRED = 2
     for i in range(n_bootstraps):
         indices = resample(
-            np.arange(len(y_true)),
-            replace=False,
-            n_samples=int(0.20 * len(y_true))
+            np.arange(len(y_true)), replace=False, n_samples=int(0.20 * len(y_true))
         )
         if len(np.unique(y_true[indices])) < MIN_CLASSES_REQUIRED:
             continue
@@ -90,4 +88,3 @@ def bootstrap_roc_auc(
         bootstrapped_scores.append(score)
 
     return np.array(bootstrapped_scores)
-
