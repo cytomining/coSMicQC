@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Compute HDSBCAN clusters for pre- and post-QC feature spaces
-#
+# 
 # We apply PCA first to the feature spaces before computing HDBSCAN.
 
 # In[1]:
@@ -83,6 +83,10 @@ pre_X = pre_QC_df.loc[:, ~pre_QC_df.columns.str.startswith("Metadata_")].values
 pca = PCA(n_components=5, random_state=0)
 pre_QC_pca = pca.fit_transform(pre_X)
 
+# Print the total explained variance percentage for the first 5 PCs
+explained_variance = np.sum(pca.explained_variance_ratio_) * 100
+print(f"Total explained variance by first 5 PCs: {explained_variance:.2f}%")
+
 # Create scree plot to show variance explained by each PC
 plt.figure(figsize=(8, 5))
 plt.plot(
@@ -132,6 +136,10 @@ post_X = post_QC_df.loc[:, ~post_QC_df.columns.str.startswith("Metadata_")].valu
 # Run PCA on post-QC feature space
 pca = PCA(n_components=5, random_state=0)
 post_QC_pca = pca.fit_transform(post_X)
+
+# Print the total explained variance percentage for the first 5 PCs
+explained_variance = np.sum(pca.explained_variance_ratio_) * 100
+print(f"Total explained variance by first 5 PCs: {explained_variance:.2f}%")
 
 # Create scree plot to show variance explained by each PC
 plt.figure(figsize=(8, 5))
@@ -313,3 +321,4 @@ p = (
 
 p.save(output_dir / "post_QC_cluster_treatment_celltype.png", dpi=300)
 p
+
