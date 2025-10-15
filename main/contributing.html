@@ -1,0 +1,463 @@
+<!-- extends sphinx page to include docs version warnings if not viewing latest released documentation -->
+<!-- referenced from: https://github.com/wagtail/sphinx-wagtail-theme/blob/main/sphinx_wagtail_theme/layout.html
+ in order to preload plotly javascript dependency for rendering --><!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Contributing &mdash; coSMicQC  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=76a74e97" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="coSMicQC  documentation" href="#" />
+            <link rel="next" title="Contributor Covenant Code of Conduct" href="code_of_conduct.html" />
+            <link rel="prev" title="Python API" href="python-api.html" />
+    <!-- line added for plotly compatibility in cosmicqc -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="https://cytomining.github.io/coSMicQC"
+                        title="coSMicQC logo"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/just-icon.png" width="45" height="59" alt="coSMicQC logo"
+                            class="logo-img"
+                        />
+                        coSMicQC
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://github.com/cytomining/coSMicQC"><span class='fab fa-github'></span> GitHub Repository</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/contamination_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html#set-a-path-for-the-parquet-based-dataset">set a path for the parquet-based dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html#in-this-case-cellprofiler-sqlite-data-processed-by-cytotable">(in this case, CellProfiler SQLite data processed by CytoTable)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html#set-a-context-directory-for-images-associated-with-the-dataset">set a context directory for images associated with the dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html#create-a-cosmicqc-cytodataframe-single-cell-dataframe">create a cosmicqc CytoDataFrame (single-cell DataFrame)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html#display-the-dataframe">display the dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presentations.html">Presentations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="presentations/sbi2-2024.html">SBI2 Annual Confrerence 2024 Poster</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="python-api.html"
+                          title="previous chapter">Python API</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="code_of_conduct.html"
+                          title="next chapter">Contributor Covenant Code of Conduct</a></p>
+  </div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
+
+<h4>Versions</h4>
+<select name="versions" id="versions" onchange="redirectToPage()">
+    <option value="../v0.0.11/index.html">v0.0.11</option>
+    <option value="../v0.1.0/index.html">v0.1.0</option>
+    <option value="../v0.1.1/index.html">v0.1.1</option>
+    <option value="../v0.1.2/index.html">v0.1.2</option>
+    <option value="../v0.1.3/index.html">v0.1.3</option>
+    <option value="../v0.1.4/index.html">v0.1.4</option>
+    <option value="../v0.1.5/index.html">v0.1.5</option>
+    <option value="../v1.0.0/index.html">v1.0.0</option>
+    <option value="contributing.html">main</option>
+</select>
+<script>
+/**
+ * Redirects the browser to the URL corresponding to the selected option in the dropdown.
+ *
+ * This function is triggered when the user changes the selection in the dropdown menu. It
+ * retrieves the selected option's value (which is a URL) and sets `window.location.href`
+ * to that URL, causing the browser to navigate to the new page.
+ */
+function redirectToPage() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the value of the selected option (the URL to redirect to)
+    var selectedValue = selectElement.value;
+
+    // If a valid option is selected (non-empty), redirect the browser to the URL
+    if (selectedValue) {
+        window.location.href = selectedValue;
+    }
+}
+
+/**
+ * Sets the default selection of the dropdown menu based on the current URL.
+ *
+ * This function checks the current page URL and compares it with the values (URLs) of the
+ * options in the dropdown menu. If the current URL contains "index.html" and matches an
+ * option's value, that option is selected as the default.
+ * This function runs automatically when the page loads.
+ */
+ function setDefaultSelection() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the current page URL
+    var currentUrl = window.location.href;
+
+    // Loop through all options in the dropdown
+    for (var i = 0; i < selectElement.options.length; i++) {
+        var option = selectElement.options[i];
+        var optionUrl = option.value;
+
+        // If the current URL includes "index.html" and matches the option's value, select that option
+        if (optionUrl == "index.html") {
+            selectElement.selectedIndex = i;  // Set the selected index to the matching option
+            break;  // Exit the loop after finding the match
+        }
+    }
+}
+
+// Automatically call setDefaultSelection() when the page finishes loading
+window.onload = setDefaultSelection;
+
+</script>
+
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Contributing</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/cytomining/coSMicQC/tree/main/docs/srccontributing.md" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/contributing.md.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+
+<p style="background:#E7C3EB;padding:5px 10px;">
+
+You're reading the documentation for a development version.
+For the latest released version, please have a look at <a href="../v1.0.0/index.html">v1.0.0</a>.
+
+</p>
+</span>
+
+
+    <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h1>
+<p>First of all, thank you so much for contributing! 🎉 💯</p>
+<p>This document contains guidelines on how to most effectively contribute within this repository.</p>
+<p>If you are stuck, please feel free to ask any questions or ask for help.</p>
+<section id="code-of-conduct">
+<h2>Code of conduct<a class="headerlink" href="#code-of-conduct" title="Link to this heading">¶</a></h2>
+<p>This project is governed by our <a class="reference internal" href="code_of_conduct.html"><span class="std std-doc">code of conduct</span></a>. By participating, you are expected to uphold this code.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported to community leaders responsible for enforcement.
+Please open a <a class="reference external" href="https://github.com/cytomining/coSMicQC/security/advisories/new">new security advisory notice</a> (using defaults or “n/a” where unable to fill in the form) to privately notify us of any incidents of this nature.</p>
+</section>
+<section id="development">
+<h2>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h2>
+<p>This project leverages development environments managed by Python <a class="reference external" href="https://python-poetry.org/">Poetry</a>.
+We leverage interactions with the Docker through Python to achieve reproducible results through containers.
+We use <a class="reference external" href="https://docs.pytest.org/">pytest</a> for testing and <a class="reference external" href="https://docs.github.com/en/actions">GitHub actions</a> for automated tests.</p>
+<section id="development-setup">
+<h3>Development setup<a class="headerlink" href="#development-setup" title="Link to this heading">¶</a></h3>
+<p>Perform the following steps to setup a Python development environment.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://www.python.org/downloads/">Install Python</a> (we recommend using <a class="reference external" href="https://github.com/pyenv/pyenv"><code class="docutils literal notranslate"><span class="pre">pyenv</span></code></a> or similar)</p></li>
+<li><p><a class="reference external" href="https://python-poetry.org/docs/#installation">Install Poetry</a></p></li>
+<li><p><a class="reference external" href="https://python-poetry.org/docs/basic-usage/#installing-dependencies">Install Poetry Environment</a>: <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">install</span></code></p></li>
+</ol>
+</section>
+<section id="linting">
+<h3>Linting<a class="headerlink" href="#linting" title="Link to this heading">¶</a></h3>
+<p>Work added to this project is automatically checked using <a class="reference external" href="https://pre-commit.com/">pre-commit</a> via <a class="reference external" href="https://docs.github.com/en/actions">GitHub Actions</a>.
+Pre-commit can work alongside your local <a class="reference external" href="https://pre-commit.com/index.html#3-install-the-git-hook-scripts">git with git-hooks</a></p>
+<p>After <a class="reference external" href="https://pre-commit.com/#installation">installing pre-commit</a> within your development environment, the following command also can perform the same checks within your local development environment:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</pre></div>
+</div>
+<p>We use these same checks within our automated tests which are managed by <a class="reference external" href="https://docs.github.com/en/actions/using-workflows">GitHub Actions workflows</a>.
+These automated tests generally must pass in order to merge work into this repository.</p>
+</section>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Link to this heading">¶</a></h3>
+<p>Work added to this project is automatically tested using <a class="reference external" href="https://docs.pytest.org/">pytest</a> via <a class="reference external" href="https://docs.github.com/en/actions">GitHub Actions</a>.
+Pytest is installed through the Poetry environment for this project.
+We recommend testing your work before opening pull requests with proposed changes.</p>
+<p>You can run pytest on your work using the following example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pytest
+</pre></div>
+</div>
+</section>
+</section>
+<section id="making-changes-to-this-repository">
+<h2>Making changes to this repository<a class="headerlink" href="#making-changes-to-this-repository" title="Link to this heading">¶</a></h2>
+<p>We welcome anyone to use <a class="reference external" href="https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues">GitHub issues</a> (requires a GitHub login) or create <a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests">pull requests</a> (to directly make changes within this repository) to modify content found within this repository.</p>
+<p>Specifically, there are several ways to suggest or make changes to this repository:</p>
+<ol class="arabic simple">
+<li><p>Open a GitHub issue: https://github.com/cytomining/coSMicQC/issues</p></li>
+<li><p>Create a pull request from a forked branch of the repository</p></li>
+</ol>
+<section id="creating-a-pull-request">
+<h3>Creating a pull request<a class="headerlink" href="#creating-a-pull-request" title="Link to this heading">¶</a></h3>
+</section>
+<section id="pull-requests">
+<h3>Pull requests<a class="headerlink" href="#pull-requests" title="Link to this heading">¶</a></h3>
+<p>After you’ve decided to contribute code and have written it up, please file a pull request.
+We specifically follow a <a class="reference external" href="https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork">forked pull request model</a>.
+Please create a fork of this repository, clone the fork, and then create a new, feature-specific branch.
+Once you make the necessary changes on this branch, you should file a pull request to incorporate your changes into this (fork upstream) repository.</p>
+<p>The content and description of your pull request are directly related to the speed at which we are able to review, approve, and merge your contribution.
+To ensure an efficient review process please perform the following steps:</p>
+<ol class="arabic simple">
+<li><p>Follow all instructions in the <a class="reference external" href="https://github.com/cytomining/coSMicQC/blob/main/.github/PULL_REQUEST_TEMPLATE.md">pull request template</a></p></li>
+<li><p>Triple check that your pull request is adding <em>one</em> specific feature or additional group of content.
+Small, bite-sized pull requests move so much faster than large pull requests.</p></li>
+<li><p>After submitting your pull request, ensure that your contribution passes all status checks (e.g. passes all tests)</p></li>
+</ol>
+<p>Pull request review and approval is required by at least one project maintainer to merge.
+We will do our best to review the code addition in a timely fashion.
+Ensuring that you follow all steps above will increase our speed and ability to review.
+We will check for accuracy, style, code coverage, and scope.</p>
+</section>
+</section>
+<section id="versioning">
+<h2>Versioning<a class="headerlink" href="#versioning" title="Link to this heading">¶</a></h2>
+<p>We use <a class="reference external" href="https://github.com/mtkennerly/poetry-dynamic-versioning"><code class="docutils literal notranslate"><span class="pre">poetry-dynamic-versioning</span></code></a> to help version this software through <a class="reference external" href="https://peps.python.org/pep-0440/"><code class="docutils literal notranslate"><span class="pre">PEP</span> <span class="pre">440</span></code></a> standards.
+Configuration for versioning is found within the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file.
+All builds for packages include dynamic version data to help label distinct versions of the software.
+<code class="docutils literal notranslate"><span class="pre">poetry-dynamic-versioning</span></code> uses <code class="docutils literal notranslate"><span class="pre">git</span></code> tags to help distinguish version data.
+We also use the <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file as a place to persist the version data for occaissions where the <code class="docutils literal notranslate"><span class="pre">git</span></code> history is unavailable or unwanted.</p>
+<p>The following command is used to add <code class="docutils literal notranslate"><span class="pre">poetry-dynamic-versioning</span></code> to Poetry for use with this project: <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">self</span> <span class="pre">add</span> <span class="pre">&quot;poetry-dynamic-versioning[plugin]&quot;</span></code>.
+Versioning for the project is intended to align with GitHub Releases which provide <code class="docutils literal notranslate"><span class="pre">git</span></code> tag capabilities.</p>
+<section id="releases">
+<h3>Releases<a class="headerlink" href="#releases" title="Link to this heading">¶</a></h3>
+<p>We publish source code by using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases">GitHub Releases</a> available <a class="reference external" href="https://github.com/cytomining/cosmicqc/releases">here</a>.
+We publish a related Python package through the <a class="reference external" href="https://pypi.org/">Python Packaging Index (PyPI)</a> available <a class="reference external" href="https://pypi.org/project/cosmicqc/">here</a>.</p>
+<section id="release-publishing-process">
+<h4>Release Publishing Process<a class="headerlink" href="#release-publishing-process" title="Link to this heading">¶</a></h4>
+<p>Several manual and automated steps are involved with publishing coSMicQC releases.
+See below for an overview of how this works.</p>
+<p>Notes about <a class="reference external" href="https://en.wikipedia.org/wiki/Software_versioning#Semantic_versioning">semantic version</a> (semver) specifications:
+coSMicQC version specifications are controlled through <a class="reference external" href="https://github.com/mtkennerly/poetry-dynamic-versioning"><code class="docutils literal notranslate"><span class="pre">poetry-dynamic-versioning</span></code></a> which leverages <a class="reference external" href="https://github.com/mtkennerly/dunamai"><code class="docutils literal notranslate"><span class="pre">dunamai</span></code></a> to create version data based on <a class="reference external" href="https://git-scm.com/book/en/v2/Git-Basics-Tagging">git tags</a> and commits.
+coSMicQC release git tags are automatically applied through <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases">GitHub Releases</a> and related inferred changes from <a class="reference external" href="https://github.com/release-drafter/release-drafter"><code class="docutils literal notranslate"><span class="pre">release-drafter</span></code></a>.</p>
+<ol class="arabic simple">
+<li><p>Open a pull request and use a repository label for <code class="docutils literal notranslate"><span class="pre">release-&lt;semver</span> <span class="pre">release</span> <span class="pre">type&gt;</span></code> to label the pull request for visibility with <a class="reference external" href="https://github.com/release-drafter/release-drafter"><code class="docutils literal notranslate"><span class="pre">release-drafter</span></code></a> (for example, see <a class="reference external" href="https://github.com/cytomining/cosmicqc/pull/24">coSMicQC#24</a> as a reference of a semver patch update).</p></li>
+<li><p>On merging the pull request for the release, a <a class="reference external" href="https://docs.github.com/en/actions/using-workflows">GitHub Actions workflow</a> defined in <code class="docutils literal notranslate"><span class="pre">draft-release.yml</span></code> leveraging <a class="reference external" href="https://github.com/release-drafter/release-drafter"><code class="docutils literal notranslate"><span class="pre">release-drafter</span></code></a> will draft a release for maintainers.</p></li>
+<li><p>The draft GitHub release will include a version tag based on the GitHub PR label applied and <code class="docutils literal notranslate"><span class="pre">release-drafter</span></code>.</p></li>
+<li><p>Make modifications as necessary to the draft GitHub release, then publish the release (the draft release does not normally need additional modifications).</p></li>
+<li><p>On publishing the release, another GitHub Actions workflow defined in <code class="docutils literal notranslate"><span class="pre">publish-pypi.yml</span></code> will run to build and deploy the Python package to PyPI (utilizing the earlier modified <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> semantic version reference for labeling the release).</p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
+<p>Documentation for this project is published using <a class="reference external" href="https://www.sphinx-doc.org">Sphinx</a> with markdown and Jupyter notebook file compatibility provided by <a class="reference external" href="https://myst-parser.readthedocs.io/en/latest/">myst-parser</a> and <a class="reference external" href="https://myst-nb.readthedocs.io/en/latest/">myst-nb</a> to create a “documentation website” (also known as “docsite”).
+The docsite is hosted through <a class="reference external" href="https://pages.github.com/">GitHub Pages</a> and deployed through automated <a class="reference external" href="https://docs.github.com/en/actions">GitHub Actions</a> jobs which trigger on pushes to the main branch or the publishing of a new release on GitHub.
+Documentation is versioned as outlined earlier sections covering versioning details to help ensure users are able to understand each release independently of one another.</p>
+<p>It can sometimes be useful to test documentation builds locally before proposing changes within a pull request.
+See below for some examples of how to build documentation locally.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># build single-version sphinx documentation</span>
+<span class="c1"># (useful for troubleshooting potential issues)</span>
+poetry<span class="w"> </span>run<span class="w"> </span>sphinx-build<span class="w"> </span>docs/src<span class="w"> </span>docs/build
+
+<span class="c1"># build multi-version sphinx documentation</span>
+<span class="c1"># (used in production)</span>
+poetry<span class="w"> </span>run<span class="w"> </span>sphinx-multiversion<span class="w"> </span>docs/src<span class="w"> </span>docs/build
+</pre></div>
+</div>
+<p>After the docs build, navigate the <code class="docutils literal notranslate"><span class="pre">docs/build</span></code> folder and open the HTML files with your browser.
+Opening the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file which may be found in the base of <code class="docutils literal notranslate"><span class="pre">docs/build</span></code> or <code class="docutils literal notranslate"><span class="pre">docs/build/&lt;version&gt;</span></code> will simulate the docsite experience through GitHub Pages.</p>
+</section>
+</section>
+
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="python-api.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Python API
+    </a>
+    <a class="float-right" href="code_of_conduct.html" title="Next">
+        Contributor Covenant Code of Conduct <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#code-of-conduct">Code of conduct</a></li>
+<li><a class="reference internal" href="#development">Development</a><ul>
+<li><a class="reference internal" href="#development-setup">Development setup</a></li>
+<li><a class="reference internal" href="#linting">Linting</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#making-changes-to-this-repository">Making changes to this repository</a><ul>
+<li><a class="reference internal" href="#creating-a-pull-request">Creating a pull request</a></li>
+<li><a class="reference internal" href="#pull-requests">Pull requests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#versioning">Versioning</a><ul>
+<li><a class="reference internal" href="#releases">Releases</a><ul>
+<li><a class="reference internal" href="#release-publishing-process">Release Publishing Process</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://www.cytomininglab.com/">Way Lab</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://github.com/cytomining/coSMicQC">coSMicQC GitHub Repository</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Cytomining Community
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 8.2.3
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9bcbadda"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
