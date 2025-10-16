@@ -31,7 +31,9 @@ for url, file_path in zip(
 ):
     if not pathlib.Path(file_path).is_file():
         print(f"Downloading {file_path}...")
-        subprocess.run(["wget", '--user-agent="Mozilla/5.0"',"-O", file_path, url], check=True)
+        subprocess.run(
+            ["wget", '--user-agent="Mozilla/5.0"', "-O", file_path, url], check=True
+        )
         print(f"Downloaded {file_path}")
 
 # Check if the zip file exists
