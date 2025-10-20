@@ -2,8 +2,6 @@
 # coding: utf-8
 
 # # Generate UMAP embeddings and plots
-#
-# We replicate the same process of generating UMAP embeddings that was done in the original LINCS paper, but with and without QC.  # noqa: E501
 
 # In[1]:
 
@@ -110,6 +108,11 @@ pre_qc_pca_df = pca.fit_transform(pre_qc_df.loc[:, cp_features])
 pre_qc_pca_df = pd.DataFrame(pre_qc_pca_df)
 pre_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 
+# print percent explained variance accounted for by top 50 components
+explained_variance = pca.explained_variance_ratio_.sum() * 100
+print(
+    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"
+)
 print(pre_qc_pca_df.shape)
 pre_qc_pca_df.head()
 
@@ -220,11 +223,8 @@ p = (
         size=1,
         show_legend=False,
     )
-    # Layer 2: All other MOAs + DMSO for correct legends
-    + geom_point(
-        data=main_df,
-        mapping=aes(x="UMAP_0", y="UMAP_1", color="plot_moa", shape="is_control"),
-    )
+    # Layer 2: All other MOAs + DMSO for legend
+    + geom_point(data=main_df, mapping=aes(x="UMAP_0", y="UMAP_1", color="plot_moa"))
     # Titles and labels
     + xlab("UMAP_0")
     + ylab("UMAP_1")
@@ -308,6 +308,12 @@ post_qc_pca_df = pca.fit_transform(post_qc_df.loc[:, cp_features])
 post_qc_pca_df = pd.DataFrame(post_qc_pca_df)
 post_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 
+# print percent explained variance accounted for by top 50 components
+explained_variance = pca.explained_variance_ratio_.sum() * 100
+print(
+    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"
+)
+
 print(post_qc_pca_df.shape)
 post_qc_pca_df.head()
 
@@ -376,11 +382,8 @@ p = (
         size=1,
         show_legend=False,
     )
-    # Layer 2: All other MOAs + DMSO for correct legends
-    + geom_point(
-        data=main_df,
-        mapping=aes(x="UMAP_0", y="UMAP_1", color="plot_moa", shape="is_control"),
-    )
+    # Layer 2: All other MOAs + DMSO for legend
+    + geom_point(data=main_df, mapping=aes(x="UMAP_0", y="UMAP_1", color="plot_moa"))
     # Titles and labels
     + xlab("UMAP_0")
     + ylab("UMAP_1")
@@ -397,3 +400,4 @@ p = (
 )
 p.save(filename=figure_output_dir / "post_qc_moa_umap.png", dpi=600)
 p.show()
+

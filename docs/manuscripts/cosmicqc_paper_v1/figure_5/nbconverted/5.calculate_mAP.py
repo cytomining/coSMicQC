@@ -19,10 +19,13 @@ from plotnine import (
     element_text,
     facet_wrap,
     geom_abline,
+    geom_bar,
+    geom_hline,
     geom_point,
     ggplot,
     labs,
     scale_color_gradientn,
+    scale_fill_manual,
     theme,
     theme_bw,
 )
@@ -149,7 +152,7 @@ pre_qc_df["Metadata_sc_count_failed_qc"] = pre_qc_df[
 ].fillna(0)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Compute percentage of failed QC single-cell across all plates in post_qc_df
@@ -186,7 +189,7 @@ print(f"Mean failed proportion (DMSO): {dmso_failed.mean():.4f}")
 
 # ## Assign reference index
 
-# In[ ]:
+# In[6]:
 
 
 reference_col = "Metadata_reference_index"
@@ -224,7 +227,7 @@ neg_diffby = ["Metadata_broad_sample", reference_col]
 
 # ### Pre-QC dataframe
 
-# In[ ]:
+# In[8]:
 
 
 preqc_map_file = f"{output_dir}/final_map_scores_preQC.parquet"
@@ -289,7 +292,7 @@ else:
 
 # ### Post-QC dataframe
 
-# In[ ]:
+# In[9]:
 
 
 postqc_map_file = f"{output_dir}/final_map_scores_postQC.parquet"
@@ -395,7 +398,31 @@ scatter.set_cmap("coolwarm")
 plt.show()
 
 
-# In[18]:
+# In[11]:
+
+
+# Compute change per row
+merged_map["mAP_change"] = (
+    merged_map["mean_average_precision_postQC"]
+    - merged_map["mean_average_precision_preQC"]
+)
+
+# Filter rows where the preQC was low and the change was large
+improved_rows = merged_map.query(
+    "mean_average_precision_preQC <= 0.5 and mAP_change >= 0.2"
+)
+
+# Count unique compounds
+num_improved = improved_rows["Metadata_broad_sample"].nunique()
+
+# Compute percentage of all rows (compounds × doses) that improved
+percent_improved = len(improved_rows) / len(merged_map) * 100
+
+print(f"{num_improved} compounds with preQC ≤ 0.5 and an increase ≥ 0.2.")
+print(f"These rows represent {percent_improved:.1f}% of all compounds/doses.")
+
+
+# In[12]:
 
 
 # Merge (as before)
@@ -473,7 +500,7 @@ fig.savefig("figures/mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 p.show()
 
 
-# In[12]:
+# In[13]:
 
 
 # Get proportion of points above and below y=x line
@@ -481,17 +508,17 @@ proportion_df = proportion_above_below_y_eq_x(merged_map)
 proportion_df
 
 
-# In[20]:
+# In[14]:
 
 
-# Rank independently within each dose
+# Rank independently within each dose based on post-QC mAP
 merged_map_sorted = merged_map.groupby("Metadata_dose_recode", group_keys=False).apply(
     lambda df: df.sort_values("mean_average_precision_postQC", ascending=False).assign(
         postQC_rank=lambda d: np.arange(1, len(d) + 1)
     )
 )
 
-# Calculate rank pre-QC within each dose
+# Rank independently within each dose  each dose based on pre-QC mAP
 merged_map_sorted["preQC_rank"] = merged_map_sorted.groupby("Metadata_dose_recode")[
     "mean_average_precision_preQC"
 ].rank(ascending=False, method="first")
@@ -550,3 +577,213 @@ for ax in fig.axes:
 fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
 
 p.show()
+
+
+# In[15]:
+
+
+# Print for dose recode 1 the sample, and ranks pre and post QC
+merged_map_sorted.loc[
+    merged_map_sorted["Metadata_dose_recode"] == 4,
+    [
+        "Metadata_broad_sample",
+        "preQC_rank",
+        "postQC_rank",
+    ],
+].sort_values("postQC_rank").head(10)
+
+
+# In[16]:
+
+
+# Step 1: Identify top 20 per dose
+top20_pre = merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False).apply(
+    lambda df: df.nsmallest(20, "preQC_rank")
+)[["Metadata_broad_sample", "Metadata_dose_recode", "preQC_rank"]]
+
+top20_post = merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False).apply(
+    lambda df: df.nsmallest(20, "postQC_rank")
+)[["Metadata_broad_sample", "Metadata_dose_recode", "postQC_rank"]]
+
+# Step 2: Union of compounds
+rank_change = pd.merge(
+    top20_pre,
+    top20_post,
+    on=["Metadata_broad_sample", "Metadata_dose_recode"],
+    how="outer",
+)
+
+# Step 3: Fill missing ranks from full dataset
+rank_change = pd.merge(
+    rank_change,
+    merged_map_sorted[
+        ["Metadata_broad_sample", "Metadata_dose_recode", "preQC_rank", "postQC_rank"]
+    ],
+    on=["Metadata_broad_sample", "Metadata_dose_recode"],
+    how="left",
+    suffixes=("_tmp", ""),
+)
+
+# Step 4: Compute rank differences
+rank_change["rank_diff"] = rank_change["preQC_rank"] - rank_change["postQC_rank"]
+
+
+# Step 5: Define color based on rank change
+def get_color(r: pd.Series) -> str:
+    """Get color for rank change visualization.
+
+    Args:
+        r (pd.Series): A row from the DataFrame containing rank information.
+
+    Returns:
+        str: The color associated with the rank change.
+    """
+    if pd.isna(r["preQC_rank"]):
+        return "gray"  # new post-QC top 20
+    elif r["rank_diff"] < 0:
+        return "red"  # increased (rank number went down = not important)
+    else:
+        return "blue"  # decreased (rank number went up = improved)
+
+
+rank_change["color"] = rank_change.apply(get_color, axis=1)
+
+# Step 6: Order compounds per dose for plotting
+rank_change["sort_rank"] = rank_change["preQC_rank"].fillna(1000)
+rank_change = rank_change.sort_values(["Metadata_dose_recode", "sort_rank"])
+
+# Step 7: Plot per dose using plotnine
+for dose, df_dose in rank_change.groupby("Metadata_dose_recode"):
+    # Skip doses with no rank changes (all zeros or NaNs)
+    if df_dose["rank_diff"].fillna(0).eq(0).all():
+        continue
+
+    p = (
+        ggplot(df_dose, aes(x="Metadata_broad_sample", y="rank_diff", fill="color"))
+        + geom_bar(stat="identity")
+        + geom_hline(yintercept=0, color="black", linetype="dashed")
+        + scale_fill_manual(
+            name="Rank change",
+            values={"red": "red", "blue": "blue"},
+            labels=["Rank decreased", "Rank increased"],
+        )
+        + theme(
+            title=element_text(size=14),
+            axis_text_x=element_text(rotation=90, hjust=1, size=8),
+            axis_title_x=element_text(size=12),
+            axis_title_y=element_text(size=12),
+            legend_title=element_text(size=12),
+            legend_text=element_text(size=10),
+        )
+        + labs(
+            title=f"Compound rank changes - dose {dose}",
+            x="Broad sample ID",
+            y="Rank change (post-QC - pre-QC)",
+            color="Avg prop failed cells",
+        )
+    )
+    # Save plot as PNG
+    plot_path = f"figures/rank_change_dose_{dose}_bar_plot.png"
+    p.save(plot_path, width=14, height=6, dpi=600)
+    p.show()
+
+
+# In[17]:
+
+
+# Filter for compounds where rank_diff > 0 (rank improved) for dose 1 and 2
+improved_dose1 = rank_change[
+    (rank_change["Metadata_dose_recode"] == 1) & (rank_change["rank_diff"] > 0)
+]
+improved_dose2 = rank_change[
+    (rank_change["Metadata_dose_recode"] == 2) & (rank_change["rank_diff"] > 0)
+]
+
+# Concatenate and get unique broad samples (should be 9 in total)
+# Only include broad sample as column
+improved_compounds = pd.concat([improved_dose1, improved_dose2])[
+    ["Metadata_broad_sample", "Metadata_dose_recode"]
+]
+broad_samples = improved_compounds["Metadata_broad_sample"].unique()
+
+print("Broad samples of the 9 compounds that went up in ranks from dose 1 and 2:")
+for sample in broad_samples:
+    print(sample)
+
+
+# In[18]:
+
+
+# For each of the 9 compounds at their respective dose, get the pre-QC rank from merged_map_sorted
+preqc_ranks = []
+for _, row in improved_compounds.iterrows():
+    sample = row["Metadata_broad_sample"]
+    dose = row["Metadata_dose_recode"]
+    # Find the preQC_rank for this sample and dose
+    rank = merged_map_sorted.loc[
+        (merged_map_sorted["Metadata_broad_sample"] == sample)
+        & (merged_map_sorted["Metadata_dose_recode"] == dose),
+        "preQC_rank",
+    ]
+    if not rank.empty:
+        preqc_ranks.append(rank.values[0])
+
+# Compute the average pre-QC rank
+avg_preqc_rank = np.mean(preqc_ranks)
+print(
+    f"Average pre-QC mAP rank for the 9 compounds at their respective doses: {avg_preqc_rank:.2f}"
+)
+
+
+# In[19]:
+
+
+# Calculate total passed and failed cells per sample and dose
+cell_counts = (
+    post_qc_df_activity.groupby(["Metadata_broad_sample", "Metadata_dose_recode"])
+    .agg(
+        total_passed=("Metadata_sc_count_passed_qc", "sum"),
+        total_failed=("Metadata_sc_count_failed_qc", "sum"),
+    )
+    .reset_index()
+)
+
+# Calculate total and proportion failed
+cell_counts["total_cells"] = cell_counts["total_passed"] + cell_counts["total_failed"]
+cell_counts["proportion_failed"] = (
+    cell_counts["total_failed"] / cell_counts["total_cells"]
+)
+
+# Merge with improved_compounds
+improved_compounds = improved_compounds.merge(
+    cell_counts, on=["Metadata_broad_sample", "Metadata_dose_recode"], how="left"
+)
+
+# Add back Metadata_moa from post_qc_df_activity
+moa_info = post_qc_df_activity[
+    ["Metadata_broad_sample", "Metadata_moa"]
+].drop_duplicates()
+improved_compounds = improved_compounds.merge(
+    moa_info, on="Metadata_broad_sample", how="left"
+)
+
+# Compute the average proportion failed across each compound in this list
+avg_proportion_failed = improved_compounds["proportion_failed"].mean()
+print(
+    f"Average proportion of failed cells across the 9 compounds: {avg_proportion_failed:.4f}"
+)
+
+# Compute the average of the total passed across each compound in this list
+avg_total_passed = improved_compounds["total_passed"].mean()
+print(f"Average total passed cells across the 9 compounds: {avg_total_passed:.0f}")
+
+# Quantify the number of duplicate compounds (same broad sample at different doses)
+duplicate_counts = improved_compounds["Metadata_broad_sample"].value_counts()
+num_duplicates = (duplicate_counts > 1).sum()
+print(
+    f"Number of duplicate compounds (same broad sample at different doses): {num_duplicates}"
+)
+
+print(improved_compounds.shape)
+improved_compounds.head(10)
+
