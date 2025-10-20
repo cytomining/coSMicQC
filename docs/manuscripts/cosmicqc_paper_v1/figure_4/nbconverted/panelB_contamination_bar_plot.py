@@ -241,7 +241,9 @@ plot_df["Metadata_genotype"] = plot_df["Column"].apply(
         else (
             "cell_line_2"  # HET
             if 5 <= col <= 8  # noqa: PLR2004
-            else "cell_line_3" if 9 <= col <= 12 else "Unknown"  # Null  # noqa: PLR2004
+            else "cell_line_3"
+            if 9 <= col <= 12
+            else "Unknown"  # Null
         )
     )
 )
@@ -295,4 +297,3 @@ p.save(
 )
 
 p.show()
-

@@ -253,4 +253,3 @@ plt.savefig(
     f"figures/{well}{site}_{compartment}.png", bbox_inches="tight", pad_inches=0
 )
 plt.close()
-

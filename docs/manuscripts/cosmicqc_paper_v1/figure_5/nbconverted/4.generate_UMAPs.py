@@ -400,4 +400,3 @@ p = (
 )
 p.save(filename=figure_output_dir / "post_qc_moa_umap.png", dpi=600)
 p.show()
-

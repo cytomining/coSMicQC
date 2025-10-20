@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # ## Generate plots to show the distributions of the failed versus passing cells
-# 
+#
 # We use the `PCCMA optimization` dataset.
 
 # In[1]:
@@ -39,7 +39,6 @@ from plotnine.options import set_option
 from pycytominer import annotate
 
 from cosmicqc import find_outliers, identify_outliers
-
 
 # In[2]:
 
@@ -391,7 +390,7 @@ print(filtered_plate_df["Image_PathName_OrigDNA"].dropna().iloc[0])
 compartment = "Nuclei"
 
 outline_to_orig_mapping = {
-    rf"{compartment}Outlines_{record['Image_Metadata_Plate']}_{record['Image_Metadata_Well']}_{record['Image_Metadata_Site']}.tiff": 
+    rf"{compartment}Outlines_{record['Image_Metadata_Plate']}_{record['Image_Metadata_Well']}_{record['Image_Metadata_Site']}.tiff":
     rf"r{int(record['Image_Metadata_Row']):02d}c{int(record['Image_Metadata_Col']):02d}f{int(record['Image_Metadata_Site']):02d}p(\d{{2}})-ch\d+sk\d+fk\d+fl\d+\.tiff"
     for record in filtered_plate_df[
         [
@@ -454,7 +453,7 @@ solidity_nuclei_outliers = find_outliers(
     df=filtered_plate_df,
     metadata_columns=metadata_columns,
     feature_thresholds={
-         # Set at this point where it looks like it starts to detect good quality nuclei
+        # Set at this point where it looks like it starts to detect good quality nuclei
         "Nuclei_AreaShape_Solidity": -1.6,
     },
 )
@@ -525,7 +524,7 @@ filtered_plate_df = example_df[metadata_columns + qc_features]
 # from being reformatted by black, which is normally preferred.
 # fmt: off
 outline_to_orig_mapping = {
-    rf"{compartment}Outlines_{record['Image_Metadata_Plate']}_{record['Image_Metadata_Well']}_{record['Image_Metadata_Site']}.tiff": 
+    rf"{compartment}Outlines_{record['Image_Metadata_Plate']}_{record['Image_Metadata_Well']}_{record['Image_Metadata_Site']}.tiff":
     rf"r{int(record['Image_Metadata_Row']):02d}c{int(record['Image_Metadata_Col']):02d}f{int(record['Image_Metadata_Site']):02d}p(\d{{2}})-ch\d+sk\d+fk\d+fl\d+\.tiff"
     for record in filtered_plate_df[
         [
@@ -722,4 +721,3 @@ p = (
 # Save the plot
 p.save(f"{output_dir}/failed_qc_summary.png", dpi=600, width=width, height=height)
 p.show()
-

@@ -786,4 +786,3 @@ print(
 
 print(improved_compounds.shape)
 improved_compounds.head(10)
-

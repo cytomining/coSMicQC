@@ -188,4 +188,3 @@ p = (
 p.save(figure_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
 
 p.show()
-
