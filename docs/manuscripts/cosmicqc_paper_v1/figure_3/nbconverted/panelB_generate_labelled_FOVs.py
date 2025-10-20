@@ -111,14 +111,19 @@ no_QC_df["QC_status"].value_counts()
 
 # Select a well and site to visualize after running `whole_FOV_outlines.cppipe`
 # CellProfiler pipeline
-well = "D10"
-site = "f12"
+well = "E10"
+site = "f01"
 
 # Select the outline to apply to the FOV
 compartment = "Cells"
 
 # Select the gamma correction value
-gamma = 0.6
+if compartment == "Cells" and well == "G07":
+    gamma = 0.6
+elif compartment == "Cells" and well == "E10":
+    gamma = 0.25
+elif compartment == "Nuclei":
+    gamma = 0.6
 
 # Filter the no_QC_df for the selected well and site
 filtered_df = no_QC_df[
@@ -201,7 +206,7 @@ viewer.add_labels(
 napari.run()
 
 
-# In[ ]:
+# In[9]:
 
 
 # Apply gamma correction to background
@@ -225,6 +230,19 @@ passed_qc_color = 55
 overlay[green_channel == failed_qc_color] = [221, 102, 102, 90]  # Soft red
 overlay[green_channel == passed_qc_color] = [102, 187, 102, 90]  # Soft green
 
+# Add 200 uM scale bar to images (1 uM/pixel)
+scale_bar_length = 200  # in micrometers
+scale_bar_pixels = scale_bar_length  # 1 uM/pixel
+# Coordinates for bottom-right placement
+bar_height = 8  # thickness of the scale bar
+y_start = overlay.shape[0] - 40  # 40 px above bottom
+y_end = y_start + bar_height
+x_end = overlay.shape[1] - 40  # 40 px from right
+x_start = x_end - scale_bar_pixels
+
+# Draw scale bar
+overlay[y_start:y_end, x_start:x_end] = [255, 255, 255, 255]
+
 # Plot the labelled FOV and save
 plt.figure(figsize=(6, 6), dpi=600)
 plt.imshow(base_img)
@@ -235,3 +253,4 @@ plt.savefig(
     f"figures/{well}{site}_{compartment}.png", bbox_inches="tight", pad_inches=0
 )
 plt.close()
+

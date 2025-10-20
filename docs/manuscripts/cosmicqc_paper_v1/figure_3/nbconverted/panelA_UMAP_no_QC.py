@@ -51,6 +51,15 @@ no_QC_df = no_QC_df.dropna(
     subset=[col for col in no_QC_df.columns if not col.startswith("Metadata_")]
 ).reset_index(drop=True)
 
+# Blind treatments for UMAP visualization
+# (DMSO = treatment1, TGFRi = treatment2, drug_X = treatment3)
+treatment_mapping = {
+    "DMSO": "treatment1",
+    "TGFRi": "treatment2",
+    "drug_x": "treatment3",
+}
+no_QC_df["Metadata_treatment"] = no_QC_df["Metadata_treatment"].map(treatment_mapping)
+
 # Create new column for treatment cell type ID for each unique combo
 no_QC_df["Metadata_Treatment_CellType_ID"] = (
     no_QC_df["Metadata_treatment"] + "_" + no_QC_df["Metadata_cell_type"]
@@ -62,6 +71,17 @@ no_QC_df.head()
 
 
 # In[3]:
+
+
+# Check unique values for treatment and treatment-cell type ID
+print("Unique blinded treatments:", no_QC_df["Metadata_treatment"].unique())
+print(
+    "Unique Treatment_CellType_IDs:",
+    no_QC_df["Metadata_Treatment_CellType_ID"].unique(),
+)
+
+
+# In[4]:
 
 
 # Process cp_df to separate features and metadata
@@ -85,15 +105,12 @@ cp_umap_with_metadata_df = pd.concat(
     [no_QC_df.loc[:, meta_features], embeddings], axis=1
 )
 
-# Save UMAP with metadata DataFrame
-cp_umap_with_metadata_df.to_parquet(output_dir / "pre_QC_umap_embeddings.parquet")
 
-
-# In[4]:
+# In[5]:
 
 
 # Add QC_status column and set all to "failed"
-cp_umap_with_metadata_df["QC_status"] = "failed"
+cp_umap_with_metadata_df["Metadata_QC_status"] = "failed"
 
 # Find matching rows and set QC_status to "passed"
 match_cols = [
@@ -113,18 +130,21 @@ QC_df = pd.read_parquet(
 # Create a MultiIndex for fast lookup
 qc_index = QC_df.set_index(match_cols).index
 mask = cp_umap_with_metadata_df.set_index(match_cols).index.isin(qc_index)
-cp_umap_with_metadata_df.loc[mask, "QC_status"] = "passed"
+cp_umap_with_metadata_df.loc[mask, "Metadata_QC_status"] = "passed"
+
+# Save UMAP with metadata DataFrame
+cp_umap_with_metadata_df.to_parquet(output_dir / "pre_QC_umap_embeddings.parquet")
 
 print(cp_umap_with_metadata_df.shape)
 cp_umap_with_metadata_df.head()
 
 
-# In[5]:
+# In[6]:
 
 
 # Set the figure size
 height = 8
-width = 9
+width = 8
 set_option("figure_size", (width, height))
 
 # Plot UMAP of non-QC profiles labelled with QC status and
@@ -132,7 +152,7 @@ set_option("figure_size", (width, height))
 p = (
     ggplot(
         cp_umap_with_metadata_df,
-        aes(x="UMAP0", y="UMAP1", color="QC_status"),
+        aes(x="UMAP0", y="UMAP1", color="Metadata_QC_status"),
     )
     + labs(
         color="QC Status",
@@ -168,3 +188,4 @@ p = (
 p.save(figure_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
 
 p.show()
+

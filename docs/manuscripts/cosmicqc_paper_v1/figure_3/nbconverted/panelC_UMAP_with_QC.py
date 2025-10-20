@@ -50,6 +50,15 @@ QC_df = QC_df.dropna(
     subset=[col for col in QC_df.columns if not col.startswith("Metadata_")]
 ).reset_index(drop=True)
 
+# Blind treatments for UMAP visualization
+# (DMSO = treatment1, TGFRi = treatment2, drug_X = treatment3)
+treatment_mapping = {
+    "DMSO": "treatment1",
+    "TGFRi": "treatment2",
+    "drug_x": "treatment3",
+}
+QC_df["Metadata_treatment"] = QC_df["Metadata_treatment"].map(treatment_mapping)
+
 # Create new column for treatment cell type ID for each unique combo
 QC_df["Metadata_Treatment_CellType_ID"] = (
     QC_df["Metadata_treatment"] + "_" + QC_df["Metadata_cell_type"]
@@ -86,7 +95,7 @@ cp_umap_with_metadata_df = pd.concat([QC_df.loc[:, meta_features], embeddings], 
 cp_umap_with_metadata_df.to_parquet(output_dir / "post_QC_umap_embeddings.parquet")
 
 
-# In[4]:
+# In[5]:
 
 
 # Set the figure size
@@ -112,13 +121,14 @@ p = (
         legend_title=element_text(size=16),
         legend_text=element_text(size=14),
     )
-    + scale_color_brewer(type="qual", palette="Dark2")  # Change palette as needed
+    + scale_color_brewer(type="qual", palette="Dark2")
     + guides(
         color=guide_legend(
             override_aes={
-                "alpha": 1,  # fully opaque in legend
-                "size": 5,  # bigger points in legend
-            }
+                "alpha": 1,
+                "size": 5,
+            },
+            ncol=2,  # set legend columns to 2
         )
     )
 )
@@ -127,3 +137,4 @@ p = (
 p.save(figure_dir / "facet_umap_with_QC_plot.png", dpi=400, width=width, height=height)
 
 p.show()
+
