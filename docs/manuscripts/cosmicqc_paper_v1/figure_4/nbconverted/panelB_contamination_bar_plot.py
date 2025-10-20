@@ -93,7 +93,24 @@ irregular_nuclei_outliers = find_outliers(
 
 irregular_nuclei_outliers_cdf = CytoDataFrame(
     data=irregular_nuclei_outliers,
-    display_options={"center_dot": False},
+    display_options={
+        "center_dot": False,
+        "brightness": 35,
+        "pixel_per_um": 3.1065,
+        "scale_bar": {
+            "length_um": 20,
+            "location": "lower right",
+            "color": (255, 255, 255),
+            "thickness_px": 4,
+            "margin_px": 5,
+        },
+        "offset_bounding_box": {
+            "x_min": -60,
+            "y_min": -60,
+            "x_max": 60,
+            "y_max": 60,
+        },
+    },
 )[
     [
         "Image_FileName_DAPI",
@@ -107,7 +124,7 @@ irregular_nuclei_outliers_cdf = CytoDataFrame(
 print(irregular_nuclei_outliers_cdf.shape)
 irregular_nuclei_outliers_cdf.sort_values(
     by="Cytoplasm_Texture_InfoMeas1_DAPI_3_02_256", ascending=True
-).head(2)
+).head(6).T
 
 
 # In[5]:
@@ -127,7 +144,24 @@ extra_nuclei_outliers = find_outliers(
 
 extra_nuclei_outliers_cdf = CytoDataFrame(
     data=extra_nuclei_outliers,
-    display_options={"center_dot": False, "brightness": 20},
+    display_options={
+        "center_dot": False,
+        "brightness": 35,
+        "pixel_per_um": 3.1065,
+        "scale_bar": {
+            "length_um": 20,
+            "location": "lower right",
+            "color": (255, 255, 255),
+            "thickness_px": 4,
+            "margin_px": 5,
+        },
+        "offset_bounding_box": {
+            "x_min": -60,
+            "y_min": -60,
+            "x_max": 60,
+            "y_max": 60,
+        },
+    },
 )[
     [
         "Image_FileName_DAPI",
@@ -139,9 +173,15 @@ extra_nuclei_outliers_cdf = CytoDataFrame(
 ]
 
 print(extra_nuclei_outliers_cdf.shape)
-extra_nuclei_outliers_cdf.sort_values(
-    by="Cytoplasm_Granularity_2_DAPI", ascending=False
-).head(2)
+# Filter for wells in columns 5-8
+extra_nuclei_outliers_cdf[
+    extra_nuclei_outliers_cdf["Image_Metadata_Well"]
+    .str.extract(r"(\d+)")
+    .astype(int)[0]
+    .between(5, 8)
+].sort_values(by="Cytoplasm_Granularity_2_DAPI", ascending=False).sample(
+    n=6, random_state=0
+)
 
 
 # In[6]:
@@ -190,20 +230,18 @@ plot_df["Image_Metadata_Well"] = pd.Categorical(
 )
 
 
-# In[ ]:
+# In[7]:
 
 
-# Assign genotype based on column number directly
+# Assign genotype (blinded) based on column number directly
 plot_df["Metadata_genotype"] = plot_df["Column"].apply(
     lambda col: (
-        "WT"
+        "cell_line_1"  # WT
         if 1 <= col <= 4  # noqa: PLR2004
         else (
-            "HET"
+            "cell_line_2"  # HET
             if 5 <= col <= 8  # noqa: PLR2004
-            else "Null"
-            if 9 <= col <= 12  # noqa: PLR2004
-            else "Unknown"
+            else "cell_line_3" if 9 <= col <= 12 else "Unknown"  # Null  # noqa: PLR2004
         )
     )
 )
@@ -215,8 +253,8 @@ plot_df.head()
 # In[8]:
 
 
-# Set facet order: WT, HET, Null
-genotype_order = ["WT", "HET", "Null"]
+# Set facet order: cell_line_1, cell_line_2, cell_line_3
+genotype_order = ["cell_line_1", "cell_line_2", "cell_line_3"]
 plot_df["Metadata_genotype"] = pd.Categorical(
     plot_df["Metadata_genotype"], categories=genotype_order, ordered=True
 )
@@ -257,3 +295,4 @@ p.save(
 )
 
 p.show()
+
