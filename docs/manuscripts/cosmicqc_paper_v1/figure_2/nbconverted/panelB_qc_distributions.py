@@ -138,8 +138,8 @@ pd.DataFrame(identify_nuclei_clustered_outliers).head()
 
 # Rename for easier access
 rename_map = {
-    "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",
-    "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",
+    "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",  # noqa: E501
+    "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",  # noqa: E501
     "cqc.custom.is_outlier": "is_outlier",
 }
 df = identify_nuclei_clustered_outliers.rename(columns=rename_map)
@@ -299,7 +299,7 @@ pd.DataFrame(over_segmented_cells_outliers).head()
 # Rename for easier access
 df = over_segmented_cells_outliers.rename(
     columns={
-        "cqc.custom.Z_Score.Cells_Intensity_IntegratedIntensity_CorrDNA": "zscore_integrated_intensity",
+        "cqc.custom.Z_Score.Cells_Intensity_IntegratedIntensity_CorrDNA": "zscore_integrated_intensity",  # noqa: E501
         "cqc.custom.is_outlier": "is_outlier",
     }
 )
@@ -661,7 +661,8 @@ annotated_plate_df["failed_qc"].value_counts()
 # In[20]:
 
 
-# Group by cell line and seeding density, and calculate total nuclei segmented and failed QC
+# Group by cell line and seeding density, and calculate
+# total nuclei segmented and failed QC
 failure_stats = (
     annotated_plate_df.groupby(
         [

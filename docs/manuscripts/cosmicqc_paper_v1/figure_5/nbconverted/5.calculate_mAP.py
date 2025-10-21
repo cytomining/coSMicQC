@@ -415,7 +415,7 @@ improved_rows = merged_map.query(
 # Count unique compounds
 num_improved = improved_rows["Metadata_broad_sample"].nunique()
 
-# Compute percentage of all rows (compounds × doses) that improved
+# Compute percentage of all rows (compounds and doses) that improved
 percent_improved = len(improved_rows) / len(merged_map) * 100
 
 print(f"{num_improved} compounds with preQC ≤ 0.5 and an increase ≥ 0.2.")
@@ -584,7 +584,7 @@ p.show()
 
 # Print for dose recode 1 the sample, and ranks pre and post QC
 merged_map_sorted.loc[
-    merged_map_sorted["Metadata_dose_recode"] == 4,
+    merged_map_sorted["Metadata_dose_recode"] == 4,  # noqa: PLR2004
     [
         "Metadata_broad_sample",
         "preQC_rank",
@@ -696,7 +696,7 @@ improved_dose1 = rank_change[
     (rank_change["Metadata_dose_recode"] == 1) & (rank_change["rank_diff"] > 0)
 ]
 improved_dose2 = rank_change[
-    (rank_change["Metadata_dose_recode"] == 2) & (rank_change["rank_diff"] > 0)
+    (rank_change["Metadata_dose_recode"] == 2) & (rank_change["rank_diff"] > 0)  # noqa: PLR2004
 ]
 
 # Concatenate and get unique broad samples (should be 9 in total)
@@ -714,7 +714,7 @@ for sample in broad_samples:
 # In[18]:
 
 
-# For each of the 9 compounds at their respective dose, get the pre-QC rank from merged_map_sorted
+# For each of the 9 compounds at their respective dose, get the pre-QC rank from merged_map_sorted  # noqa: E501
 preqc_ranks = []
 for _, row in improved_compounds.iterrows():
     sample = row["Metadata_broad_sample"]
@@ -731,7 +731,7 @@ for _, row in improved_compounds.iterrows():
 # Compute the average pre-QC rank
 avg_preqc_rank = np.mean(preqc_ranks)
 print(
-    f"Average pre-QC mAP rank for the 9 compounds at their respective doses: {avg_preqc_rank:.2f}"
+    f"Average pre-QC mAP rank for the 9 compounds at their respective doses: {avg_preqc_rank:.2f}"  # noqa: E501
 )
 
 
@@ -770,7 +770,7 @@ improved_compounds = improved_compounds.merge(
 # Compute the average proportion failed across each compound in this list
 avg_proportion_failed = improved_compounds["proportion_failed"].mean()
 print(
-    f"Average proportion of failed cells across the 9 compounds: {avg_proportion_failed:.4f}"
+    f"Average proportion of failed cells across the 9 compounds: {avg_proportion_failed:.4f}"  # noqa: E501
 )
 
 # Compute the average of the total passed across each compound in this list
@@ -781,7 +781,7 @@ print(f"Average total passed cells across the 9 compounds: {avg_total_passed:.0f
 duplicate_counts = improved_compounds["Metadata_broad_sample"].value_counts()
 num_duplicates = (duplicate_counts > 1).sum()
 print(
-    f"Number of duplicate compounds (same broad sample at different doses): {num_duplicates}"
+    f"Number of duplicate compounds (same broad sample at different doses): {num_duplicates}"  # noqa: E501
 )
 
 print(improved_compounds.shape)

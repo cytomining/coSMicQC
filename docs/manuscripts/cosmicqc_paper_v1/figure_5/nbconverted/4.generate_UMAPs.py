@@ -111,7 +111,7 @@ pre_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 # print percent explained variance accounted for by top 50 components
 explained_variance = pca.explained_variance_ratio_.sum() * 100
 print(
-    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"
+    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"  # noqa: E501
 )
 print(pre_qc_pca_df.shape)
 pre_qc_pca_df.head()
@@ -311,7 +311,7 @@ post_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 # print percent explained variance accounted for by top 50 components
 explained_variance = pca.explained_variance_ratio_.sum() * 100
 print(
-    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"
+    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"  # noqa: E501
 )
 
 print(post_qc_pca_df.shape)
