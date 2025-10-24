@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       jupytext_version: 1.17.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -43,7 +43,7 @@ scdf = CytoDataFrame(
 )
 
 # display the dataframe
-scdf
+scdf.iloc[:, :5]
 # -
 
 # Identify which rows include outliers for a given threshold definition
@@ -77,6 +77,7 @@ labeled_scdf.iloc[:, -8:]
 # -
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
+# labeled_scdf._enbable_debug_mode()
 labeled_scdf.sort_values(by="cqc.large_nuclei.is_outlier", ascending=False)[
     [
         "Metadata_ImageNumber",

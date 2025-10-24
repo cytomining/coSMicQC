@@ -25,6 +25,9 @@ identifiers:
   - description: Software DOI
     type: doi
     value: "10.5281/zenodo.14797008"
+  - description: Preprint DOI
+    type: doi
+    value: "10.1101/2025.10.14.682427"
 abstract: >-
   coSMicQC is a software tool for single-cell quality control of morphology datasets.
 keywords:

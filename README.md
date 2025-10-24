@@ -7,7 +7,8 @@
 ![Coverage Status](https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-[![Software DOI badge](https://zenodo.org/badge/DOI/10.5281/zenodo.14797008.svg)](https://doi.org/10.5281/zenodo.14797008)
+[![Preprint DOI badge](https://img.shields.io/badge/Preprint_DOI-10.1101/2025.10.14.682427-blue)](https://doi.org/10.1101/2025.10.14.682427)
+[![Software DOI badge](https://img.shields.io/badge/Software_DOI-10.5281/zenodo.14888111-blue)](https://doi.org/10.5281/zenodo.14797008)
 
 > 🌠 Navigate the cosmos of single-cell morphology with confidence — coSMicQC keeps your data on course!
 
