@@ -1519,14 +1519,14 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
 name = "cytodataframe"
-version = "0.0.29"
+version = "0.0.30"
 description = "An in-memory data analysis format for single-cell profiles alongside their corresponding images and segmentation masks."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "cytodataframe-0.0.29-py3-none-any.whl", hash = "sha256:29fa72d65281ea1a8905757e8bc4a47c65cd9d86e50540e63f70c6b2683503e3"},
-    {file = "cytodataframe-0.0.29.tar.gz", hash = "sha256:729425dae7b4501e3fb9a59bc69ab130950cefe0aed5277ee5b58be9cee263b4"},
+    {file = "cytodataframe-0.0.30-py3-none-any.whl", hash = "sha256:a47333b0a98fa26dd35add8db46ea1629f982a0b5c1a9d2f5254ca3c93ced02c"},
+    {file = "cytodataframe-0.0.30.tar.gz", hash = "sha256:04711a685de04a0dd82c003118df2dc9f0d5c2b87aa00a7b314149eaac897f72"},
 ]
 
 [package.dependencies]
@@ -5589,14 +5589,14 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "9.0.0"
+version = "9.0.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "pytest-9.0.0-py3-none-any.whl", hash = "sha256:e5ccdf10b0bac554970ee88fc1a4ad0ee5d221f8ef22321f9b7e4584e19d7f96"},
-    {file = "pytest-9.0.0.tar.gz", hash = "sha256:8f44522eafe4137b0f35c9ce3072931a788a21ee40a2ed279e817d3cc16ed21e"},
+    {file = "pytest-9.0.1-py3-none-any.whl", hash = "sha256:67be0030d194df2dfa7b556f2e56fb3c3315bd5c8822c6951162b92b32ce7dad"},
+    {file = "pytest-9.0.1.tar.gz", hash = "sha256:3e9c069ea73583e255c3b21cf46b8d3c56f6e3a1a8f6da94ccb0fcf57b9d73c8"},
 ]
 
 [package.dependencies]
