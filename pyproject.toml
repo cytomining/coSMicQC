@@ -104,7 +104,7 @@ cosmicqc = "cosmicqc.cli:cli_analyze"
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 
 [tool.poetry-dynamic-versioning]
-enable = false
+enable = true
 style = "pep440"
 vcs = "git"
 
