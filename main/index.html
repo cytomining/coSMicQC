@@ -234,37 +234,106 @@ For the latest released version, please have a look at <a href="../v1.0.1/index.
 <blockquote>
 <div><p>🌠 Navigate the cosmos of single-cell morphology with confidence — coSMicQC keeps your data on course!</p>
 </div></blockquote>
-<p>coSMicQC is a Python package to evaluate converted single-cell morphology outputs from CytoTable.</p>
-<p>It can be challenging to get “perfect” single-cell compartment segmentation across large high-throughput screens when performing object detection in CellProfiler (or similar software).
-Technical artifacts can arise during segmentation, leading to issues such as under-segmentation, over-segmentation, or the erroneous segmentation of background noise, smudges, or bright artifacts.</p>
-<p>In single-cell analysis, intriguing phenotypes often emerge by examining morphological differences.
-However, technical outliers in the data can obscure these biological insights, compromising the validity of the findings.</p>
-<p>By utilizing specific morphological features extracted with CellProfiler, particularly AreaShape features, you can identify technically incorrect segmentations.
-These can then be labeled or removed before further preprocessing steps, such as those performed with pycytominer.</p>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
+<!--ts-->
+<ul class="simple">
+<li><p><a class="reference internal" href="#single-cell-morphology-quality-control">Single cell Morphology Quality Control</a></p>
+<ul>
+<li><p><a class="reference internal" href="#contents">Contents</a></p></li>
+<li><p><a class="reference internal" href="#overview">Overview</a></p></li>
+<li><p><a class="reference internal" href="#repo-contents">Repo Contents</a></p></li>
+<li><p><a class="reference internal" href="#system-requirements">System Requirements</a></p></li>
+<li><p><a class="reference internal" href="#installation-guide">Installation Guide</a></p>
+<ul>
+<li><p><a class="reference internal" href="#stable-release-pypi">Stable release (PyPI)</a></p></li>
+<li><p><a class="reference internal" href="#development-version-from-source">Development version (from source)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#demo">Demo</a></p></li>
+<li><p><a class="reference internal" href="#results">Results</a></p></li>
+<li><p><a class="reference internal" href="#license">License</a></p></li>
+<li><p><a class="reference internal" href="#issues">Issues</a></p></li>
+<li><p><a class="reference internal" href="#citation">Citation</a></p></li>
+</ul>
+</li>
+</ul>
+<!--te-->
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>coSMicQC is a Python package to evaluate converted single-cell morphology outputs from <a class="reference external" href="https://github.com/cytomining/CytoTable">CytoTable</a>.
+Technical artifacts can arise during segmentation, leading to issues such as under-segmentation, over-segmentation, or the erroneous segmentation of background noise, smudges, or bright artifacts.
+By utilizing specific morphological features extracted with CellProfiler, you can identify technically incorrect segmentations and label or remove them before downstream analysis.</p>
+<p>Please confer with our docsite for more comprehensive information about the project: https://cytomining.github.io/coSMicQC/main/</p>
 <blockquote>
-<div><p>🌟 Check out our <a class="reference external" href="https://waysciencelab.com/2024/12/20/cosmicqc.html">blog post</a> on this for a greater understanding of the background and how coSMicQC can help you!</p>
+<div><p>🌟 Check out our <a class="reference external" href="https://waysciencelab.com/2024/12/20/cosmicqc.html">blog post</a> for a deeper background and how coSMicQC can help.</p>
 </div></blockquote>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
-<p>Install coSMicQC from <a class="reference external" href="https://pypi.org/project/coSMicQC/">PyPI</a> or from source:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install from pypi</span>
-pip<span class="w"> </span>install<span class="w"> </span>coSMicQC
-
-<span class="c1"># install directly from source</span>
-pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cytomining/coSMicQC.git
+</section>
+<section id="repo-contents">
+<h2>Repo Contents<a class="headerlink" href="#repo-contents" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cosmicqc</span></code>: coSMicQC source code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests</span></code>: test suite.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs</span></code>: documentation sources and examples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">media</span></code>: project assets (e.g., coverage badge).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reports</span></code>: generated artifacts (figures, notebooks, or summaries).</p></li>
+</ul>
+</section>
+<section id="system-requirements">
+<h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Python: <code class="docutils literal notranslate"><span class="pre">&gt;=3.10</span></code> (tested through 3.13).</p></li>
+<li><p>RAM/CPU: standard laptop/desktop is sufficient for typical plate-sized datasets; larger screens benefit from more RAM/cores for faster QC/plotting.</p></li>
+<li><p>OS: Linux, macOS, and Windows are supported via Python; CI tests run on GitHub Actions.</p></li>
+</ul>
+</section>
+<section id="installation-guide">
+<h2>Installation Guide<a class="headerlink" href="#installation-guide" title="Link to this heading">¶</a></h2>
+<section id="stable-release-pypi">
+<h3>Stable release (PyPI)<a class="headerlink" href="#stable-release-pypi" title="Link to this heading">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>coSMicQC
 </pre></div>
 </div>
 </section>
-<section id="contributing-development-and-testing">
-<h2>Contributing, Development, and Testing<a class="headerlink" href="#contributing-development-and-testing" title="Link to this heading">¶</a></h2>
-<p>Please see our <a class="reference external" href="https://cytomining.github.io/coSMicQC/main/contributing">contributing</a> documentation for more details on contributions, development, and testing.</p>
+<section id="development-version-from-source">
+<h3>Development version (from source)<a class="headerlink" href="#development-version-from-source" title="Link to this heading">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cytomining/coSMicQC.git
+<span class="c1"># or with poetry for local development</span>
+poetry<span class="w"> </span>install<span class="w"> </span>--with<span class="w"> </span>dev
+</pre></div>
+</div>
 </section>
-<section id="references">
-<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+</section>
+<section id="demo">
+<h2>Demo<a class="headerlink" href="#demo" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/cytomining/pycytominer">pycytominer</a></p></li>
-<li><p><a class="reference external" href="https://github.com/CellProfiler/CellProfiler">CellProfiler</a></p></li>
-<li><p><a class="reference external" href="https://github.com/cytomining/CytoTable">CytoTable</a></p></li>
+<li><p>Examples and notebooks live under <code class="docutils literal notranslate"><span class="pre">docs/src/examples</span></code> and the published docs: https://cytomining.github.io/coSMicQC</p></li>
+<li><p>Quickstart blog post: https://waysciencelab.com/2024/12/20/cosmicqc.html</p></li>
+</ul>
+</section>
+<section id="results">
+<h2>Results<a class="headerlink" href="#results" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Test and lint status: <img alt="Build Status" src="https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml/badge.svg?branch=main" /></p></li>
+<li><p>Coverage: <img alt="Coverage Status" src="https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg" /></p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<p>BSD-3-Clause; see <a class="reference internal" href="#LICENSE"><span class="xref myst">LICENSE</span></a>.</p>
+</section>
+<section id="issues">
+<h2>Issues<a class="headerlink" href="#issues" title="Link to this heading">¶</a></h2>
+<p>Please open issues or feature requests at https://github.com/cytomining/coSMicQC/issues.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading">¶</a></h2>
+<p>If you use coSMicQC in your work, please cite:</p>
+<ul class="simple">
+<li><p>Software DOI: <a class="reference external" href="https://doi.org/10.5281/zenodo.14888111">10.5281/zenodo.14888111</a></p></li>
+<li><p>Preprint: <a class="reference external" href="https://doi.org/10.1101/2025.10.14.682427">10.1101/2025.10.14.682427</a></p></li>
+<li><p>Citation metadata: <a class="reference internal" href="#CITATION.cff"><span class="xref myst">CITATION.cff</span></a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
@@ -359,9 +428,20 @@ pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Single cell Morphology Quality Control</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#contributing-development-and-testing">Contributing, Development, and Testing</a></li>
-<li><a class="reference internal" href="#references">References</a></li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#repo-contents">Repo Contents</a></li>
+<li><a class="reference internal" href="#system-requirements">System Requirements</a></li>
+<li><a class="reference internal" href="#installation-guide">Installation Guide</a><ul>
+<li><a class="reference internal" href="#stable-release-pypi">Stable release (PyPI)</a></li>
+<li><a class="reference internal" href="#development-version-from-source">Development version (from source)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demo">Demo</a></li>
+<li><a class="reference internal" href="#results">Results</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#issues">Issues</a></li>
+<li><a class="reference internal" href="#citation">Citation</a></li>
 </ul>
 </li>
 </ul>
