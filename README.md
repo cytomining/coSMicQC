@@ -36,7 +36,7 @@
 
 coSMicQC is a Python package to evaluate converted single-cell morphology outputs from CytoTable.
 Technical artifacts can arise during segmentation, leading to issues such as under-segmentation, over-segmentation, or the erroneous segmentation of background noise, smudges, or bright artifacts.
-By utilizing specific morphological features extracted with CellProfiler, particularly AreaShape features, you can identify technically incorrect segmentations and label or remove them before downstream analysis.
+By utilizing specific morphological features extracted with CellProfiler, you can identify technically incorrect segmentations and label or remove them before downstream analysis.
 
 Please confer with our docsite for more comprehensive information about the project: https://cytomining.github.io/coSMicQC/main/
 
