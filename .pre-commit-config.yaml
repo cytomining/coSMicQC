@@ -13,6 +13,7 @@ repos:
               .*\.svg
           )$
     -   id: check-yaml
+    -   id: check-added-large-files
     -   id: detect-private-key
 -   repo: https://github.com/python-poetry/poetry
     rev: "2.2.1"
