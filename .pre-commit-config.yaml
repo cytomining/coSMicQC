@@ -63,6 +63,14 @@ repos:
     rev: 'v2.14'
     hooks:
     -   id: vulture
+-   repo: local
+    hooks:
+    -   id: readme-toc
+        name: Update README TOC (github-markdown-toc)
+        language: system
+        entry: scripts/update_readme_toc.sh
+        pass_filenames: false
+        files: ^README\.md$
 -   repo: https://github.com/software-gardening/almanack
     rev: v0.1.10
     hooks:

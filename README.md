@@ -25,6 +25,13 @@ These can then be labeled or removed before further preprocessing steps, such as
 
 > 🌟 Check out our [blog post](https://waysciencelab.com/2024/12/20/cosmicqc.html) on this for a greater understanding of the background and how coSMicQC can help you!
 
+## Table of Contents
+<!-- toc start -->
+- [Installation](#installation)
+- [Contributing, Development, and Testing](#contributing-development-and-testing)
+- [References](#references)
+<!-- toc end -->
+
 ## Installation
 
 Install coSMicQC from [PyPI](https://pypi.org/project/coSMicQC/) or from source:
