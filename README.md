@@ -34,7 +34,6 @@ These can then be labeled or removed before further preprocessing steps, such as
    * [Contributing, Development, and Testing](#contributing-development-and-testing)
    * [References](#references)
 
-<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 
 <!--te-->
 
