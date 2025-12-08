@@ -35,7 +35,7 @@ cytodataframe = [
 seaborn = "^0.13.2"
 matplotlib = "^3.10.3"
 # sub-dependency which required lock for numpy installation with py313
-llvmlite = "0.45.1"
+llvmlite = "0.46.0"
 
 [tool.poetry.group.dev.dependencies]
 # provides testing capabilities for project
