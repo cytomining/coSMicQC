@@ -51,7 +51,7 @@ jupytext = "^1.16.2"
 # used for example notebook formatting
 jupyterlab-code-formatter = ">=2.2.1,<4.0.0"
 # used for example notebook formatting
-black = ">=24.4.2,<26.0.0"
+black = ">=24.4.2,<27.0.0"
 # used for example notebook formatting
 isort = ">=5.13.2,<8.0.0"
 # added to generate test coverage reports
@@ -73,7 +73,7 @@ ipywidgets = "^8.1.5"
 # added for demonstrating results with cosmicqc
 pycytominer = "^1.1.0"
 # added to avoid warnings from datashader implementation
-dask = { version = ">=2024.8,<2026.0", extras = [ "dataframe" ] }
+dask = { version = ">=2024.8,<2027.0", extras = [ "dataframe" ] }
 # used for rendering plots as images within example notebooks
 selenium = "^4.24.0"
 # used by pandas for extracting metadata and platemap data from S3 through pandas
