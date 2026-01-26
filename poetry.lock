@@ -2192,24 +2192,6 @@ test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "backports-zstd ; python_
 tqdm = ["tqdm"]
 
 [[package]]
-name = "globus-sdk"
-version = "3.63.0"
-description = "Globus SDK for Python"
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-files = [
-    {file = "globus_sdk-3.63.0-py3-none-any.whl", hash = "sha256:debd56865dd015b6e85423a46a9f3226fafae42f90cb28b8cd3c534fb9984c81"},
-    {file = "globus_sdk-3.63.0.tar.gz", hash = "sha256:9a3c4668197f710e2748c015eb06f3b5eb34e929028bc4bf37558b8e0022ab45"},
-]
-
-[package.dependencies]
-cryptography = ">=3.3.1,<3.4.0 || >3.4.0"
-pyjwt = {version = ">=2.0.0,<3.0.0", extras = ["crypto"]}
-requests = ">=2.19.1,<3.0.0"
-typing_extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
-
-[[package]]
 name = "google-api-core"
 version = "2.25.1"
 description = "Google API client core library"
@@ -4808,20 +4790,19 @@ tests-full = ["aiohttp", "cloudpickle", "gmpy", "ipython", "jsonschema", "nbval"
 
 [[package]]
 name = "parsl"
-version = "2025.9.15"
+version = "2026.1.5"
 description = "Simple data dependent workflows in Python"
 optional = false
-python-versions = ">=3.9.0"
+python-versions = ">=3.10.0"
 groups = ["dev"]
 files = [
-    {file = "parsl-2025.9.15-py3-none-any.whl", hash = "sha256:39dc0138e7a1730856f7a16f89bc6a48f34cdccfa2b37ea332b54e3985f74628"},
-    {file = "parsl-2025.9.15.tar.gz", hash = "sha256:e4beb61f0e2e3a0ea026b8aab6d5b37af18042d812213ad37e5dcb571c963c31"},
+    {file = "parsl-2026.1.5-py3-none-any.whl", hash = "sha256:f4bc92206217e465ea5c17391ebb75e73598376ce283b56eaa62978c6c6d1aea"},
+    {file = "parsl-2026.1.5.tar.gz", hash = "sha256:19ee5e0214a823c00e99e7499e48a38d88983782c8b92e0822657a8eda666eef"},
 ]
 
 [package.dependencies]
 dill = "*"
 filelock = ">=3.13,<4"
-globus-sdk = "*"
 psutil = ">=5.5.1"
 pyzmq = ">=17.1.2"
 requests = "*"
@@ -4832,20 +4813,21 @@ typeguard = ">=2.10,<3.dev0 || ==4.*"
 typing-extensions = ">=4.6,<5"
 
 [package.extras]
-all = ["Flask (>=1.0.2)", "azure (<=4)", "boto3", "cffi", "flask-sqlalchemy", "globus-compute-sdk (>=2.34.0)", "google-api-python-client", "google-auth", "ipython (<=8.6.0)", "jsonschema", "kubernetes", "msrestazure", "nbsphinx", "networkx (>=3.2,<3.3)", "pandas (>=2.2,<3)", "plotly", "proxystore", "pydot (>=1.4.2)", "python-daemon", "python-gssapi", "pyyaml", "radical.pilot (==1.90)", "radical.utils (==1.90)", "sphinx (>=7.4,<8)", "sphinx-rtd-theme", "sqlalchemy (>=2,<2.1)", "work-queue"]
+all = ["Flask (>=1.0.2)", "azure (<=4)", "boto3", "cffi", "flask_sqlalchemy", "globus-sdk", "globus_compute_sdk (>=2.34.0)", "google-api-python-client", "google-auth", "ipython (<=8.6.0)", "jsonschema", "kubernetes", "msrestazure", "nbsphinx", "networkx (>=3.2,<3.3)", "pandas (>=2.2,<3)", "plotly", "proxystore", "pydot (>=1.4.2)", "python-daemon", "python-gssapi", "pyyaml", "radical.pilot (==1.90)", "radical.utils (==1.90)", "sphinx (>=7.4,<8)", "sphinx_rtd_theme", "sqlalchemy (>=2,<2.1)", "work_queue"]
 aws = ["boto3"]
 azure = ["azure (<=4)", "msrestazure"]
-docs = ["ipython (<=8.6.0)", "nbsphinx", "sphinx (>=7.4,<8)", "sphinx-rtd-theme"]
+docs = ["ipython (<=8.6.0)", "nbsphinx", "sphinx (>=7.4,<8)", "sphinx_rtd_theme"]
 flux = ["cffi", "jsonschema", "pyyaml"]
-globus-compute = ["globus-compute-sdk (>=2.34.0)"]
+globus-compute = ["globus_compute_sdk (>=2.34.0)"]
+globus-transfer = ["globus-sdk"]
 google-cloud = ["google-api-python-client", "google-auth"]
 gssapi = ["python-gssapi"]
 kubernetes = ["kubernetes"]
 monitoring = ["sqlalchemy (>=2,<2.1)"]
 proxystore = ["proxystore"]
 radical-pilot = ["radical.pilot (==1.90)", "radical.utils (==1.90)"]
-visualization = ["Flask (>=1.0.2)", "flask-sqlalchemy", "networkx (>=3.2,<3.3)", "pandas (>=2.2,<3)", "plotly", "pydot (>=1.4.2)", "python-daemon"]
-workqueue = ["work-queue"]
+visualization = ["Flask (>=1.0.2)", "flask_sqlalchemy", "networkx (>=3.2,<3.3)", "pandas (>=2.2,<3)", "plotly", "pydot (>=1.4.2)", "python-daemon"]
+workqueue = ["work_queue"]
 
 [[package]]
 name = "parso"
@@ -5552,27 +5534,6 @@ files = [
 
 [package.extras]
 windows-terminal = ["colorama (>=0.4.6)"]
-
-[[package]]
-name = "pyjwt"
-version = "2.10.1"
-description = "JSON Web Token implementation in Python"
-optional = false
-python-versions = ">=3.9"
-groups = ["dev"]
-files = [
-    {file = "PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb"},
-    {file = "pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953"},
-]
-
-[package.dependencies]
-cryptography = {version = ">=3.4.0", optional = true, markers = "extra == \"crypto\""}
-
-[package.extras]
-crypto = ["cryptography (>=3.4.0)"]
-dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx", "sphinx-rtd-theme", "zope.interface"]
-docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
-tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pynndescent"
