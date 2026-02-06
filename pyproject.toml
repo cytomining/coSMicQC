@@ -97,11 +97,11 @@ dunamai = "^1.22.0"
 # used for theming the docsite
 sphinx-wagtail-theme = "^6.3.0"
 
-[tool.poetry.scripts]
-cosmicqc = "cosmicqc.cli:cli_analyze"
-
 [tool.poetry.requires-plugins]
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
+
+[tool.poetry.scripts]
+cosmicqc = "cosmicqc.cli:cli_analyze"
 
 [tool.poetry-dynamic-versioning]
 enable = true
