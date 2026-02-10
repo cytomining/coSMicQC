@@ -267,8 +267,9 @@ else:
         failed_cells = (
             treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
             .assign(
-                Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
-                / x["Metadata_sc_count"]
+                Metadata_failed_prop=lambda x: (
+                    x["Metadata_sc_count_failed_qc"] / x["Metadata_sc_count"]
+                )
             )
             .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
             .mean()
@@ -331,8 +332,9 @@ else:
         failed_cells = (
             treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
             .assign(
-                Metadata_failed_prop=lambda x: x["Metadata_sc_count_failed_qc"]
-                / x["Metadata_sc_count"]
+                Metadata_failed_prop=lambda x: (
+                    x["Metadata_sc_count_failed_qc"] / x["Metadata_sc_count"]
+                )
             )
             .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
             .mean()
