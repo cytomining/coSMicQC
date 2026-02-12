@@ -19,7 +19,7 @@ repos:
     hooks:
     -   id: poetry-check
 -   repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.15.0"
+    rev: "v2.12.1"
     hooks:
     -   id: pyproject-fmt
 -   repo: https://github.com/codespell-project/codespell
@@ -72,7 +72,7 @@ repos:
         pass_filenames: false
         files: ^README\.md$
 -   repo: https://github.com/software-gardening/almanack
-    rev: v0.1.14
+    rev: v0.1.15
     hooks:
     -   id: almanack-check
         args: [--exclude_paths=docs]
@@ -80,7 +80,8 @@ repos:
     rev: v0.6.0
     hooks:
     -   id: pre-commit-update
-        args: ["--keep", "mdformat", "--keep", "pre-commit-update", "--keep", "cffconvert"]
+        args: ["--keep", "mdformat", "--keep", "pre-commit-update", "--keep", "cffconvert",
+          "--keep", "pyproject-fmt"]
 -   repo: local
     hooks:
     -   id: code-cov-gen
