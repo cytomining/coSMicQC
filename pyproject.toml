@@ -53,11 +53,11 @@ jupyterlab-code-formatter = ">=2.2.1,<4.0.0"
 # used for example notebook formatting
 black = ">=24.4.2,<27.0.0"
 # used for example notebook formatting
-isort = ">=5.13.2,<8.0.0"
+isort = ">=5.13.2,<9.0.0"
 # added to generate test coverage reports
 coverage = "^7.6.0"
 # for standardizing various dev tasks
-poethepoet = ">=0.27,<0.42"
+poethepoet = ">=0.27,<0.43"
 # added for preparing data for cosmicqc in examples
 cytotable = ">=0.0.10,<1.1.5"
 # used to avoid dependency resolution issues during installs
