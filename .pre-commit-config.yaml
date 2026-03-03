@@ -96,3 +96,5 @@ repos:
     -   id: coverage-xml
     -   id: coverage-badge
         args: ["-o", "media/coverage-badge.svg"]
+        additional_dependencies:
+        - setuptools<81
