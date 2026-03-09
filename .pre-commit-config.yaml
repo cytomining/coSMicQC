@@ -23,7 +23,7 @@ repos:
     hooks:
     -   id: pyproject-fmt
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
     -   id: codespell
         exclude: |
@@ -55,12 +55,12 @@ repos:
     hooks:
     -   id: actionlint
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.4"
+    rev: "v0.15.5"
     hooks:
     -   id: ruff-format
     -   id: ruff-check
 -   repo: https://github.com/jendrikseipp/vulture
-    rev: 'v2.14'
+    rev: 'v2.15'
     hooks:
     -   id: vulture
 -   repo: local
