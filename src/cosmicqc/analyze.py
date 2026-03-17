@@ -61,7 +61,8 @@ def identify_outliers(
     """
 
     # Ensure the input is a CytoDataFrame, converting if necessary
-    df = CytoDataFrame(data=df)
+    if not isinstance(df, CytoDataFrame):
+        df = CytoDataFrame(data=df)
 
     # reference the df for a new outlier_df
     outlier_df = df
@@ -189,7 +190,11 @@ def find_outliers(
     required_columns = list(feature_thresholds.keys()) + metadata_columns
 
     # Interpret the df as CytoDataFrame
-    df = CytoDataFrame(data=df)[required_columns]
+    if not isinstance(df, CytoDataFrame):
+        df = CytoDataFrame(data=df)
+    df = df[required_columns]
+    custom_attrs = dict(df._custom_attrs)
+    display_options = dict(df._custom_attrs.get("display_options") or {})
 
     # if we have nan's in our columns, emit a warning and drop them
     if any(df[list(feature_thresholds.keys())].isna().any()):
@@ -221,6 +226,28 @@ def find_outliers(
 
     # Include metadata columns in the output DataFrame
     result = outliers_df[required_columns]
+    if not isinstance(result, CytoDataFrame):
+        result = CytoDataFrame(
+            data=result,
+            data_context_dir=custom_attrs.get("data_context_dir"),
+            data_image_paths=custom_attrs.get("data_image_paths"),
+            data_bounding_box=custom_attrs.get("data_bounding_box"),
+            compartment_center_xy=custom_attrs.get("compartment_center_xy"),
+            data_mask_context_dir=custom_attrs.get("data_mask_context_dir"),
+            data_outline_context_dir=custom_attrs.get("data_outline_context_dir"),
+            segmentation_file_regex=custom_attrs.get("segmentation_file_regex"),
+            image_adjustment=custom_attrs.get("image_adjustment"),
+        )
+    filter_columns = list(display_options.get("filter_columns") or [])
+
+    for feature in feature_thresholds:
+        if feature in result.columns and feature not in filter_columns:
+            filter_columns.append(feature)
+
+    result._custom_attrs["display_options"] = {
+        **display_options,
+        "filter_columns": filter_columns,
+    }
 
     # Export the file if specified
     if export_path is not None:
@@ -286,42 +313,87 @@ def label_outliers(
             include_threshold_scores=include_threshold_scores,
         )
 
+        identified_outliers_df = (
+            pd.DataFrame(identified_outliers)
+            if isinstance(identified_outliers, pd.DataFrame)
+            else pd.DataFrame(
+                {
+                    (
+                        f"cqc.{feature_thresholds}.is_outlier"
+                        if isinstance(feature_thresholds, str)
+                        else "cqc.custom.is_outlier"
+                    ): identified_outliers
+                }
+            )
+        )
+
         result = CytoDataFrame(
             data=pd.concat(
                 [
-                    df,
-                    (
-                        identified_outliers
-                        if isinstance(identified_outliers, pd.DataFrame)
-                        else CytoDataFrame(
-                            {
-                                (
-                                    f"cqc.{feature_thresholds}.is_outlier"
-                                    if isinstance(feature_thresholds, str)
-                                    else "cqc.custom.is_outlier"
-                                ): identified_outliers
-                            }
-                        )
-                    ),
+                    pd.DataFrame(df),
+                    identified_outliers_df,
                 ],
                 axis=1,
-            ),
-            # reuse the custom attributes
-            **custom_attrs,
+            ).loc[:, lambda frame: ~frame.columns.duplicated()]
         )
+        for attr_name in [
+            "data_context_dir",
+            "data_image_paths",
+            "data_bounding_box",
+            "compartment_center_xy",
+            "data_mask_context_dir",
+            "data_outline_context_dir",
+            "segmentation_file_regex",
+            "image_adjustment",
+        ]:
+            result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
+
+        resolved_feature_thresholds = (
+            read_thresholds_set_from_file(
+                feature_thresholds=feature_thresholds,
+                feature_thresholds_file=feature_thresholds_file,
+            )
+            if isinstance(feature_thresholds, str)
+            else feature_thresholds
+        )
+        thresholds_name = (
+            f"cqc.{feature_thresholds}"
+            if isinstance(feature_thresholds, str)
+            else "cqc.custom"
+        )
+        display_options = dict(custom_attrs.get("display_options") or {})
+        filter_columns = list(display_options.get("filter_columns") or [])
+        filter_plot_thresholds = dict(
+            display_options.get("filter_plot_thresholds") or {}
+        )
+
+        for feature, threshold in resolved_feature_thresholds.items():
+            zscore_column = f"{thresholds_name}.Z_Score.{feature}"
+            if zscore_column in result.columns and zscore_column not in filter_columns:
+                filter_columns.append(zscore_column)
+            if zscore_column in result.columns:
+                filter_plot_thresholds[zscore_column] = threshold
+
+        result._custom_attrs["display_options"] = {
+            **display_options,
+            "filter_columns": filter_columns,
+            "filter_plot_thresholds": filter_plot_thresholds,
+        }
 
     # for multiple outlier processing
     elif feature_thresholds is None:
         # return the outlier dataframe for all threshold rules
         labeled_df = pd.concat(
-            [df]
+            [pd.DataFrame(df)]
             + [
                 # identify outliers for each threshold rule
-                identify_outliers(
-                    df=df,
-                    feature_thresholds=thresholds,
-                    feature_thresholds_file=feature_thresholds_file,
-                    include_threshold_scores=include_threshold_scores,
+                pd.DataFrame(
+                    identify_outliers(
+                        df=df,
+                        feature_thresholds=thresholds,
+                        feature_thresholds_file=feature_thresholds_file,
+                        include_threshold_scores=include_threshold_scores,
+                    )
                 )
                 # loop through each threshold rule
                 for thresholds in read_thresholds_set_from_file(
@@ -332,11 +404,40 @@ def label_outliers(
         )
 
         # return a dataframe with deduplicated columns by name
-        result = CytoDataFrame(
-            labeled_df.loc[:, ~labeled_df.columns.duplicated()],
-            # reuse the custom attributes
-            **custom_attrs,
+        result = CytoDataFrame(data=labeled_df.loc[:, ~labeled_df.columns.duplicated()])
+        for attr_name in [
+            "data_context_dir",
+            "data_image_paths",
+            "data_bounding_box",
+            "compartment_center_xy",
+            "data_mask_context_dir",
+            "data_outline_context_dir",
+            "segmentation_file_regex",
+            "image_adjustment",
+        ]:
+            result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
+
+        display_options = dict(custom_attrs.get("display_options") or {})
+        filter_columns = list(display_options.get("filter_columns") or [])
+        filter_plot_thresholds = dict(
+            display_options.get("filter_plot_thresholds") or {}
         )
+
+        for threshold_set_name, thresholds in read_thresholds_set_from_file(
+            feature_thresholds_file=feature_thresholds_file,
+        ).items():
+            for feature, threshold in thresholds.items():
+                zscore_column = f"cqc.{threshold_set_name}.Z_Score.{feature}"
+                if zscore_column in result.columns and zscore_column not in filter_columns:
+                    filter_columns.append(zscore_column)
+                if zscore_column in result.columns:
+                    filter_plot_thresholds[zscore_column] = threshold
+
+        result._custom_attrs["display_options"] = {
+            **display_options,
+            "filter_columns": filter_columns,
+            "filter_plot_thresholds": filter_plot_thresholds,
+        }
 
     # export the file if specified
     if export_path is not None:

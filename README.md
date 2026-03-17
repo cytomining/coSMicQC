@@ -76,6 +76,8 @@ poetry install --with dev
 
 - Examples and notebooks live under `docs/src/examples` and the published docs: https://cytomining.github.io/coSMicQC
 - Quickstart blog post: https://waysciencelab.com/2024/12/20/cosmicqc.html
+- `find_outliers` returns a `CytoDataFrame` that auto-populates the thresholded feature columns as filter columns for `CytoDataFrame` displays.
+- `label_outliers(..., include_threshold_scores=True)` returns z-score columns and auto-populates the related `cqc...Z_Score...` filter columns with threshold indicators.
 
 ## Results
 

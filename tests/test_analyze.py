@@ -606,3 +606,65 @@ def test_label_outliers_retains_custom_attrs(basic_outlier_dataframe: pd.DataFra
     )
 
     assert isinstance(df, CytoDataFrame)
+    assert df._custom_attrs["data_context_dir"] == "example_context_dir"
+    assert df._custom_attrs["data_mask_context_dir"] == "example_mask_dir"
+    assert df._custom_attrs["data_outline_context_dir"] == "example_context_dir"
+    assert df._custom_attrs["segmentation_file_regex"] == {"example": "example"}
+
+
+def test_label_outliers_adds_threshold_display_options(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Tests that label_outliers annotates display options for thresholded columns.
+    """
+
+    cdf = CytoDataFrame(
+        data=basic_outlier_dataframe,
+        display_options={
+            "width": 320,
+            "filter_columns": ["existing_feature"],
+            "filter_plot_thresholds": {"existing_feature": 5},
+        },
+    )
+
+    df = analyze.label_outliers(
+        df=cdf,
+        feature_thresholds={"example_feature": 1},
+        include_threshold_scores=True,
+    )
+
+    assert df._custom_attrs["display_options"] == {
+        "width": 320,
+        "filter_columns": ["existing_feature", "cqc.custom.Z_Score.example_feature"],
+        "filter_plot_thresholds": {
+            "existing_feature": 5,
+            "cqc.custom.Z_Score.example_feature": 1,
+        },
+    }
+
+
+def test_find_outliers_adds_threshold_display_options(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Tests that find_outliers annotates display options for thresholded columns.
+    """
+
+    metadata_column_name = "Image_Metadata_Plate"
+    basic_outlier_dataframe[metadata_column_name] = "A"
+
+    result = analyze.find_outliers(
+        df=CytoDataFrame(
+            data=basic_outlier_dataframe,
+            display_options={"height": 240},
+        ),
+        feature_thresholds={"example_feature": 1},
+        metadata_columns=[metadata_column_name],
+    )
+
+    assert isinstance(result, CytoDataFrame)
+    assert result._custom_attrs["display_options"] == {
+        "height": 240,
+        "filter_columns": ["example_feature"],
+    }

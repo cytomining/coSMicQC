@@ -5,9 +5,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.17.2
+#       jupytext_version: 1.17.3
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: coSMicQC
 #     language: python
 #     name: python3
 # ---
@@ -43,7 +43,7 @@ scdf = CytoDataFrame(
 )
 
 # display the dataframe
-scdf.iloc[:, :5]
+scdf.head()
 # -
 
 # Identify which rows include outliers for a given threshold definition
@@ -71,9 +71,8 @@ labeled_scdf = cosmicqc.analyze.label_outliers(
     include_threshold_scores=True,
 )
 
-# show the dataframe rows with only the last 8 columns
-# (added from the label_outliers function)
-labeled_scdf.iloc[:, -8:]
+# show the dataframe rows with outlier labels and z-scores
+labeled_scdf.head()
 # -
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
