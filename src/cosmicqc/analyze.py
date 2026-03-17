@@ -64,8 +64,8 @@ def identify_outliers(
     if not isinstance(df, CytoDataFrame):
         df = CytoDataFrame(data=df)
 
-    # reference the df for a new outlier_df
-    outlier_df = df
+    # work on a copy so we do not mutate the caller's dataframe in-place
+    outlier_df = df.copy()
 
     # Define the naming scheme for z-score columns based on thresholds
     thresholds_name = (
@@ -257,6 +257,76 @@ def find_outliers(
     return result
 
 
+def _copy_cytodataframe_attrs(
+    result: CytoDataFrame, custom_attrs: Dict[str, object]
+) -> CytoDataFrame:
+    """
+    Copy selected CytoDataFrame custom attributes onto a new result object.
+    """
+
+    for attr_name in [
+        "data_context_dir",
+        "data_image_paths",
+        "data_bounding_box",
+        "compartment_center_xy",
+        "data_mask_context_dir",
+        "data_outline_context_dir",
+        "segmentation_file_regex",
+        "image_adjustment",
+    ]:
+        result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
+
+    return result
+
+
+def _add_label_outlier_display_options(
+    result: CytoDataFrame,
+    custom_attrs: Dict[str, object],
+    feature_thresholds: Optional[Union[Dict[str, float], str]],
+    feature_thresholds_file: str,
+) -> CytoDataFrame:
+    """
+    Add CytoDataFrame filter settings for label_outliers z-score columns.
+    """
+
+    display_options = dict(custom_attrs.get("display_options") or {})
+    filter_columns = list(display_options.get("filter_columns") or [])
+    filter_plot_thresholds = dict(display_options.get("filter_plot_thresholds") or {})
+
+    if feature_thresholds is None:
+        threshold_sets = read_thresholds_set_from_file(
+            feature_thresholds_file=feature_thresholds_file,
+        ).items()
+    elif isinstance(feature_thresholds, str):
+        threshold_sets = [
+            (
+                feature_thresholds,
+                read_thresholds_set_from_file(
+                    feature_thresholds=feature_thresholds,
+                    feature_thresholds_file=feature_thresholds_file,
+                ),
+            )
+        ]
+    else:
+        threshold_sets = [("custom", feature_thresholds)]
+
+    for threshold_set_name, thresholds in threshold_sets:
+        for feature, threshold in thresholds.items():
+            zscore_column = f"cqc.{threshold_set_name}.Z_Score.{feature}"
+            if zscore_column in result.columns and zscore_column not in filter_columns:
+                filter_columns.append(zscore_column)
+            if zscore_column in result.columns:
+                filter_plot_thresholds[zscore_column] = threshold
+
+    result._custom_attrs["display_options"] = {
+        **display_options,
+        "filter_columns": filter_columns,
+        "filter_plot_thresholds": filter_plot_thresholds,
+    }
+
+    return result
+
+
 def label_outliers(
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: Optional[Union[Dict[str, float], str]] = None,
@@ -336,49 +406,13 @@ def label_outliers(
                 axis=1,
             ).loc[:, lambda frame: ~frame.columns.duplicated()]
         )
-        for attr_name in [
-            "data_context_dir",
-            "data_image_paths",
-            "data_bounding_box",
-            "compartment_center_xy",
-            "data_mask_context_dir",
-            "data_outline_context_dir",
-            "segmentation_file_regex",
-            "image_adjustment",
-        ]:
-            result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
-
-        resolved_feature_thresholds = (
-            read_thresholds_set_from_file(
-                feature_thresholds=feature_thresholds,
-                feature_thresholds_file=feature_thresholds_file,
-            )
-            if isinstance(feature_thresholds, str)
-            else feature_thresholds
+        result = _copy_cytodataframe_attrs(result=result, custom_attrs=custom_attrs)
+        result = _add_label_outlier_display_options(
+            result=result,
+            custom_attrs=custom_attrs,
+            feature_thresholds=feature_thresholds,
+            feature_thresholds_file=feature_thresholds_file,
         )
-        thresholds_name = (
-            f"cqc.{feature_thresholds}"
-            if isinstance(feature_thresholds, str)
-            else "cqc.custom"
-        )
-        display_options = dict(custom_attrs.get("display_options") or {})
-        filter_columns = list(display_options.get("filter_columns") or [])
-        filter_plot_thresholds = dict(
-            display_options.get("filter_plot_thresholds") or {}
-        )
-
-        for feature, threshold in resolved_feature_thresholds.items():
-            zscore_column = f"{thresholds_name}.Z_Score.{feature}"
-            if zscore_column in result.columns and zscore_column not in filter_columns:
-                filter_columns.append(zscore_column)
-            if zscore_column in result.columns:
-                filter_plot_thresholds[zscore_column] = threshold
-
-        result._custom_attrs["display_options"] = {
-            **display_options,
-            "filter_columns": filter_columns,
-            "filter_plot_thresholds": filter_plot_thresholds,
-        }
 
     # for multiple outlier processing
     elif feature_thresholds is None:
@@ -405,39 +439,13 @@ def label_outliers(
 
         # return a dataframe with deduplicated columns by name
         result = CytoDataFrame(data=labeled_df.loc[:, ~labeled_df.columns.duplicated()])
-        for attr_name in [
-            "data_context_dir",
-            "data_image_paths",
-            "data_bounding_box",
-            "compartment_center_xy",
-            "data_mask_context_dir",
-            "data_outline_context_dir",
-            "segmentation_file_regex",
-            "image_adjustment",
-        ]:
-            result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
-
-        display_options = dict(custom_attrs.get("display_options") or {})
-        filter_columns = list(display_options.get("filter_columns") or [])
-        filter_plot_thresholds = dict(
-            display_options.get("filter_plot_thresholds") or {}
-        )
-
-        for threshold_set_name, thresholds in read_thresholds_set_from_file(
+        result = _copy_cytodataframe_attrs(result=result, custom_attrs=custom_attrs)
+        result = _add_label_outlier_display_options(
+            result=result,
+            custom_attrs=custom_attrs,
+            feature_thresholds=feature_thresholds,
             feature_thresholds_file=feature_thresholds_file,
-        ).items():
-            for feature, threshold in thresholds.items():
-                zscore_column = f"cqc.{threshold_set_name}.Z_Score.{feature}"
-                if zscore_column in result.columns and zscore_column not in filter_columns:
-                    filter_columns.append(zscore_column)
-                if zscore_column in result.columns:
-                    filter_plot_thresholds[zscore_column] = threshold
-
-        result._custom_attrs["display_options"] = {
-            **display_options,
-            "filter_columns": filter_columns,
-            "filter_plot_thresholds": filter_plot_thresholds,
-        }
+        )
 
     # export the file if specified
     if export_path is not None:
