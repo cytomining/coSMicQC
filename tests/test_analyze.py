@@ -698,7 +698,10 @@ def test_label_outliers_requires_thresholds_file_before_threshold_lookup(
 
     with pytest.raises(
         ValueError,
-        match="feature_thresholds_file must be provided when feature_thresholds is a string.",
+        match=(
+            r"feature_thresholds_file must be provided when "
+            r"feature_thresholds is a string\."
+        ),
     ):
         analyze.label_outliers(
             df=basic_outlier_dataframe,
@@ -708,7 +711,10 @@ def test_label_outliers_requires_thresholds_file_before_threshold_lookup(
 
     with pytest.raises(
         ValueError,
-        match="feature_thresholds_file must be provided when labeling all threshold sets.",
+        match=(
+            r"feature_thresholds_file must be provided when "
+            r"labeling all threshold sets\."
+        ),
     ):
         analyze.label_outliers(
             df=basic_outlier_dataframe,

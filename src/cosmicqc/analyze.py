@@ -9,9 +9,9 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 import yaml
+from cytodataframe.frame import CytoDataFrame
 from IPython import get_ipython
 from IPython.display import HTML, display
-from cytodataframe.frame import CytoDataFrame
 from scipy.stats import zscore as scipy_zscore
 
 DEFAULT_QC_THRESHOLD_FILE = (
@@ -238,32 +238,11 @@ def find_outliers(
             result=CytoDataFrame(data=result),
             custom_attrs=custom_attrs,
         )
-    filter_columns = [
-        column
-        for column in (display_options.get("filter_columns") or [])
-        if column in result.columns
-    ]
-    filter_plot_thresholds = {
-        column: threshold
-        for column, threshold in (
-            display_options.get("filter_plot_thresholds") or {}
-        ).items()
-        if column in result.columns
-    }
-
-    for feature in feature_thresholds:
-        if feature in result.columns and feature not in filter_columns:
-            filter_columns.append(feature)
-
-    result._custom_attrs["display_options"] = {
-        **display_options,
-        "filter_columns": filter_columns,
-        **(
-            {"filter_plot_thresholds": filter_plot_thresholds}
-            if filter_plot_thresholds
-            else {}
-        ),
-    }
+    result = _add_find_outlier_display_options(
+        result=result,
+        display_options=display_options,
+        feature_thresholds=feature_thresholds,
+    )
 
     # In notebooks, print output can prevent the returned dataframe from visibly
     # rendering in the same cell. Show a static HTML snapshot while still
@@ -297,6 +276,45 @@ def _copy_cytodataframe_attrs(
         "image_adjustment",
     ]:
         result._custom_attrs[attr_name] = custom_attrs.get(attr_name)
+
+    return result
+
+
+def _add_find_outlier_display_options(
+    result: CytoDataFrame,
+    display_options: Dict[str, object],
+    feature_thresholds: Dict[str, float],
+) -> CytoDataFrame:
+    """
+    Add CytoDataFrame filter settings for find_outliers feature columns.
+    """
+
+    filter_columns = [
+        column
+        for column in (display_options.get("filter_columns") or [])
+        if column in result.columns
+    ]
+    filter_plot_thresholds = {
+        column: threshold
+        for column, threshold in (
+            display_options.get("filter_plot_thresholds") or {}
+        ).items()
+        if column in result.columns
+    }
+
+    for feature in feature_thresholds:
+        if feature in result.columns and feature not in filter_columns:
+            filter_columns.append(feature)
+
+    result._custom_attrs["display_options"] = {
+        **display_options,
+        "filter_columns": filter_columns,
+        **(
+            {"filter_plot_thresholds": filter_plot_thresholds}
+            if filter_plot_thresholds
+            else {}
+        ),
+    }
 
     return result
 
@@ -397,7 +415,8 @@ def label_outliers(
 
     if feature_thresholds_file is None and isinstance(feature_thresholds, str):
         raise ValueError(
-            "feature_thresholds_file must be provided when feature_thresholds is a string."
+            "feature_thresholds_file must be provided when "
+            "feature_thresholds is a string."
         )
 
     if feature_thresholds_file is None and feature_thresholds is None:
