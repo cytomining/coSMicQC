@@ -248,7 +248,7 @@ def find_outliers(
     # rendering in the same cell. Show a static HTML snapshot while still
     # returning the CytoDataFrame for normal downstream use.
     if get_ipython() is not None:
-        display(HTML(result._repr_html_(debug=True)))
+        display(HTML(result._repr_html_()))
 
     # Export the file if specified
     if export_path is not None:
