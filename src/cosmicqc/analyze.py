@@ -9,6 +9,8 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 import yaml
+from IPython import get_ipython
+from IPython.display import HTML, display
 from cytodataframe.frame import CytoDataFrame
 from scipy.stats import zscore as scipy_zscore
 
@@ -263,6 +265,12 @@ def find_outliers(
         ),
     }
 
+    # In notebooks, print output can prevent the returned dataframe from visibly
+    # rendering in the same cell. Show a static HTML snapshot while still
+    # returning the CytoDataFrame for normal downstream use.
+    if get_ipython() is not None:
+        display(HTML(result._repr_html_(debug=True)))
+
     # Export the file if specified
     if export_path is not None:
         result.export(file_path=export_path)
@@ -306,18 +314,6 @@ def _add_label_outlier_display_options(
     display_options = dict(custom_attrs.get("display_options") or {})
     filter_columns = list(display_options.get("filter_columns") or [])
     filter_plot_thresholds = dict(display_options.get("filter_plot_thresholds") or {})
-
-    if feature_thresholds_file is None and feature_thresholds is not None and isinstance(
-        feature_thresholds, str
-    ):
-        raise ValueError(
-            "feature_thresholds_file must be provided when feature_thresholds is a string."
-        )
-
-    if feature_thresholds_file is None and feature_thresholds is None:
-        raise ValueError(
-            "feature_thresholds_file must be provided when labeling all threshold sets."
-        )
 
     if feature_thresholds is None:
         threshold_sets = read_thresholds_set_from_file(
@@ -399,6 +395,16 @@ def label_outliers(
     # store the custom attributes
     custom_attrs = dict(df._custom_attrs)
 
+    if feature_thresholds_file is None and isinstance(feature_thresholds, str):
+        raise ValueError(
+            "feature_thresholds_file must be provided when feature_thresholds is a string."
+        )
+
+    if feature_thresholds_file is None and feature_thresholds is None:
+        raise ValueError(
+            "feature_thresholds_file must be provided when labeling all threshold sets."
+        )
+
     # for single outlier processing
     if isinstance(feature_thresholds, (str, dict)):
         # return the outlier dataframe for one threshold rule
@@ -430,7 +436,7 @@ def label_outliers(
                     identified_outliers_df,
                 ],
                 axis=1,
-            ).loc[:, lambda frame: ~frame.columns.duplicated()]
+            ).loc[:, lambda frame: ~frame.columns.duplicated(keep="last")]
         )
         result = _copy_cytodataframe_attrs(result=result, custom_attrs=custom_attrs)
         result = _add_label_outlier_display_options(
@@ -471,7 +477,9 @@ def label_outliers(
         )
 
         # return a dataframe with deduplicated columns by name
-        result = CytoDataFrame(data=labeled_df.loc[:, ~labeled_df.columns.duplicated()])
+        result = CytoDataFrame(
+            data=labeled_df.loc[:, ~labeled_df.columns.duplicated(keep="last")]
+        )
         result = _copy_cytodataframe_attrs(result=result, custom_attrs=custom_attrs)
         result = _add_label_outlier_display_options(
             result=result,

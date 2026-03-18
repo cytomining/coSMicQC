@@ -662,6 +662,61 @@ def test_label_outliers_adds_threshold_display_options(
     }
 
 
+def test_label_outliers_overwrites_existing_outlier_column(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Tests that label_outliers overwrites stale pre-existing outlier columns.
+    """
+
+    input_df = basic_outlier_dataframe.copy()
+    input_df["cqc.custom.is_outlier"] = False
+
+    result = analyze.label_outliers(
+        df=input_df,
+        feature_thresholds={"example_feature": 1},
+        include_threshold_scores=False,
+    )
+
+    expected = analyze.identify_outliers(
+        df=basic_outlier_dataframe,
+        feature_thresholds={"example_feature": 1},
+    )
+
+    pd.testing.assert_series_equal(
+        result["cqc.custom.is_outlier"],
+        expected.rename("cqc.custom.is_outlier"),
+    )
+
+
+def test_label_outliers_requires_thresholds_file_before_threshold_lookup(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Tests that label_outliers validates threshold file requirements early.
+    """
+
+    with pytest.raises(
+        ValueError,
+        match="feature_thresholds_file must be provided when feature_thresholds is a string.",
+    ):
+        analyze.label_outliers(
+            df=basic_outlier_dataframe,
+            feature_thresholds="large_nuclei",
+            feature_thresholds_file=None,
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="feature_thresholds_file must be provided when labeling all threshold sets.",
+    ):
+        analyze.label_outliers(
+            df=basic_outlier_dataframe,
+            feature_thresholds=None,
+            feature_thresholds_file=None,
+        )
+
+
 def test_find_outliers_adds_threshold_display_options(
     basic_outlier_dataframe: pd.DataFrame,
 ):
