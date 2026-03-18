@@ -307,8 +307,10 @@ def _add_label_outlier_display_options(
     filter_columns = list(display_options.get("filter_columns") or [])
     filter_plot_thresholds = dict(display_options.get("filter_plot_thresholds") or {})
 
-    if feature_thresholds_file is None and feature_thresholds is not None and isinstance(
-        feature_thresholds, str
+    if (
+        feature_thresholds_file is None
+        and feature_thresholds is not None
+        and isinstance(feature_thresholds, str)
     ):
         raise ValueError(
             "feature_thresholds_file must be provided when feature_thresholds is a string."
