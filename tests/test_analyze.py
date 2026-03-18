@@ -612,6 +612,24 @@ def test_label_outliers_retains_custom_attrs(basic_outlier_dataframe: pd.DataFra
     assert df._custom_attrs["segmentation_file_regex"] == {"example": "example"}
 
 
+def test_label_outliers_all_threshold_sets_keep_unique_columns(
+    cytotable_CFReT_data_df: pd.DataFrame,
+):
+    """
+    Tests that label_outliers retains distinct boolean columns for all threshold sets.
+    """
+
+    df = analyze.label_outliers(
+        df=cytotable_CFReT_data_df,
+        feature_thresholds=None,
+        include_threshold_scores=False,
+    )
+
+    assert "cqc.small_and_low_formfactor_nuclei.is_outlier" in df.columns
+    assert "cqc.elongated_nuclei.is_outlier" in df.columns
+    assert "cqc.large_nuclei.is_outlier" in df.columns
+
+
 def test_label_outliers_adds_threshold_display_options(
     basic_outlier_dataframe: pd.DataFrame,
 ):

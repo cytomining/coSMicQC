@@ -147,7 +147,7 @@ def find_outliers(
     feature_thresholds: Union[Dict[str, float], str],
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
     export_path: Optional[str] = None,
-) -> pd.DataFrame:
+) -> CytoDataFrame:
     """
     This function uses identify_outliers to return a dataframe
     with only the outliers and provided metadata columns.
@@ -175,7 +175,7 @@ def find_outliers(
             Note: compatible exports are CSV's, TSV's, and parquet.
 
     Returns:
-        pd.DataFrame:
+        CytoDataFrame:
             Outlier data frame for the given conditions.
     """
 
@@ -203,6 +203,11 @@ def find_outliers(
             "These will be dropped before processing."
         )
         df = df.dropna(subset=list(feature_thresholds.keys()))
+        if not isinstance(df, CytoDataFrame):
+            df = _copy_cytodataframe_attrs(
+                result=CytoDataFrame(data=df),
+                custom_attrs=custom_attrs,
+            )
 
     # Filter DataFrame for outliers using identify_outliers
     outliers_mask = identify_outliers(
@@ -227,18 +232,22 @@ def find_outliers(
     # Include metadata columns in the output DataFrame
     result = outliers_df[required_columns]
     if not isinstance(result, CytoDataFrame):
-        result = CytoDataFrame(
-            data=result,
-            data_context_dir=custom_attrs.get("data_context_dir"),
-            data_image_paths=custom_attrs.get("data_image_paths"),
-            data_bounding_box=custom_attrs.get("data_bounding_box"),
-            compartment_center_xy=custom_attrs.get("compartment_center_xy"),
-            data_mask_context_dir=custom_attrs.get("data_mask_context_dir"),
-            data_outline_context_dir=custom_attrs.get("data_outline_context_dir"),
-            segmentation_file_regex=custom_attrs.get("segmentation_file_regex"),
-            image_adjustment=custom_attrs.get("image_adjustment"),
+        result = _copy_cytodataframe_attrs(
+            result=CytoDataFrame(data=result),
+            custom_attrs=custom_attrs,
         )
-    filter_columns = list(display_options.get("filter_columns") or [])
+    filter_columns = [
+        column
+        for column in (display_options.get("filter_columns") or [])
+        if column in result.columns
+    ]
+    filter_plot_thresholds = {
+        column: threshold
+        for column, threshold in (
+            display_options.get("filter_plot_thresholds") or {}
+        ).items()
+        if column in result.columns
+    }
 
     for feature in feature_thresholds:
         if feature in result.columns and feature not in filter_columns:
@@ -247,6 +256,11 @@ def find_outliers(
     result._custom_attrs["display_options"] = {
         **display_options,
         "filter_columns": filter_columns,
+        **(
+            {"filter_plot_thresholds": filter_plot_thresholds}
+            if filter_plot_thresholds
+            else {}
+        ),
     }
 
     # Export the file if specified
@@ -283,7 +297,7 @@ def _add_label_outlier_display_options(
     result: CytoDataFrame,
     custom_attrs: Dict[str, object],
     feature_thresholds: Optional[Union[Dict[str, float], str]],
-    feature_thresholds_file: str,
+    feature_thresholds_file: Optional[str],
 ) -> CytoDataFrame:
     """
     Add CytoDataFrame filter settings for label_outliers z-score columns.
@@ -292,6 +306,18 @@ def _add_label_outlier_display_options(
     display_options = dict(custom_attrs.get("display_options") or {})
     filter_columns = list(display_options.get("filter_columns") or [])
     filter_plot_thresholds = dict(display_options.get("filter_plot_thresholds") or {})
+
+    if feature_thresholds_file is None and feature_thresholds is not None and isinstance(
+        feature_thresholds, str
+    ):
+        raise ValueError(
+            "feature_thresholds_file must be provided when feature_thresholds is a string."
+        )
+
+    if feature_thresholds_file is None and feature_thresholds is None:
+        raise ValueError(
+            "feature_thresholds_file must be provided when labeling all threshold sets."
+        )
 
     if feature_thresholds is None:
         threshold_sets = read_thresholds_set_from_file(
@@ -420,19 +446,26 @@ def label_outliers(
         labeled_df = pd.concat(
             [pd.DataFrame(df)]
             + [
+                (
+                    identify_outliers_result
+                    if isinstance(identify_outliers_result, pd.DataFrame)
+                    else identify_outliers_result.rename(
+                        f"cqc.{thresholds}.is_outlier"
+                    ).to_frame()
+                )
                 # identify outliers for each threshold rule
-                pd.DataFrame(
+                for thresholds in read_thresholds_set_from_file(
+                    feature_thresholds_file=feature_thresholds_file,
+                )
+                for identify_outliers_result in [
                     identify_outliers(
                         df=df,
                         feature_thresholds=thresholds,
                         feature_thresholds_file=feature_thresholds_file,
                         include_threshold_scores=include_threshold_scores,
                     )
-                )
+                ]
                 # loop through each threshold rule
-                for thresholds in read_thresholds_set_from_file(
-                    feature_thresholds_file=feature_thresholds_file,
-                )
             ],
             axis=1,
         )
