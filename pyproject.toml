@@ -94,8 +94,11 @@ group.docs.dependencies.sphinx-wagtail-theme = "^6.3.0"
 requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 scripts.cosmicqc = "cosmicqc.cli:cli_analyze"
 
+[tool.poetry.scripts]
+cosmicqc = "cosmicqc.cli:cli_analyze"
+
 [tool.poetry-dynamic-versioning]
-enable = false
+enable = true
 style = "pep440"
 vcs = "git"
 # specify where version replacement is performed

@@ -12,37 +12,88 @@
 
 > 🌠 Navigate the cosmos of single-cell morphology with confidence — coSMicQC keeps your data on course!
 
-coSMicQC is a Python package to evaluate converted single-cell morphology outputs from CytoTable.
+## Contents
 
-It can be challenging to get "perfect" single-cell compartment segmentation across large high-throughput screens when performing object detection in CellProfiler (or similar software).
+<!--ts-->
+* [Single cell Morphology Quality Control](#single-cell-morphology-quality-control)
+   * [Contents](#contents)
+   * [Overview](#overview)
+   * [Repo Contents](#repo-contents)
+   * [System Requirements](#system-requirements)
+   * [Installation Guide](#installation-guide)
+      * [Stable release (PyPI)](#stable-release-pypi)
+      * [Development version (from source)](#development-version-from-source)
+   * [Demo](#demo)
+   * [Results](#results)
+   * [License](#license)
+   * [Issues](#issues)
+   * [Citation](#citation)
+
+
+<!--te-->
+
+## Overview
+
+coSMicQC is a Python package to evaluate converted single-cell morphology outputs from [CytoTable](https://github.com/cytomining/CytoTable).
 Technical artifacts can arise during segmentation, leading to issues such as under-segmentation, over-segmentation, or the erroneous segmentation of background noise, smudges, or bright artifacts.
+By utilizing specific morphological features extracted with CellProfiler, you can identify technically incorrect segmentations and label or remove them before downstream analysis.
 
-In single-cell analysis, intriguing phenotypes often emerge by examining morphological differences.
-However, technical outliers in the data can obscure these biological insights, compromising the validity of the findings.
+Please confer with our docsite for more comprehensive information about the project: https://cytomining.github.io/coSMicQC/main/
 
-By utilizing specific morphological features extracted with CellProfiler, particularly AreaShape features, you can identify technically incorrect segmentations.
-These can then be labeled or removed before further preprocessing steps, such as those performed with pycytominer.
+> 🌟 Check out our [blog post](https://waysciencelab.com/2024/12/20/cosmicqc.html) for a deeper background and how coSMicQC can help.
 
-> 🌟 Check out our [blog post](https://waysciencelab.com/2024/12/20/cosmicqc.html) on this for a greater understanding of the background and how coSMicQC can help you!
+## Repo Contents
 
-## Installation
+- `src/cosmicqc`: coSMicQC source code.
+- `tests`: test suite.
+- `docs`: documentation sources and examples.
+- `media`: project assets (e.g., coverage badge).
+- `reports`: generated artifacts (figures, notebooks, or summaries).
 
-Install coSMicQC from [PyPI](https://pypi.org/project/coSMicQC/) or from source:
+## System Requirements
+
+- Python: `>=3.10` (tested through 3.13).
+- RAM/CPU: standard laptop/desktop is sufficient for typical plate-sized datasets; larger screens benefit from more RAM/cores for faster QC/plotting.
+- OS: Linux, macOS, and Windows are supported via Python; CI tests run on GitHub Actions.
+
+## Installation Guide
+
+### Stable release (PyPI)
 
 ```shell
-# install from pypi
 pip install coSMicQC
-
-# install directly from source
-pip install git+https://github.com/cytomining/coSMicQC.git
 ```
 
-## Contributing, Development, and Testing
+### Development version (from source)
 
-Please see our [contributing](https://cytomining.github.io/coSMicQC/main/contributing) documentation for more details on contributions, development, and testing.
+```shell
+pip install git+https://github.com/cytomining/coSMicQC.git
+# or with poetry for local development
+poetry install --with dev
+```
 
-## References
+## Demo
 
-- [pycytominer](https://github.com/cytomining/pycytominer)
-- [CellProfiler](https://github.com/CellProfiler/CellProfiler)
-- [CytoTable](https://github.com/cytomining/CytoTable)
+- Examples and notebooks live under `docs/src/examples` and the published docs: https://cytomining.github.io/coSMicQC
+- Quickstart blog post: https://waysciencelab.com/2024/12/20/cosmicqc.html
+
+## Results
+
+- Test and lint status: ![Build Status](https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml/badge.svg?branch=main)
+- Coverage: ![Coverage Status](https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg)
+
+## License
+
+BSD-3-Clause; see [LICENSE](LICENSE).
+
+## Issues
+
+Please open issues or feature requests at https://github.com/cytomining/coSMicQC/issues.
+
+## Citation
+
+If you use coSMicQC in your work, please cite:
+
+- Software DOI: [10.5281/zenodo.14888111](https://doi.org/10.5281/zenodo.14888111)
+- Preprint: [10.1101/2025.10.14.682427](https://doi.org/10.1101/2025.10.14.682427)
+- Citation metadata: [CITATION.cff](CITATION.cff)
