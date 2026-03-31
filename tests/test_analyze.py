@@ -2,6 +2,8 @@
 Tests cosmicqc analyze module
 """
 
+import pathlib
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -423,7 +425,7 @@ def test_label_outliers(
             8: 9,
             9: 10,
         },
-        "cqc.custom.Z_Score.example_feature": {
+        "Metadata_cqc_custom_example_feature_zscore": {
             0: -1.5666989036012806,
             1: -1.2185435916898848,
             2: -0.8703882797784892,
@@ -435,7 +437,7 @@ def test_label_outliers(
             8: 1.2185435916898848,
             9: 1.5666989036012806,
         },
-        "cqc.custom.is_outlier": {
+        "Metadata_cqc_custom_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -467,7 +469,7 @@ def test_label_outliers(
             8: 9,
             9: 10,
         },
-        "cqc.custom.is_outlier": {
+        "Metadata_cqc_custom_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -506,35 +508,35 @@ def test_label_outliers(
     )
 
 
-def test_identify_outliers(
+def test_detect_outliers_zscore(
     basic_outlier_dataframe: pd.DataFrame,
     basic_outlier_csv: str,
     cytotable_CFReT_data_df: pd.DataFrame,
 ):
     """
-    Tests identify_outliers
+    Tests _detect_outliers_zscore helper function
     """
 
     # show that dataframe and csv output are the same
     pd.testing.assert_frame_equal(
-        analyze.identify_outliers(
+        analyze._detect_outliers_zscore(
             df=basic_outlier_dataframe,
             feature_thresholds={"example_feature": 1},
             include_threshold_scores=True,
         ),
-        analyze.identify_outliers(
+        analyze._detect_outliers_zscore(
             df=basic_outlier_csv,
             feature_thresholds={"example_feature": 1},
             include_threshold_scores=True,
         ),
     )
 
-    assert analyze.identify_outliers(
+    assert analyze._detect_outliers_zscore(
         df=basic_outlier_dataframe,
         feature_thresholds={"example_feature": 1},
         include_threshold_scores=True,
     ).to_dict(orient="dict") == {
-        "cqc.custom.Z_Score.example_feature": {
+        "Metadata_cqc_custom_example_feature_zscore": {
             0: -1.5666989036012806,
             1: -1.2185435916898848,
             2: -0.8703882797784892,
@@ -546,7 +548,7 @@ def test_identify_outliers(
             8: 1.2185435916898848,
             9: 1.5666989036012806,
         },
-        "cqc.custom.is_outlier": {
+        "Metadata_cqc_custom_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -561,7 +563,7 @@ def test_identify_outliers(
     }
 
     pd.testing.assert_frame_equal(
-        analyze.identify_outliers(
+        analyze._detect_outliers_zscore(
             df=cytotable_CFReT_data_df,
             feature_thresholds="large_nuclei",
             include_threshold_scores=True,
@@ -571,7 +573,7 @@ def test_identify_outliers(
         ),
     )
 
-    identified_df = analyze.identify_outliers(
+    identified_df = analyze._detect_outliers_zscore(
         df=cytotable_CFReT_data_df,
         feature_thresholds="large_nuclei",
     )
@@ -579,8 +581,8 @@ def test_identify_outliers(
         identified_df,
         pd.read_parquet(
             "tests/data/coSMicQC/output_data/test_identifier_outliers_output.parquet",
-            columns=["cqc.large_nuclei.is_outlier"],
-        )["cqc.large_nuclei.is_outlier"],
+            columns=["Metadata_cqc_large_nuclei_is_outlier"],
+        )["Metadata_cqc_large_nuclei_is_outlier"],
         check_names=False,
     )
 
@@ -606,3 +608,109 @@ def test_label_outliers_retains_custom_attrs(basic_outlier_dataframe: pd.DataFra
     )
 
     assert isinstance(df, CytoDataFrame)
+
+
+def test_label_outliers_multiple_conditions(basic_outlier_dataframe: pd.DataFrame):
+    """
+    Test `label_outliers` with a dict-of-dicts defining multiple
+    conditions/rules to ensure multiple Metadata_cqc_<rule>_is_outlier
+    columns are produced correctly when called directly.
+    """
+
+    feature_thresholds = {
+        "weird_cells": {"example_feature": 1},
+        "large_cells": {"example_feature": 2},
+    }
+    # run label_outliers with multiple named conditions
+    result = analyze.label_outliers(
+        df=basic_outlier_dataframe, feature_thresholds=feature_thresholds
+    )
+
+    # expected: last two values (9,10) are outliers for threshold 1,
+    # and none exceed threshold 2 so large_cells flags remain False
+    assert result.to_dict(orient="dict") == {
+        "example_feature": {
+            0: 1,
+            1: 2,
+            2: 3,
+            3: 4,
+            4: 5,
+            5: 6,
+            6: 7,
+            7: 8,
+            8: 9,
+            9: 10,
+        },
+        "Metadata_cqc_weird_cells_is_outlier": {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+            9: True,
+        },
+        "Metadata_cqc_large_cells_is_outlier": {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+        },
+    }
+
+
+def test_label_outliers_annotation_export(
+    tmp_path: pathlib.Path, basic_outlier_dataframe: pd.DataFrame
+):
+    """
+    Ensure `label_outliers` exports only metadata + QC columns when
+    `export_mode='annotation'` is used.
+    """
+
+    # prepare data with Image metadata columns so annotation mode can detect them
+    df = basic_outlier_dataframe.copy()
+    df["Image_Metadata_Plate"] = "plate1"
+    df["Image_Metadata_Well"] = "A01"
+
+    export_path = tmp_path / "annotation_output.parquet"
+
+    # run label_outliers and export in annotation mode
+    analyze.label_outliers(
+        df=df,
+        feature_thresholds={"example_feature": 1},
+        include_threshold_scores=False,
+        export_path=str(export_path),
+        export_mode="annotation",
+    )
+
+    # read exported parquet and assert columns are metadata then cqc columns
+    exported = pd.read_parquet(export_path)
+
+    assert list(exported.columns) == [
+        "Image_Metadata_Plate",
+        "Image_Metadata_Well",
+        "Metadata_cqc_custom_is_outlier",
+    ]
+
+    # check that the outlier flags match expectations (only last two are outliers)
+    assert exported["Metadata_cqc_custom_is_outlier"].tolist() == [
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+        True,
+        True,
+    ]

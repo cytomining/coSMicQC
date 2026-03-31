@@ -105,8 +105,8 @@ if __name__ == "__main__":
     """
     Setup the CLI with python-fire for the coSMicQC package.
 
-    This enables running the functions identify_outliers, find_outliers,
-    and label_outliers from the command line interface through analyze
+    This enables running the functions find_outliers and label_outliers
+    from the command line interface through analyze.
     """
 
     cli_analyze()

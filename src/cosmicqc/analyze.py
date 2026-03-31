@@ -4,6 +4,7 @@ Module for detecting various quality control aspects from source data.
 
 import operator
 import pathlib
+import re
 from functools import reduce
 from typing import Dict, List, Optional, Union
 
@@ -17,12 +18,13 @@ DEFAULT_QC_THRESHOLD_FILE = (
 )
 
 
-def identify_outliers(
+def _detect_outliers_zscore(  # noqa: C901, PLR0913
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: Union[Dict[str, float], str],
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
     include_threshold_scores: bool = False,
     export_path: Optional[str] = None,
+    rule_name: Optional[str] = None,
 ) -> Union[pd.Series, CytoDataFrame]:
     """
     This function uses z-scoring to format the data for detecting outlier
@@ -46,6 +48,12 @@ def identify_outliers(
         feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
             An optional feature thresholds file where thresholds may be
             defined within a file.
+        rule_name: Optional[str]
+            Optional explicit name of the threshold rule. This is used to
+            construct output column names (e.g. `Metadata_cqc_<rule>_is_outlier`).
+            If not provided and `feature_thresholds` is a string, the string
+            value will be used. If neither is provided, a default name
+            of `custom` will be used.
         include_threshold_scores: bool
             Whether to include the threshold scores in addition to whether
             the threshold set passes per row.
@@ -60,83 +68,71 @@ def identify_outliers(
             or not for use within other functions.
     """
 
-    # Ensure the input is a CytoDataFrame, converting if necessary
     df = CytoDataFrame(data=df)
-
-    # reference the df for a new outlier_df
     outlier_df = df
 
-    # Define the naming scheme for z-score columns based on thresholds
-    thresholds_name = (
-        f"cqc.{feature_thresholds}"
-        if isinstance(feature_thresholds, str)
-        else "cqc.custom"
-    )
-
-    # If feature_thresholds is a string, load the thresholds from the specified file
+    # --- naming ---
+    # Preserve a caller-provided `rule_name` when possible. If the
+    # caller passed a string for `feature_thresholds` (a named set in the
+    # thresholds file) prefer that as the rule name unless `rule_name` was
+    # explicitly provided by the caller. Resolve threshold sets from file
+    # when a string is provided.
     if isinstance(feature_thresholds, str):
+        if rule_name is None:
+            rule_name = feature_thresholds
+
         feature_thresholds = read_thresholds_set_from_file(
             feature_thresholds=feature_thresholds,
             feature_thresholds_file=feature_thresholds_file,
         )
 
-    # Dictionary to store mappings of features to their z-score column names
+    if rule_name is None:
+        rule_name = "custom"
+
+    # Set name prefix for columns based on rule name
+    name_prefix = f"Metadata_cqc_{rule_name}"
+
     zscore_columns = {}
     for feature in feature_thresholds:
-        # Ensure the feature exists in the DataFrame
         if feature not in df.columns:
             raise ValueError(f"Feature '{feature}' does not exist in the DataFrame.")
 
-        # Construct the z-score column name
-        zscore_col = f"{thresholds_name}.Z_Score.{feature}"
+        zscore_col = f"{name_prefix}_{feature}_zscore"
 
-        # Calculate and store z-scores only if not already present
         if zscore_col not in outlier_df:
             outlier_df[zscore_col] = scipy_zscore(df[feature])
 
-        # Add the column name to the zscore_columns dictionary
         zscore_columns[feature] = zscore_col
 
-    # Helper function to create outlier detection conditions
     def create_condition(feature: str, threshold: float) -> pd.Series:
-        # Positive threshold checks for outliers above the mean
         if threshold > 0:
             return outlier_df[zscore_columns[feature]] > threshold
-        # Negative threshold checks for outliers below the mean
         return outlier_df[zscore_columns[feature]] < threshold
 
-    # Generate outlier detection conditions for all features
     conditions = [
         create_condition(feature, threshold)
         for feature, threshold in feature_thresholds.items()
     ]
 
-    # Construct the result based on whether threshold scores should be included
     if include_threshold_scores:
-        # Extract z-score columns for each feature
         zscore_df = outlier_df[list(zscore_columns.values())]
 
-        # Combine conditions into a single Series indicating outlier status
         is_outlier_series = reduce(operator.and_, conditions).rename(
-            f"{thresholds_name}.is_outlier"
+            f"{name_prefix}_is_outlier"
         )
 
-        # Combine z-scores and outlier status into a single DataFrame
         result = CytoDataFrame(
             data=pd.concat([zscore_df, is_outlier_series], axis=1),
             data_context_dir=df._custom_attrs["data_context_dir"],
             data_mask_context_dir=df._custom_attrs["data_mask_context_dir"],
         )
     else:
-        # Combine conditions into a single Series of boolean values
         result = reduce(operator.and_, conditions)
 
-    # Export the result if an export path is specified
     if export_path is not None:
         export_df = CytoDataFrame(result) if isinstance(result, pd.Series) else result
         export_df.export(file_path=export_path)
 
-    # Return the resulting Series or DataFrame
     return result
 
 
@@ -178,7 +174,8 @@ def find_outliers(
             Outlier data frame for the given conditions.
     """
 
-    # Resolve feature_thresholds if provided as a string
+    # Resolve feature_thresholds if provided as a string and remember the name
+    rule_name = feature_thresholds if isinstance(feature_thresholds, str) else None
     if isinstance(feature_thresholds, str):
         feature_thresholds = read_thresholds_set_from_file(
             feature_thresholds=feature_thresholds,
@@ -199,12 +196,13 @@ def find_outliers(
         )
         df = df.dropna(subset=list(feature_thresholds.keys()))
 
-    # Filter DataFrame for outliers using identify_outliers
-    outliers_mask = identify_outliers(
+    # Filter DataFrame for outliers using _detect_outliers_zscore
+    outliers_mask = _detect_outliers_zscore(
         # Select only the required columns from the DataFrame
         df=df,
         feature_thresholds=feature_thresholds,
         feature_thresholds_file=feature_thresholds_file,
+        rule_name=rule_name,
     )
     outliers_df = df[outliers_mask]
 
@@ -230,117 +228,206 @@ def find_outliers(
     return result
 
 
-def label_outliers(
+def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
     df: Union[CytoDataFrame, pd.DataFrame, str],
-    feature_thresholds: Optional[Union[Dict[str, float], str]] = None,
+    feature_thresholds: Optional[Union[Dict, str]] = None,
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
     include_threshold_scores: bool = False,
     export_path: Optional[str] = None,
+    export_mode: Optional[str] = None,
 ) -> CytoDataFrame:
     """
     Use identify_outliers to label the original dataset for
     where a cell passed or failed the quality control condition(s).
 
-        Args:
-            df: Union[CytoDataFrame, pd.DataFrame, str]
-                DataFrame or file string-based filepath of a
-                Parquet, CSV, or TSV file with CytoTable output or similar data.
-            feature_thresholds: Dict[str, float]
-                One of two options:
-                A dictionary with the feature name(s) as the key(s) and their assigned
-                threshold for identifying outliers. Positive int for the threshold
-                will detect outliers "above" than the mean, negative int will detect
-                outliers "below" the mean.
-                Or a string which is a named key reference found within
-                the feature_thresholds_file yaml file.
-            feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
-                An optional feature thresholds file where thresholds may be
-                defined within a file.
-            include_threshold_scores: bool = False
-                Whether to include the scores in addition to whether an outlier
-                was detected or not.
-            export_path: Optional[str] = None
-                An optional path to export the data using CytoDataFrame export
-                capabilities. If None no export is performed.
-                Note: compatible exports are CSV's, TSV's, and parquet.
+    Args:
+        df: Union[CytoDataFrame, pd.DataFrame, str]
+            DataFrame or file path (Parquet, CSV, or TSV).
 
-        Returns:
-            CytoDataFrame:
-                Full dataframe with optional scores and outlier boolean column.
+        feature_thresholds: Union[
+            Dict[str, float],
+            Dict[str, Dict[str, float]],
+            str,
+            None,
+        ]
+            Defines one or more QC conditions.
+
+            - Single condition:
+                {"feature": threshold}
+
+            - Multiple conditions:
+                {
+                    "weird_cells": {"feature1": -1, "feature2": -1},
+                    "large_cells": {"feature3": 2},
+                }
+
+            - String:
+                Named condition from the feature_thresholds_file.
+
+            - None:
+                Run all conditions defined in the thresholds file.
+
+        feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE
+            YAML file containing named threshold conditions.
+
+        include_threshold_scores: bool = False
+            If True, include per-feature z-score columns.
+
+        export_path: Optional[str] = None
+            Path to export results.
+
+        export_mode: str = "full"
+            - "full": entire dataset
+            - "annotation": metadata + QC columns
+
+    Returns:
+        CytoDataFrame:
+            Input dataframe with added QC columns:
+
+            - Metadata_cqc_<condition>_is_outlier
+            - (optional) Metadata_cqc_<condition>_<feature>_zscore
     """
 
-    # interpret the df as CytoDataFrame
+    # Ensure CytoDataFrame for consistent handling + metadata preservation
     if not isinstance(df, CytoDataFrame):
         df = CytoDataFrame(data=df)
 
-    # store the custom attributes
     custom_attrs = dict(df._custom_attrs)
 
-    # for single outlier processing
-    if isinstance(feature_thresholds, (str, dict)):
-        # return the outlier dataframe for one threshold rule
-        identified_outliers = identify_outliers(
-            df=df,
-            feature_thresholds=feature_thresholds,
+    # -------------------------
+    # Normalize thresholds input
+    # -------------------------
+    if isinstance(feature_thresholds, dict):
+        # Single condition: {"feature": threshold}
+        if all(isinstance(v, (int, float)) for v in feature_thresholds.values()):
+            thresholds_list = [("custom", feature_thresholds)]
+
+        # Multiple conditions: {"rule_name": {...}}
+        elif all(isinstance(v, dict) for v in feature_thresholds.values()):
+            thresholds_list = list(feature_thresholds.items())
+
+        else:
+            raise ValueError("Invalid feature_thresholds format.")
+
+    elif isinstance(feature_thresholds, str):
+        thresholds = read_thresholds_set_from_file(
             feature_thresholds_file=feature_thresholds_file,
-            include_threshold_scores=include_threshold_scores,
         )
 
-        result = CytoDataFrame(
-            data=pd.concat(
+        if feature_thresholds not in thresholds:
+            raise KeyError(
+                f"'{feature_thresholds}' not found in threshold file. "
+                f"Available keys: {list(thresholds.keys())}"
+            )
+
+        thresholds_list = [(feature_thresholds, thresholds[feature_thresholds])]
+
+    elif feature_thresholds is None:
+        # Run all rules in the file
+        thresholds_list = list(
+            read_thresholds_set_from_file(
+                feature_thresholds_file=feature_thresholds_file,
+            ).items()
+        )
+
+    else:
+        raise ValueError("Unsupported feature_thresholds type.")
+
+    # -------------------------
+    # Run outlier detection per rule
+    # -------------------------
+    results = [df]
+
+    for rule_name, thresholds in thresholds_list:
+        detected = _detect_outliers_zscore(
+            df=df,
+            feature_thresholds=thresholds,
+            feature_thresholds_file=feature_thresholds_file,
+            include_threshold_scores=True,
+            rule_name=rule_name,
+        )
+
+        # Identify columns by naming convention
+        zscore_cols = [c for c in detected.columns if c.endswith("_zscore")]
+        outlier_cols = [c for c in detected.columns if c.endswith("_is_outlier")]
+
+        # Combine multiple feature flags into a single outlier flag
+        combined_outlier = (
+            detected[outlier_cols[0]]
+            if len(outlier_cols) == 1
+            else detected[outlier_cols].any(axis=1)
+        )
+
+        # Final column name
+        condition_col = f"Metadata_cqc_{rule_name}_is_outlier"
+
+        # Place z-score columns first when requested, then the combined
+        # outlier annotation so output ordering matches historical output.
+        if include_threshold_scores and zscore_cols:
+            condition_df = pd.concat(
                 [
-                    df,
-                    (
-                        identified_outliers
-                        if isinstance(identified_outliers, pd.DataFrame)
-                        else CytoDataFrame(
-                            {
-                                (
-                                    f"cqc.{feature_thresholds}.is_outlier"
-                                    if isinstance(feature_thresholds, str)
-                                    else "cqc.custom.is_outlier"
-                                ): identified_outliers
-                            }
-                        )
-                    ),
+                    detected[zscore_cols],
+                    pd.DataFrame({condition_col: combined_outlier}),
                 ],
                 axis=1,
-            ),
-            # reuse the custom attributes
-            **custom_attrs,
-        )
+            )
+        else:
+            condition_df = pd.DataFrame({condition_col: combined_outlier})
 
-    # for multiple outlier processing
-    elif feature_thresholds is None:
-        # return the outlier dataframe for all threshold rules
-        labeled_df = pd.concat(
-            [df]
-            + [
-                # identify outliers for each threshold rule
-                identify_outliers(
-                    df=df,
-                    feature_thresholds=thresholds,
-                    feature_thresholds_file=feature_thresholds_file,
-                    include_threshold_scores=include_threshold_scores,
-                )
-                # loop through each threshold rule
-                for thresholds in read_thresholds_set_from_file(
-                    feature_thresholds_file=feature_thresholds_file,
-                )
-            ],
-            axis=1,
-        )
+        results.append(condition_df)
 
-        # return a dataframe with deduplicated columns by name
-        result = CytoDataFrame(
-            labeled_df.loc[:, ~labeled_df.columns.duplicated()],
-            # reuse the custom attributes
-            **custom_attrs,
-        )
+    # -------------------------
+    # Merge all results
+    # -------------------------
+    result = CytoDataFrame(
+        pd.concat(results, axis=1).loc[:, lambda x: ~x.columns.duplicated()],
+        **custom_attrs,
+    )
 
-    # export the file if specified
+    # -------------------------
+    # Optional export
+    # -------------------------
     if export_path is not None:
-        result.export(file_path=export_path)
+        if export_mode is None:
+            raise ValueError(
+                "export_mode must be specified when export_path is provided."
+            )
+
+        if export_mode == "annotation":
+
+            def _normalize_col(name: str) -> str:
+                return re.sub(r"[^a-z0-9]", "_", name.lower())
+
+            keywords = {"plate", "site", "well", "location_center", "locationcenter"}
+            metadata_cols = []
+
+            for col in result.columns:
+                if col.startswith("Image_Metadata"):
+                    metadata_cols.append(col)
+                    continue
+
+                norm = _normalize_col(col)
+
+                if any(k in norm for k in keywords) or (
+                    "location" in norm and "center" in norm
+                ):
+                    metadata_cols.append(col)
+
+            metadata_cols = list(dict.fromkeys(metadata_cols))
+
+            cqc_cols = [
+                col for col in result.columns if col.startswith("Metadata_cqc_")
+            ]
+
+            export_df = result[metadata_cols + cqc_cols]
+
+        elif export_mode == "full":
+            export_df = result
+
+        else:
+            raise ValueError(f"Invalid export_mode: {export_mode}")
+
+        export_df.export(file_path=export_path)
 
     return result
 

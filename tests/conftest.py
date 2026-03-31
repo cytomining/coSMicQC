@@ -35,7 +35,11 @@ def fixture_basic_outlier_dataframe():
     """
     Creates basic example data for use in tests
     """
-    return pd.DataFrame({"example_feature": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
+    return pd.DataFrame(
+        {
+            "example_feature": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        }
+    )
 
 
 @pytest.fixture(name="basic_outlier_csv")
