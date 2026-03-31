@@ -92,7 +92,6 @@ group.docs.dependencies.dunamai = "^1.22.0"
 # used for theming the docsite
 group.docs.dependencies.sphinx-wagtail-theme = "^6.3.0"
 requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
-scripts.cosmicqc = "cosmicqc.cli:cli_analyze"
 
 [tool.poetry.scripts]
 cosmicqc = "cosmicqc.cli:cli_analyze"
