@@ -19,6 +19,7 @@ def test_cli_util():
 
     assert returncode == 0
 
+
 def test_cli_identify_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     """
     Test the `identify_outliers` function of the CLI.
