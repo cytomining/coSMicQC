@@ -411,9 +411,13 @@ def label_outliers(  # noqa: PLR0913
         feature_thresholds_file=feature_thresholds_file,
     )
 
-    # Initialize results with the original dataframe to ensure we always have a base
-    # to concatenate to
-    results = [df]
+    # Start with the original dataframe and iteratively add outlier columns
+    # for each condition
+    base_df = df.drop(
+        columns=[c for c in df.columns if c.startswith("Metadata_cqc_")],
+        errors="ignore",
+    )
+    results = [base_df]
 
     # Loop through each set of thresholds and identify outliers
     for name, thresholds in thresholds_list:
@@ -438,10 +442,10 @@ def label_outliers(  # noqa: PLR0913
     # Concatenate all results along the columns, ensuring we don't duplicate columns
     clean_results = [r for r in results if isinstance(r, (pd.Series, pd.DataFrame))]
 
-    # Create the final result DataFrame, ensuring we don't have duplicate columns
-    # from multiple conditions
+    # Create the final result DataFrame by concatenating the original data
+    # with the new outlier columns
     result = CytoDataFrame(
-        pd.concat(clean_results, axis=1).loc[:, lambda x: ~x.columns.duplicated()],
+        pd.concat(clean_results, axis=1),
         **custom_attrs,
     )
 
