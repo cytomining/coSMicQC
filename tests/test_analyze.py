@@ -508,30 +508,30 @@ def test_label_outliers(
     )
 
 
-def test_detect_outliers_zscore(
+def test_identify_outliers(
     basic_outlier_dataframe: pd.DataFrame,
     basic_outlier_csv: str,
     cytotable_CFReT_data_df: pd.DataFrame,
 ):
     """
-    Tests _detect_outliers_zscore helper function
+    Tests identify_outliers helper function
     """
 
     # show that dataframe and csv output are the same
     pd.testing.assert_frame_equal(
-        analyze._detect_outliers_zscore(
+        analyze.identify_outliers(
             df=basic_outlier_dataframe,
             feature_thresholds={"example_feature": 1},
             include_threshold_scores=True,
         ),
-        analyze._detect_outliers_zscore(
+        analyze.identify_outliers(
             df=basic_outlier_csv,
             feature_thresholds={"example_feature": 1},
             include_threshold_scores=True,
         ),
     )
 
-    assert analyze._detect_outliers_zscore(
+    assert analyze.identify_outliers(
         df=basic_outlier_dataframe,
         feature_thresholds={"example_feature": 1},
         include_threshold_scores=True,
@@ -563,7 +563,7 @@ def test_detect_outliers_zscore(
     }
 
     pd.testing.assert_frame_equal(
-        analyze._detect_outliers_zscore(
+        analyze.identify_outliers(
             df=cytotable_CFReT_data_df,
             feature_thresholds="large_nuclei",
             include_threshold_scores=True,
@@ -573,7 +573,7 @@ def test_detect_outliers_zscore(
         ),
     )
 
-    identified_df = analyze._detect_outliers_zscore(
+    identified_df = analyze.identify_outliers(
         df=cytotable_CFReT_data_df,
         feature_thresholds="large_nuclei",
     )

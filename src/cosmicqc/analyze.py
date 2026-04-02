@@ -18,7 +18,7 @@ DEFAULT_QC_THRESHOLD_FILE = (
 )
 
 
-def _detect_outliers_zscore(  # noqa: C901, PLR0913
+def identify_outliers(  # noqa: C901, PLR0913
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: Union[Dict[str, float], str],
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
@@ -196,8 +196,8 @@ def find_outliers(
         )
         df = df.dropna(subset=list(feature_thresholds.keys()))
 
-    # Filter DataFrame for outliers using _detect_outliers_zscore
-    outliers_mask = _detect_outliers_zscore(
+    # Filter DataFrame for outliers using identify_outliers
+    outliers_mask = identify_outliers(
         # Select only the required columns from the DataFrame
         df=df,
         feature_thresholds=feature_thresholds,
@@ -339,7 +339,7 @@ def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
     results = [df]
 
     for rule_name, thresholds in thresholds_list:
-        detected = _detect_outliers_zscore(
+        detected = identify_outliers(
             df=df,
             feature_thresholds=thresholds,
             feature_thresholds_file=feature_thresholds_file,
