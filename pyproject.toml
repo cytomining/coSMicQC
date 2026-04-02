@@ -178,7 +178,7 @@ quarto preview \
 tasks.poster-render.shell = """
   quarto render \
   docs/presentations/2024-09-18-SBI2-Conference/poster.qmd
-  mkdir docs/src/media
+  mkdir -p docs/src/media
   mv docs/presentations/2024-09-18-SBI2-Conference/sbi2-2024-cosmicqc-poster.pdf \
   docs/src/media
 """
