@@ -38,7 +38,7 @@ def test_cli_identify_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     assert parquet.read_table(
         f"{tmp_path}/identify_outliers_output.parquet"
     ).to_pydict() == {
-        "cqc.custom.Z_Score.example_feature": [
+        "Metadata_cqc_custom_example_feature_zscore": [
             False,
             False,
             False,
@@ -90,7 +90,7 @@ def test_cli_label_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
             f"""cosmicqc label_outliers --df {basic_outlier_csv}"""
             """ --feature_thresholds {"example_feature":1.0}"""
             f" --export_path {tmp_path}/label_outliers_output.parquet"
-            " --export_mode full"
+            " --export_as_annotations False"
         )
     )
 
@@ -133,7 +133,7 @@ def test_cli_label_outliers_multiple_conditions(
         )
         + " --export_path "
         + str(tmp_path / "label_outliers_output.parquet")
-        + " --export_mode full"
+        + " --export_as_annotations False"
     )
 
     _, _, returncode = run_cli_command(command)

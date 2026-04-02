@@ -689,7 +689,7 @@ def test_label_outliers_annotation_export(
         feature_thresholds={"example_feature": 1},
         include_threshold_scores=False,
         export_path=str(export_path),
-        export_mode="annotation",
+        export_as_annotations=True,
     )
 
     # read exported parquet and assert columns are metadata then cqc columns

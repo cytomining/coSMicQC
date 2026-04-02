@@ -228,13 +228,13 @@ def find_outliers(
     return result
 
 
-def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
+def label_outliers(  # noqa: C901, PLR0912, PLR0913
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: Optional[Union[Dict, str]] = None,
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
     include_threshold_scores: bool = False,
     export_path: Optional[str] = None,
-    export_mode: Optional[str] = None,
+    export_as_annotations: bool = False,
 ) -> CytoDataFrame:
     """
     Use identify_outliers to label the original dataset for
@@ -276,9 +276,9 @@ def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
         export_path: Optional[str] = None
             Path to export results.
 
-        export_mode: str = "full"
-            - "full": entire dataset
-            - "annotation": metadata + QC columns
+        export_as_annotations: bool = False
+            If True, export only metadata + QC columns (annotations file).
+            If False, export the full dataset.
 
     Returns:
         CytoDataFrame:
@@ -388,12 +388,7 @@ def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
     # Optional export
     # -------------------------
     if export_path is not None:
-        if export_mode is None:
-            raise ValueError(
-                "export_mode must be specified when export_path is provided."
-            )
-
-        if export_mode == "annotation":
+        if export_as_annotations:
 
             def _normalize_col(name: str) -> str:
                 return re.sub(r"[^a-z0-9]", "_", name.lower())
@@ -421,11 +416,8 @@ def label_outliers(  # noqa: C901, PLR0912, PLR0913, PLR0915
 
             export_df = result[metadata_cols + cqc_cols]
 
-        elif export_mode == "full":
-            export_df = result
-
         else:
-            raise ValueError(f"Invalid export_mode: {export_mode}")
+            export_df = result
 
         export_df.export(file_path=export_path)
 
