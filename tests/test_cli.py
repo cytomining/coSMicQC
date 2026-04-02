@@ -38,7 +38,7 @@ def test_cli_identify_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     assert parquet.read_table(
         f"{tmp_path}/identify_outliers_output.parquet"
     ).to_pydict() == {
-        "Metadata_cqc_custom_example_feature_zscore": [
+        "Metadata_cqc_custom_is_outlier": [
             False,
             False,
             False,
