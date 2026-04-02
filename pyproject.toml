@@ -159,6 +159,7 @@ run.omit = [
 ]
 
 # set dynamic versioning capabilities for project
+
 [tool.bandit]
 exclude_dirs = [ "tests" ]
 
