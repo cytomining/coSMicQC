@@ -318,6 +318,169 @@ def test_read_thresholds_set_from_file():
     }
 
 
+def test_convert_feature_threshold_input_to_named_threshold_dicts_none(
+    tmp_path: pathlib.Path,
+):
+    """
+    Test converting None into all named threshold sets from a YAML file.
+    """
+
+    thresholds_file = tmp_path / "thresholds.yml"
+    thresholds_file.write_text(
+        """
+thresholds:
+  low_feature:
+    example_feature: -1
+  high_feature:
+    example_feature: 2
+""".strip()
+    )
+
+    assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
+        feature_thresholds_file=str(thresholds_file),
+        feature_thresholds=None,
+    ) == [
+        ("low_feature", {"example_feature": -1}),
+        ("high_feature", {"example_feature": 2}),
+    ]
+
+
+def test_convert_feature_threshold_input_to_named_threshold_dicts_string(
+    tmp_path: pathlib.Path,
+):
+    """
+    Test converting a named threshold key into one named threshold tuple.
+    """
+
+    thresholds_file = tmp_path / "thresholds.yml"
+    thresholds_file.write_text(
+        """
+thresholds:
+  weird_cells:
+    example_feature: 1
+""".strip()
+    )
+
+    assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
+        feature_thresholds_file=str(thresholds_file),
+        feature_thresholds="weird_cells",
+    ) == [("weird_cells", {"example_feature": 1})]
+
+
+def test_convert_feature_threshold_input_to_named_threshold_dicts_inline_dict_warns():
+    """
+    Test inline thresholds become a custom named tuple and warn on file override.
+    """
+
+    with pytest.warns(UserWarning, match="feature_thresholds_file` will be ignored"):
+        assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
+            feature_thresholds_file="custom_thresholds.yml",
+            feature_thresholds={"example_feature": 1},
+        ) == [("custom", {"example_feature": 1})]
+
+
+def test_convert_feature_threshold_input_to_named_threshold_dicts_multiple_dicts():
+    """
+    Test multiple inline named threshold dictionaries are returned unchanged.
+    """
+
+    feature_thresholds = {
+        "weird_cells": {"example_feature": 1},
+        "large_cells": {"example_feature": 2},
+    }
+
+    assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
+        feature_thresholds_file=analyze.DEFAULT_QC_THRESHOLD_FILE,
+        feature_thresholds=feature_thresholds,
+    ) == list(feature_thresholds.items())
+
+
+@pytest.mark.parametrize(
+    "feature_thresholds",
+    [
+        {},
+        {"example_feature": "bad"},
+        {"weird_cells": {"example_feature": 1}, "bad_feature": 2},
+    ],
+)
+def test_convert_feature_threshold_input_to_named_threshold_dicts_invalid_input(
+    feature_thresholds: object,
+):
+    """
+    Test invalid threshold inputs raise a ValueError.
+    """
+
+    with pytest.raises(ValueError, match="feature_thresholds"):
+        analyze._convert_feature_threshold_input_to_named_threshold_dicts(
+            feature_thresholds_file=analyze.DEFAULT_QC_THRESHOLD_FILE,
+            feature_thresholds=feature_thresholds,
+        )
+
+
+def test_create_condition_map_creates_conditions_and_reuses_zscores():
+    """
+    Test condition generation and z-score column reuse for one prefix.
+    """
+
+    df = CytoDataFrame(
+        pd.DataFrame(
+            {
+                "high_feature": [1, 2, 3, 4, 5],
+                "low_feature": [5, 4, 3, 2, 1],
+            }
+        )
+    )
+    outlier_df = df.copy()
+    thresholds = {"high_feature": 1, "low_feature": -1}
+
+    conditions, zscore_columns = analyze._create_condition_map(
+        df=df,
+        outlier_df=outlier_df,
+        thresholds=thresholds,
+        name_prefix="Metadata_cqc_custom",
+    )
+
+    assert zscore_columns == {
+        "high_feature": "Metadata_cqc_custom_high_feature_zscore",
+        "low_feature": "Metadata_cqc_custom_low_feature_zscore",
+    }
+    assert len(conditions) == 2
+    assert conditions[0].tolist() == [False, False, False, False, True]
+    assert conditions[1].tolist() == [False, False, False, False, True]
+
+    original_high_zscore = outlier_df[zscore_columns["high_feature"]].copy()
+
+    analyze._create_condition_map(
+        df=df,
+        outlier_df=outlier_df,
+        thresholds={"high_feature": 1},
+        name_prefix="Metadata_cqc_custom",
+    )
+
+    pd.testing.assert_series_equal(
+        outlier_df[zscore_columns["high_feature"]],
+        original_high_zscore,
+        check_names=False,
+    )
+
+
+def test_create_condition_map_raises_for_missing_feature():
+    """
+    Test that missing features are rejected clearly.
+    """
+
+    df = CytoDataFrame(pd.DataFrame({"example_feature": [1, 2, 3]}))
+    outlier_df = df.copy()
+
+    with pytest.raises(ValueError, match="does not exist"):
+        analyze._create_condition_map(
+            df=df,
+            outlier_df=outlier_df,
+            thresholds={"missing_feature": 1},
+            name_prefix="Metadata_cqc_custom",
+        )
+
+
 def test_find_outliers_dict_and_default_config_cfret(
     cytotable_CFReT_data_df: pd.DataFrame,
 ):
@@ -587,6 +750,76 @@ def test_identify_outliers(
     )
 
 
+def test_identify_outliers_multiple_conditions_returns_cytodataframe(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Ensure multiple conditions return a combined CytoDataFrame.
+    """
+
+    result = analyze.identify_outliers(
+        df=basic_outlier_dataframe,
+        feature_thresholds={
+            "weird_cells": {"example_feature": 1},
+            "large_cells": {"example_feature": 2},
+        },
+        include_threshold_scores=False,
+    )
+
+    assert isinstance(result, CytoDataFrame)
+    assert result.to_dict(orient="dict") == {
+        "Metadata_cqc_weird_cells_is_outlier": {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+            9: True,
+        },
+        "Metadata_cqc_large_cells_is_outlier": {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+        },
+    }
+
+
+def test_identify_outliers_multiple_conditions_with_scores_returns_cytodataframe(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Ensure multiple conditions with scores return one combined CytoDataFrame.
+    """
+
+    result = analyze.identify_outliers(
+        df=basic_outlier_dataframe,
+        feature_thresholds={
+            "weird_cells": {"example_feature": 1},
+            "large_cells": {"example_feature": 2},
+        },
+        include_threshold_scores=True,
+    )
+
+    assert isinstance(result, CytoDataFrame)
+    assert list(result.columns) == [
+        "Metadata_cqc_weird_cells_example_feature_zscore",
+        "Metadata_cqc_weird_cells_is_outlier",
+        "Metadata_cqc_large_cells_example_feature_zscore",
+        "Metadata_cqc_large_cells_is_outlier",
+    ]
+
+
 def test_label_outliers_retains_custom_attrs(basic_outlier_dataframe: pd.DataFrame):
     """
     Tests that label_outliers retains custom attributes
@@ -672,14 +905,15 @@ def test_label_outliers_annotation_export(
     tmp_path: pathlib.Path, basic_outlier_dataframe: pd.DataFrame
 ):
     """
-    Ensure `label_outliers` exports only metadata + QC columns when
-    `export_mode='annotation'` is used.
+    Ensure `label_outliers` exports user-selected metadata + QC columns when
+    `export_as_annotations=True` is used.
     """
 
-    # prepare data with Image metadata columns so annotation mode can detect them
+    # prepare data with metadata columns used for downstream annotation
     df = basic_outlier_dataframe.copy()
     df["Image_Metadata_Plate"] = "plate1"
     df["Image_Metadata_Well"] = "A01"
+    df["Image_Metadata_Site"] = "site1"
 
     export_path = tmp_path / "annotation_output.parquet"
 
@@ -690,14 +924,18 @@ def test_label_outliers_annotation_export(
         include_threshold_scores=False,
         export_path=str(export_path),
         export_as_annotations=True,
+        annotation_metadata_columns=[
+            "Image_Metadata_Plate",
+            "Image_Metadata_Site",
+        ],
     )
 
-    # read exported parquet and assert columns are metadata then cqc columns
+    # read exported parquet and assert columns are the requested metadata then CQC
     exported = pd.read_parquet(export_path)
 
     assert list(exported.columns) == [
         "Image_Metadata_Plate",
-        "Image_Metadata_Well",
+        "Image_Metadata_Site",
         "Metadata_cqc_custom_is_outlier",
     ]
 
@@ -714,3 +952,21 @@ def test_label_outliers_annotation_export(
         True,
         True,
     ]
+
+
+def test_label_outliers_annotation_export_requires_metadata_columns(
+    tmp_path: pathlib.Path, basic_outlier_dataframe: pd.DataFrame
+):
+    """
+    Ensure annotation export requires explicit metadata columns.
+    """
+
+    export_path = tmp_path / "annotation_output_missing_metadata.parquet"
+
+    with pytest.raises(ValueError, match="annotation_metadata_columns"):
+        analyze.label_outliers(
+            df=basic_outlier_dataframe,
+            feature_thresholds={"example_feature": 1},
+            export_path=str(export_path),
+            export_as_annotations=True,
+        )

@@ -4,6 +4,7 @@ Tests cosmicqc cli module
 
 import pathlib
 
+import pandas as pd
 from pyarrow import parquet
 
 from .utils import run_cli_command
@@ -166,5 +167,51 @@ def test_cli_label_outliers_multiple_conditions(
             False,
             False,
             False,
+        ],
+    }
+
+
+def test_cli_label_outliers_annotation_export(tmp_path: pathlib.Path):
+    """
+    Test the `label_outliers` CLI annotation export path.
+    """
+
+    input_path = tmp_path / "basic_annotation_example.csv"
+    annotation_metadata_columns = '["Image_Metadata_Plate","Image_Metadata_Site"]'
+    pd.DataFrame(
+        {
+            "example_feature": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "Image_Metadata_Plate": ["plate1"] * 10,
+            "Image_Metadata_Site": ["site1"] * 10,
+        }
+    ).to_csv(input_path, index=False)
+
+    _, _, returncode = run_cli_command(
+        (
+            f"cosmicqc label_outliers --df {input_path}"
+            ' --feature_thresholds {"example_feature":1.0}'
+            f" --export_path {tmp_path}/label_outliers_annotations.parquet"
+            " --export_as_annotations True"
+            f" --annotation_metadata_columns {annotation_metadata_columns}"
+        )
+    )
+
+    assert returncode == 0
+    assert parquet.read_table(
+        f"{tmp_path}/label_outliers_annotations.parquet"
+    ).to_pydict() == {
+        "Image_Metadata_Plate": ["plate1"] * 10,
+        "Image_Metadata_Site": ["site1"] * 10,
+        "Metadata_cqc_custom_is_outlier": [
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            True,
+            True,
         ],
     }
