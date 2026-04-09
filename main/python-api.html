@@ -232,10 +232,85 @@ For the latest released version, please have a look at <a href="../v1.0.1/index.
 <span id="cosmicqc-analyze"></span><h2>cosmicqc.analyze<a class="headerlink" href="#module-src.cosmicqc.analyze" title="Link to this heading">¶</a></h2>
 <p>Module for detecting various quality control aspects from source data.</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="src.cosmicqc.analyze._convert_feature_threshold_input_to_named_threshold_dicts">
+<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">_convert_feature_threshold_input_to_named_threshold_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#_convert_feature_threshold_input_to_named_threshold_dicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze._convert_feature_threshold_input_to_named_threshold_dicts" title="Link to this definition">¶</a></dt>
+<dd><p>Convert feature threshold input into named threshold dictionaries
+for processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_thresholds_file</strong> – str
+Path to the YAML file containing threshold definitions.</p></li>
+<li><p><strong>feature_thresholds</strong> – LabelOutliersFeatureThresholdInput
+If you do not provide feature_thresholds, the function will default to using
+the default YAML file.
+- None: Use all thresholds from the file (only applicable to
+<cite>label_outliers</cite>).
+- str: Named threshold set from the file.
+- Dict[str, float]: Single unnamed threshold set.
+- Dict[str, Dict[str, float]]: Multiple named threshold sets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of (name, thresholds_dict) tuples.
+If a single unnamed threshold dictionary is provided as input, it will be
+returned with the name “custom”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Tuple[str, Dict[str, float]]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the input format is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.cosmicqc.analyze._create_condition_map">
+<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">_create_condition_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#_create_condition_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze._create_condition_map" title="Link to this definition">¶</a></dt>
+<dd><p>Create boolean outlier conditions and z-score column names for one threshold set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – CytoDataFrame
+Source data used to calculate z-scores.</p></li>
+<li><p><strong>outlier_df</strong> – CytoDataFrame
+Working dataframe where z-score columns are stored.</p></li>
+<li><p><strong>thresholds</strong> – Dict[str, float]
+Dictionary of feature thresholds.</p></li>
+<li><p><strong>name_prefix</strong> – str
+Prefix to use when naming z-score columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a feature in thresholds does not exist in the DataFrame.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Tuple[List[pd.Series], Dict[str, str]]</dt><dd><p>A list of boolean condition series and a mapping of features to their
+z-score column names.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.cosmicqc.analyze._warn_if_inline_thresholds_ignore_file">
+<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">_warn_if_inline_thresholds_ignore_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#_warn_if_inline_thresholds_ignore_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze._warn_if_inline_thresholds_ignore_file" title="Link to this definition">¶</a></dt>
+<dd><p>Warn when inline thresholds override a non-default thresholds file.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="src.cosmicqc.analyze.find_outliers">
 <span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">find_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_QC_THRESHOLD_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#find_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze.find_outliers" title="Link to this definition">¶</a></dt>
 <dd><p>This function uses identify_outliers to return a dataframe
 with only the outliers and provided metadata columns.</p>
+<p>NOTE: This function can only be used with a single set of feature thresholds
+for finding what outliers look like in the data. For multiple sets of
+feature thresholds, use label_outliers instead and filter the results for
+the condition(s) of interest.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -272,86 +347,128 @@ Note: compatible exports are CSV’s, TSV’s, and parquet.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.cosmicqc.analyze.identify_outliers">
-<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">identify_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_QC_THRESHOLD_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_threshold_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CytoDataFrame</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#identify_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze.identify_outliers" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">identify_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_QC_THRESHOLD_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_threshold_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CytoDataFrame</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#identify_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze.identify_outliers" title="Link to this definition">¶</a></dt>
 <dd><p>This function uses z-scoring to format the data for detecting outlier
-nuclei or cells using specific CellProfiler features. Thresholds are
-the number of standard deviations away from the mean, either above
-(positive) or below (negative). We recommend making sure to not use a
-threshold of 0 as that would represent the whole dataset.</p>
+nuclei or cells using specific CellProfiler features.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> – Union[CytoDataFrame, pd.DataFrame, str]
-DataFrame or file string-based filepath of a
-Parquet, CSV, or TSV file with CytoTable output or similar data.</p></li>
-<li><p><strong>feature_thresholds</strong> – Dict[str, float]
-One of two options:
-A dictionary with the feature name(s) as the key(s) and their assigned
-threshold for identifying outliers. Positive int for the threshold
-will detect outliers “above” than the mean, negative int will detect
-outliers “below” the mean.
-Or a string which is a named key reference found within
-the feature_thresholds_file yaml file.</p></li>
-<li><p><strong>feature_thresholds_file</strong> – Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
-An optional feature thresholds file where thresholds may be
-defined within a file.</p></li>
+Input dataframe or file path.</p></li>
+<li><p><strong>feature_thresholds</strong> – IdentifyOutliersFeatureThresholdInput
+Either:
+1. {feature: threshold}
+2. {condition_name: {feature: threshold}}
+3. string key from a YAML file</p></li>
 <li><p><strong>include_threshold_scores</strong> – bool
-Whether to include the threshold scores in addition to whether
-the threshold set passes per row.</p></li>
-<li><p><strong>export_path</strong> – Optional[str] = None
-An optional path to export the data using CytoDataFrame export
-capabilities. If None no export is performed.
-Note: compatible exports are CSV’s, TSV’s, and parquet.</p></li>
+Whether to include z-score columns in the output.</p></li>
+<li><p><strong>condition_name</strong> – Optional[str]
+Optional explicit name to use for CQC columns when
+<cite>feature_thresholds</cite> is a single dict (only features and thresholds).
+Default name is “custom” if not provided.</p></li>
+<li><p><strong>export_path</strong> – Optional[str]
+If provided, export the result.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Outlier series with booleans based on whether outliers were detected
-or not for use within other functions.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>Union[pd.Series, CytoDataFrame]</dt><dd><p>Return shape depends on whether one or multiple conditions are provided:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Single condition:</dt><dd><p>Returns a boolean <cite>pd.Series</cite> if <cite>include_threshold_scores</cite> is False.
+Returns a <cite>CytoDataFrame</cite> with z-score columns and the outlier column
+if <cite>include_threshold_scores</cite> is True.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[pd.Series, CytoDataFrame]</p>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Multiple conditions via <cite>Dict[str, Dict[str, float]]</cite>:</dt><dd><p>Returns a <cite>CytoDataFrame</cite>.
+If <cite>include_threshold_scores</cite> is False, it contains one outlier
+column per condition.
+If <cite>include_threshold_scores</cite> is True, it contains the per-condition
+z-score columns plus one outlier column per condition.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.cosmicqc.analyze.label_outliers">
-<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">label_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_QC_THRESHOLD_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_threshold_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CytoDataFrame</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#label_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze.label_outliers" title="Link to this definition">¶</a></dt>
-<dd><p>Use identify_outliers to label the original dataset for
-where a cell passed or failed the quality control condition(s).</p>
-<blockquote>
-<div><dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>df: Union[CytoDataFrame, pd.DataFrame, str]</dt><dd><p>DataFrame or file string-based filepath of a
-Parquet, CSV, or TSV file with CytoTable output or similar data.</p>
-</dd>
-<dt>feature_thresholds: Dict[str, float]</dt><dd><p>One of two options:
-A dictionary with the feature name(s) as the key(s) and their assigned
-threshold for identifying outliers. Positive int for the threshold
-will detect outliers “above” than the mean, negative int will detect
-outliers “below” the mean.
-Or a string which is a named key reference found within
-the feature_thresholds_file yaml file.</p>
-</dd>
-<dt>feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,</dt><dd><p>An optional feature thresholds file where thresholds may be
-defined within a file.</p>
-</dd>
-<dt>include_threshold_scores: bool = False</dt><dd><p>Whether to include the scores in addition to whether an outlier
-was detected or not.</p>
-</dd>
-<dt>export_path: Optional[str] = None</dt><dd><p>An optional path to export the data using CytoDataFrame export
-capabilities. If None no export is performed.
-Note: compatible exports are CSV’s, TSV’s, and parquet.</p>
+<span class="sig-prename descclassname"><span class="pre">src.cosmicqc.analyze.</span></span><span class="sig-name descname"><span class="pre">label_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CytoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_thresholds_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_QC_THRESHOLD_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_threshold_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_as_annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_metadata_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CytoDataFrame</span></span></span><a class="reference internal" href="_modules/src/cosmicqc/analyze.html#label_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.cosmicqc.analyze.label_outliers" title="Link to this definition">¶</a></dt>
+<dd><p>This function labels outliers in the input dataframe based on specified
+feature thresholds and exports the whole dataframe or an annotations file with
+just metadata and outlier labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – Union[CytoDataFrame, pd.DataFrame, str]
+DataFrame or file path (Parquet, CSV, or TSV).</p></li>
+<li><p><strong>feature_thresholds</strong> – <p>LabelOutliersFeatureThresholdInput
+Defines one or more QC conditions.</p>
+<ul>
+<li><dl class="simple">
+<dt>Single condition:</dt><dd><p>{“feature”: threshold}</p>
 </dd>
 </dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>CytoDataFrame:</dt><dd><p>Full dataframe with optional scores and outlier boolean column.</p>
+</li>
+<li><dl>
+<dt>Multiple conditions:</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>“undersegmented_cells”: {“feature1”: -1, “feature2”: -1},
+“oversegmented_nuclei”: {“feature3”: 2},</p>
 </dd>
 </dl>
+<p>}</p>
 </dd>
 </dl>
-</div></blockquote>
+</li>
+<li><dl class="simple">
+<dt>String:</dt><dd><p>Named condition from the feature_thresholds_file.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>None:</dt><dd><p>Run all conditions defined in the thresholds file.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+<li><p><strong>feature_thresholds_file</strong> – Optional[str] = DEFAULT_QC_THRESHOLD_FILE
+YAML file containing named threshold conditions.</p></li>
+<li><p><strong>include_threshold_scores</strong> – bool = False
+If True, include per-feature z-score columns in the output.</p></li>
+<li><p><strong>export_path</strong> – Optional[str] = None
+Path to export results.</p></li>
+<li><p><strong>export_as_annotations</strong> – bool = False
+If True, export only metadata + QC columns (annotations file).
+If False, export the full dataset.</p></li>
+<li><p><strong>annotation_metadata_columns</strong> – Optional[List[str]] = None
+Metadata columns to include when <cite>export_as_annotations=True</cite>.
+If annotation export is requested, these columns are required and
+will be written alongside the generated <cite>Metadata_cqc_*</cite> columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Either the full dataframe or only metadata with added QC columns:</p>
+<ul class="simple">
+<li><p>Metadata_cqc_&lt;condition&gt;_is_outlier</p></li>
+<li><p>(optional) Metadata_cqc_&lt;condition&gt;_&lt;feature&gt;_zscore if</p></li>
+</ul>
+<p>include_threshold_scores=True</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">export_as_annotations=True</span></code>, the exported file contains only
+<cite>annotation_metadata_columns</cite> plus QC-related columns.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>CytoDataFrame</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -442,6 +559,9 @@ within the analyze module.</p>
                             <ul>
 <li><a class="reference internal" href="#">Python API</a><ul>
 <li><a class="reference internal" href="#module-src.cosmicqc.analyze">cosmicqc.analyze</a><ul>
+<li><a class="reference internal" href="#src.cosmicqc.analyze._convert_feature_threshold_input_to_named_threshold_dicts"><code class="docutils literal notranslate"><span class="pre">_convert_feature_threshold_input_to_named_threshold_dicts()</span></code></a></li>
+<li><a class="reference internal" href="#src.cosmicqc.analyze._create_condition_map"><code class="docutils literal notranslate"><span class="pre">_create_condition_map()</span></code></a></li>
+<li><a class="reference internal" href="#src.cosmicqc.analyze._warn_if_inline_thresholds_ignore_file"><code class="docutils literal notranslate"><span class="pre">_warn_if_inline_thresholds_ignore_file()</span></code></a></li>
 <li><a class="reference internal" href="#src.cosmicqc.analyze.find_outliers"><code class="docutils literal notranslate"><span class="pre">find_outliers()</span></code></a></li>
 <li><a class="reference internal" href="#src.cosmicqc.analyze.identify_outliers"><code class="docutils literal notranslate"><span class="pre">identify_outliers()</span></code></a></li>
 <li><a class="reference internal" href="#src.cosmicqc.analyze.label_outliers"><code class="docutils literal notranslate"><span class="pre">label_outliers()</span></code></a></li>
