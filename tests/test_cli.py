@@ -129,8 +129,8 @@ def test_cli_label_outliers_multiple_conditions(
         + str(basic_outlier_csv)
         + " --feature_thresholds "
         + (
-            '{"weird_cells":{"example_feature":1.0},'
-            '"large_cells":{"example_feature":2.0}}'
+            '{"oversegmented_cells":{"example_feature":1.0},'
+            '"missegmented_cells":{"example_feature":2.0}}'
         )
         + " --export_path "
         + str(tmp_path / "label_outliers_output.parquet")
@@ -144,7 +144,7 @@ def test_cli_label_outliers_multiple_conditions(
         f"{tmp_path}/label_outliers_output.parquet"
     ).to_pydict() == {
         "example_feature": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "Metadata_cqc_weird_cells_is_outlier": [
+        "Metadata_cqc_oversegmented_cells_is_outlier": [
             False,
             False,
             False,
@@ -156,7 +156,7 @@ def test_cli_label_outliers_multiple_conditions(
             True,
             True,
         ],
-        "Metadata_cqc_large_cells_is_outlier": [
+        "Metadata_cqc_missegmented_cells_is_outlier": [
             False,
             False,
             False,

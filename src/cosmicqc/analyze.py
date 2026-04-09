@@ -466,8 +466,8 @@ def label_outliers(  # noqa: PLR0913
 
             - Multiple conditions:
                 {
-                    "weird_cells": {"feature1": -1, "feature2": -1},
-                    "large_cells": {"feature3": 2},
+                    "undersegmented_cells": {"feature1": -1, "feature2": -1},
+                    "oversegmented_nuclei": {"feature3": 2},
                 }
 
             - String:

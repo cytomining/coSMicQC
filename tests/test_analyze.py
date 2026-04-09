@@ -356,15 +356,15 @@ def test_convert_feature_threshold_input_to_named_threshold_dicts_string(
     thresholds_file.write_text(
         """
 thresholds:
-  weird_cells:
+  oversegmented_cells:
     example_feature: 1
 """.strip()
     )
 
     assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
         feature_thresholds_file=str(thresholds_file),
-        feature_thresholds="weird_cells",
-    ) == [("weird_cells", {"example_feature": 1})]
+        feature_thresholds="oversegmented_cells",
+    ) == [("oversegmented_cells", {"example_feature": 1})]
 
 
 def test_convert_feature_threshold_input_to_named_threshold_dicts_inline_dict_warns():
@@ -385,8 +385,8 @@ def test_convert_feature_threshold_input_to_named_threshold_dicts_multiple_dicts
     """
 
     feature_thresholds = {
-        "weird_cells": {"example_feature": 1},
-        "large_cells": {"example_feature": 2},
+        "oversegmented_cells": {"example_feature": 1},
+        "missegmented_cells": {"example_feature": 2},
     }
 
     assert analyze._convert_feature_threshold_input_to_named_threshold_dicts(
@@ -400,7 +400,7 @@ def test_convert_feature_threshold_input_to_named_threshold_dicts_multiple_dicts
     [
         {},
         {"example_feature": "bad"},
-        {"weird_cells": {"example_feature": 1}, "bad_feature": 2},
+        {"oversegmented_cells": {"example_feature": 1}, "bad_feature": 2},
     ],
 )
 def test_convert_feature_threshold_input_to_named_threshold_dicts_invalid_input(
@@ -760,15 +760,15 @@ def test_identify_outliers_multiple_conditions_returns_cytodataframe(
     result = analyze.identify_outliers(
         df=basic_outlier_dataframe,
         feature_thresholds={
-            "weird_cells": {"example_feature": 1},
-            "large_cells": {"example_feature": 2},
+            "oversegmented_cells": {"example_feature": 1},
+            "missegmented_cells": {"example_feature": 2},
         },
         include_threshold_scores=False,
     )
 
     assert isinstance(result, CytoDataFrame)
     assert result.to_dict(orient="dict") == {
-        "Metadata_cqc_weird_cells_is_outlier": {
+        "Metadata_cqc_oversegmented_cells_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -780,7 +780,7 @@ def test_identify_outliers_multiple_conditions_returns_cytodataframe(
             8: True,
             9: True,
         },
-        "Metadata_cqc_large_cells_is_outlier": {
+        "Metadata_cqc_missegmented_cells_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -805,18 +805,18 @@ def test_identify_outliers_multiple_conditions_with_scores_returns_cytodataframe
     result = analyze.identify_outliers(
         df=basic_outlier_dataframe,
         feature_thresholds={
-            "weird_cells": {"example_feature": 1},
-            "large_cells": {"example_feature": 2},
+            "oversegmented_cells": {"example_feature": 1},
+            "missegmented_cells": {"example_feature": 2},
         },
         include_threshold_scores=True,
     )
 
     assert isinstance(result, CytoDataFrame)
     assert list(result.columns) == [
-        "Metadata_cqc_weird_cells_example_feature_zscore",
-        "Metadata_cqc_weird_cells_is_outlier",
-        "Metadata_cqc_large_cells_example_feature_zscore",
-        "Metadata_cqc_large_cells_is_outlier",
+        "Metadata_cqc_oversegmented_cells_example_feature_zscore",
+        "Metadata_cqc_oversegmented_cells_is_outlier",
+        "Metadata_cqc_missegmented_cells_example_feature_zscore",
+        "Metadata_cqc_missegmented_cells_is_outlier",
     ]
 
 
@@ -851,8 +851,8 @@ def test_label_outliers_multiple_conditions(basic_outlier_dataframe: pd.DataFram
     """
 
     feature_thresholds = {
-        "weird_cells": {"example_feature": 1},
-        "large_cells": {"example_feature": 2},
+        "oversegmented_cells": {"example_feature": 1},
+        "missegmented_cells": {"example_feature": 2},
     }
     # run label_outliers with multiple named conditions
     result = analyze.label_outliers(
@@ -860,7 +860,7 @@ def test_label_outliers_multiple_conditions(basic_outlier_dataframe: pd.DataFram
     )
 
     # expected: last two values (9,10) are outliers for threshold 1,
-    # and none exceed threshold 2 so large_cells flags remain False
+    # and none exceed threshold 2 so missegmented_cells flags remain False
     assert result.to_dict(orient="dict") == {
         "example_feature": {
             0: 1,
@@ -874,7 +874,7 @@ def test_label_outliers_multiple_conditions(basic_outlier_dataframe: pd.DataFram
             8: 9,
             9: 10,
         },
-        "Metadata_cqc_weird_cells_is_outlier": {
+        "Metadata_cqc_oversegmented_cells_is_outlier": {
             0: False,
             1: False,
             2: False,
@@ -886,7 +886,7 @@ def test_label_outliers_multiple_conditions(basic_outlier_dataframe: pd.DataFram
             8: True,
             9: True,
         },
-        "Metadata_cqc_large_cells_is_outlier": {
+        "Metadata_cqc_missegmented_cells_is_outlier": {
             0: False,
             1: False,
             2: False,
