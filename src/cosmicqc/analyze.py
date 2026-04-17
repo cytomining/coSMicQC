@@ -180,6 +180,39 @@ def _create_condition_map(
     return conditions, zscore_columns
 
 
+def _build_filter_display_options(
+    threshold_sets: List[Dict[str, float]],
+    source_df: pd.DataFrame,
+    existing_display_options: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Build display options for thresholded columns in CytoDataFrame plots.
+
+    Thresholds are provided to coSMicQC as z-scores, but CytoDataFrame plot lines
+    should use feature-scale values. We therefore convert each z-score threshold to
+    the corresponding feature value using ``mean + z * std``.
+    """
+    filter_plot_thresholds: Dict[str, float] = {}
+    for thresholds in threshold_sets:
+        for feature, zscore_threshold in thresholds.items():
+            feature_series = source_df[feature]
+            feature_mean = feature_series.mean()
+            feature_std = feature_series.std(ddof=0)
+            if pd.isna(feature_mean):
+                filter_plot_thresholds[feature] = float(zscore_threshold)
+            elif pd.isna(feature_std) or feature_std == 0:
+                filter_plot_thresholds[feature] = float(feature_mean)
+            else:
+                filter_plot_thresholds[feature] = float(
+                    feature_mean + (zscore_threshold * feature_std)
+                )
+
+    return {
+        **(existing_display_options or {}),
+        "filter_columns": list(filter_plot_thresholds.keys()),
+        "filter_plot_thresholds": filter_plot_thresholds,
+    }
+
+
 def identify_outliers(  # noqa: PLR0913
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: IdentifyOutliersFeatureThresholdInput,
@@ -346,7 +379,7 @@ def find_outliers(
     feature_thresholds: Union[Dict[str, float], str],
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
     export_path: Optional[str] = None,
-) -> pd.DataFrame:
+) -> CytoDataFrame:
     """
     This function uses identify_outliers to return a dataframe
     with only the outliers and provided metadata columns.
@@ -379,12 +412,19 @@ def find_outliers(
             Note: compatible exports are CSV's, TSV's, and parquet.
 
     Returns:
-        pd.DataFrame:
-            Outlier data frame for the given conditions.
+        CytoDataFrame:
+            Outlier data frame for the given conditions with
+            CytoDataFrame ``display_options`` configured for filtering by the
+            thresholded feature columns.
     """
     _warn_if_inline_thresholds_ignore_file(
         feature_thresholds_file=feature_thresholds_file,
         feature_thresholds=feature_thresholds,
+    )
+    input_display_options = (
+        dict(df._custom_attrs.get("display_options") or {})
+        if isinstance(df, CytoDataFrame)
+        else None
     )
 
     # Convert input to CytoDataFrame if it's a file path or a pandas DataFrame
@@ -432,6 +472,15 @@ def find_outliers(
 
     # Select only the required columns for output (metadata + features)
     result = outliers_df[required_columns]
+    custom_attrs = dict(df._custom_attrs) if isinstance(df, CytoDataFrame) else {}
+    custom_attrs["display_options"] = _build_filter_display_options(
+        threshold_sets=[feature_thresholds],
+        source_df=df,
+        existing_display_options=input_display_options
+        if input_display_options is not None
+        else custom_attrs.get("display_options"),
+    )
+    result = CytoDataFrame(data=result, **custom_attrs)
 
     # Export if export_path is provided
     if export_path is not None:
@@ -551,6 +600,11 @@ def label_outliers(  # noqa: PLR0913
 
     # Create the final result DataFrame by concatenating the original data
     # with the new outlier columns
+    custom_attrs["display_options"] = _build_filter_display_options(
+        threshold_sets=[thresholds for _, thresholds in threshold_sets],
+        source_df=df,
+        existing_display_options=custom_attrs.get("display_options"),
+    )
     result = CytoDataFrame(
         pd.concat(clean_results, axis=1),
         **custom_attrs,

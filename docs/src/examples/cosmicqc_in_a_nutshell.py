@@ -1,13 +1,14 @@
 # ---
 # jupyter:
 #   jupytext:
+#     formats: ipynb,py:light
 #     text_representation:
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.17.2
+#       jupytext_version: 1.17.3
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: cosmicqc-yMtnhZm3-py3.13
 #     language: python
 #     name: python3
 # ---
@@ -43,7 +44,7 @@ scdf = CytoDataFrame(
 )
 
 # display the dataframe
-scdf.iloc[:, :5]
+scdf
 # -
 
 # Identify which rows include outliers for a given threshold definition
@@ -62,27 +63,21 @@ cosmicqc.analyze.find_outliers(
     feature_thresholds={"Nuclei_AreaShape_Area": -1},
 )
 
-# +
 # create a labeled dataset which includes z-scores and whether those scores
 # are interpreted as outliers or inliers. We use pre-defined threshold sets
 # loaded from defaults (cosmicqc can accept user-defined thresholds too!).
 labeled_scdf = cosmicqc.analyze.label_outliers(
-    df=scdf,
-    include_threshold_scores=True,
+    df=scdf, include_threshold_scores=True, feature_thresholds="large_nuclei"
 )
-
-# show the dataframe rows with only the last 8 columns
-# (added from the label_outliers function)
-labeled_scdf.iloc[:, -8:]
-# -
+labeled_scdf
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
 # labeled_scdf._enbable_debug_mode()
-labeled_scdf.sort_values(by="cqc.large_nuclei.is_outlier", ascending=False)[
+labeled_scdf.sort_values(by="Metadata_cqc_large_nuclei_is_outlier", ascending=False)[
     [
         "Metadata_ImageNumber",
         "Metadata_Cells_Number_Object_Number",
-        "cqc.large_nuclei.is_outlier",
+        "Metadata_cqc_large_nuclei_is_outlier",
         "Image_FileName_GFP",
         "Image_FileName_RFP",
         "Image_FileName_DAPI",
