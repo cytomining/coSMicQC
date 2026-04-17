@@ -477,7 +477,9 @@ def find_outliers(
     # Select only the required columns for output (metadata + features)
     result = outliers_df[required_columns]
     custom_attrs = (
-        dict(df._custom_attrs) if isinstance(df, CytoDataFrame) else projected_custom_attrs
+        dict(df._custom_attrs)
+        if isinstance(df, CytoDataFrame)
+        else projected_custom_attrs
     )
     custom_attrs["display_options"] = _build_filter_display_options(
         threshold_sets=[feature_thresholds],
