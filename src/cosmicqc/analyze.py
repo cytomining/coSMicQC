@@ -437,8 +437,12 @@ def find_outliers(
     # Determine the required columns for processing and output
     required_columns = list(feature_thresholds.keys()) + metadata_columns
 
-    # Ensure the DataFrame contains the required columns and convert to CytoDataFrame
-    df = CytoDataFrame(data=df)[required_columns]
+    # Ensure the DataFrame contains the required columns and convert to CytoDataFrame.
+    # Keep projected attrs so we can preserve them even if downstream ops
+    # (e.g., dropna) return a pandas.DataFrame.
+    projected_df = CytoDataFrame(data=df)[required_columns]
+    projected_custom_attrs = dict(projected_df._custom_attrs)
+    df = projected_df
 
     # Check for NaN values in the required feature columns and warn if any are found
     if any(df[list(feature_thresholds.keys())].isna().any()):
@@ -472,7 +476,9 @@ def find_outliers(
 
     # Select only the required columns for output (metadata + features)
     result = outliers_df[required_columns]
-    custom_attrs = dict(df._custom_attrs) if isinstance(df, CytoDataFrame) else {}
+    custom_attrs = (
+        dict(df._custom_attrs) if isinstance(df, CytoDataFrame) else projected_custom_attrs
+    )
     custom_attrs["display_options"] = _build_filter_display_options(
         threshold_sets=[feature_thresholds],
         source_df=df,

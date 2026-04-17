@@ -594,6 +594,34 @@ def test_find_outliers_sets_filter_display_options(
     )
 
 
+def test_find_outliers_retains_custom_attrs_with_dropna_path(
+    basic_outlier_dataframe: pd.DataFrame,
+):
+    """
+    Ensure find_outliers preserves context attrs after projection and dropna.
+    """
+
+    data = basic_outlier_dataframe.assign(
+        Image_Metadata_Plate="A",
+        example_feature_two=basic_outlier_dataframe["example_feature"],
+    )
+    data.loc[data["example_feature"] > 6, "example_feature"] = np.nan
+    cdf = CytoDataFrame(
+        data=data,
+        data_context_dir="example_context_dir",
+        data_mask_context_dir="example_mask_dir",
+    )
+
+    result = analyze.find_outliers(
+        df=cdf,
+        feature_thresholds={"example_feature": 1},
+        metadata_columns=["Image_Metadata_Plate"],
+    )
+
+    assert result._custom_attrs["data_context_dir"] == "example_context_dir"
+    assert result._custom_attrs["data_mask_context_dir"] == "example_mask_dir"
+
+
 def test_label_outliers(
     basic_outlier_dataframe: pd.DataFrame,
     basic_outlier_csv: str,
