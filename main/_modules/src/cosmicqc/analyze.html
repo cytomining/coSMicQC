@@ -402,6 +402,56 @@ For the latest released version, please have a look at <a href="../../../../v1.0
 
 
 
+<div class="viewcode-block" id="_build_filter_display_options">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze._build_filter_display_options">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_filter_display_options</span><span class="p">(</span>
+    <span class="n">threshold_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="n">source_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">existing_display_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build display options for thresholded columns in CytoDataFrame plots.</span>
+
+<span class="sd">    Thresholds are provided to coSMicQC as z-scores, but CytoDataFrame plot lines</span>
+<span class="sd">    should use feature-scale values. We therefore convert each z-score threshold to</span>
+<span class="sd">    the corresponding feature value using ``mean + z * std``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        threshold_sets: List[Dict[str, float]]</span>
+<span class="sd">            One or more threshold mappings from feature name to z-score threshold.</span>
+<span class="sd">        source_df: pd.DataFrame</span>
+<span class="sd">            DataFrame containing feature columns used to compute feature-scale</span>
+<span class="sd">            thresholds.</span>
+<span class="sd">        existing_display_options: Optional[Dict[str, object]]</span>
+<span class="sd">            Existing plot display options to preserve and extend.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict[str, object]</span>
+<span class="sd">            Display options including ``filter_columns`` and</span>
+<span class="sd">            ``filter_plot_thresholds`` for threshold overlays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filter_plot_thresholds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span><span class="p">,</span> <span class="n">zscore_threshold</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">feature_series</span> <span class="o">=</span> <span class="n">source_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span>
+            <span class="n">feature_mean</span> <span class="o">=</span> <span class="n">feature_series</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">feature_std</span> <span class="o">=</span> <span class="n">feature_series</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">feature_mean</span><span class="p">):</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zscore_threshold</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">feature_std</span><span class="p">)</span> <span class="ow">or</span> <span class="n">feature_std</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">feature_mean</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">feature_mean</span> <span class="o">+</span> <span class="p">(</span><span class="n">zscore_threshold</span> <span class="o">*</span> <span class="n">feature_std</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="o">**</span><span class="p">(</span><span class="n">existing_display_options</span> <span class="ow">or</span> <span class="p">{}),</span>
+        <span class="s2">&quot;filter_columns&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">filter_plot_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="s2">&quot;filter_plot_thresholds&quot;</span><span class="p">:</span> <span class="n">filter_plot_thresholds</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
 <div class="viewcode-block" id="identify_outliers">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.identify_outliers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">identify_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
@@ -573,7 +623,7 @@ For the latest released version, please have a look at <a href="../../../../v1.0
     <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
     <span class="n">export_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CytoDataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function uses identify_outliers to return a dataframe</span>
 <span class="sd">    with only the outliers and provided metadata columns.</span>
@@ -606,14 +656,18 @@ For the latest released version, please have a look at <a href="../../../../v1.0
 <span class="sd">            Note: compatible exports are CSV&#39;s, TSV&#39;s, and parquet.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        pd.DataFrame:</span>
+<span class="sd">        CytoDataFrame:</span>
 <span class="sd">            Outlier data frame for the given conditions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_warn_if_inline_thresholds_ignore_file</span><span class="p">(</span>
         <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
         <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
     <span class="p">)</span>
-
+    <span class="n">input_display_options</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">CytoDataFrame</span><span class="p">)</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
     <span class="c1"># Convert input to CytoDataFrame if it&#39;s a file path or a pandas DataFrame</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">feature_thresholds</span> <span class="o">=</span> <span class="n">read_thresholds_set_from_file</span><span class="p">(</span>
@@ -624,8 +678,12 @@ For the latest released version, please have a look at <a href="../../../../v1.0
     <span class="c1"># Determine the required columns for processing and output</span>
     <span class="n">required_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="n">metadata_columns</span>
 
-    <span class="c1"># Ensure the DataFrame contains the required columns and convert to CytoDataFrame</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)[</span><span class="n">required_columns</span><span class="p">]</span>
+    <span class="c1"># Ensure the DataFrame contains the required columns and convert to CytoDataFrame.</span>
+    <span class="c1"># Keep projected attrs so we can preserve them even if downstream ops</span>
+    <span class="c1"># (e.g., dropna) return a pandas.DataFrame.</span>
+    <span class="n">projected_df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)[</span><span class="n">required_columns</span><span class="p">]</span>
+    <span class="n">projected_custom_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">projected_df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">projected_df</span>
 
     <span class="c1"># Check for NaN values in the required feature columns and warn if any are found</span>
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
@@ -659,6 +717,14 @@ For the latest released version, please have a look at <a href="../../../../v1.0
 
     <span class="c1"># Select only the required columns for output (metadata + features)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">outliers_df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span>
+    <span class="n">custom_attrs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">CytoDataFrame</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">projected_custom_attrs</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">input_display_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">custom_attrs</span><span class="p">[</span><span class="s2">&quot;display_options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_display_options</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="o">**</span><span class="n">custom_attrs</span><span class="p">)</span>
 
     <span class="c1"># Export if export_path is provided</span>
     <span class="k">if</span> <span class="n">export_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -781,6 +847,11 @@ For the latest released version, please have a look at <a href="../../../../v1.0
 
     <span class="c1"># Create the final result DataFrame by concatenating the original data</span>
     <span class="c1"># with the new outlier columns</span>
+    <span class="n">custom_attrs</span><span class="p">[</span><span class="s2">&quot;display_options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_filter_display_options</span><span class="p">(</span>
+        <span class="n">threshold_sets</span><span class="o">=</span><span class="p">[</span><span class="n">thresholds</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">],</span>
+        <span class="n">source_df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">existing_display_options</span><span class="o">=</span><span class="n">custom_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_options&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span>
         <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">clean_results</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
         <span class="o">**</span><span class="n">custom_attrs</span><span class="p">,</span>
