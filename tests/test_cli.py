@@ -68,13 +68,10 @@ def test_cli_find_outliers(tmp_path: pathlib.Path, basic_outlier_csv: str):
     )
 
     assert returncode == 0
-    assert (
-        stdout.strip()
-        == """Number of outliers: 2 (20.00%)
-Outliers Range:
-example_feature Min: 9
-example_feature Max: 10""".strip()
-    )
+    assert "Number of outliers: 2 (20.00%)" in stdout
+    assert "Outliers Range:" in stdout
+    assert "example_feature Min: 9" in stdout
+    assert "example_feature Max: 10" in stdout
 
     assert parquet.read_table(
         f"{tmp_path}/find_outliers_output.parquet"

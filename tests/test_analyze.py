@@ -105,24 +105,6 @@ def test_find_outliers_cfret(cytotable_CFReT_data_df: pd.DataFrame):
         feature_thresholds=feature_thresholds,
         metadata_columns=metadata_columns,
     )
-    assert small_area_formfactor_outliers_df._custom_attrs["display_options"][
-        "filter_columns"
-    ] == [
-        "Nuclei_AreaShape_Area",
-        "Nuclei_AreaShape_FormFactor",
-    ]
-    assert small_area_formfactor_outliers_df._custom_attrs["display_options"][
-        "filter_plot_thresholds"
-    ]["Nuclei_AreaShape_Area"] == pytest.approx(
-        cytotable_CFReT_data_df["Nuclei_AreaShape_Area"].mean()
-        - cytotable_CFReT_data_df["Nuclei_AreaShape_Area"].std(ddof=0)
-    )
-    assert small_area_formfactor_outliers_df._custom_attrs["display_options"][
-        "filter_plot_thresholds"
-    ]["Nuclei_AreaShape_FormFactor"] == pytest.approx(
-        cytotable_CFReT_data_df["Nuclei_AreaShape_FormFactor"].mean()
-        - cytotable_CFReT_data_df["Nuclei_AreaShape_FormFactor"].std(ddof=0)
-    )
 
     # test that we found the appropriate outliers
     assert small_area_formfactor_outliers_df.sort_values(
@@ -565,33 +547,25 @@ def test_find_outliers_dict_and_default_config_cfret(
     )
 
 
-def test_find_outliers_sets_filter_display_options(
+def test_find_outliers_does_not_set_threshold_display_options(
     basic_outlier_dataframe: pd.DataFrame,
 ):
     """
-    Ensure find_outliers adds filter display options from its thresholds.
+    Ensure find_outliers does not add threshold-line display options.
     """
 
     cdf = CytoDataFrame(
         data=basic_outlier_dataframe.assign(Image_Metadata_Plate="A"),
-        display_options={"existing_setting": "keep"},
     )
+    cdf._custom_attrs["display_options"] = {"existing_setting": "keep"}
     result = analyze.find_outliers(
         df=cdf,
         feature_thresholds={"example_feature": 1},
         metadata_columns=["Image_Metadata_Plate"],
     )
-
     assert result._custom_attrs["display_options"]["existing_setting"] == "keep"
-    assert result._custom_attrs["display_options"]["filter_columns"] == [
-        "example_feature"
-    ]
-    assert result._custom_attrs["display_options"]["filter_plot_thresholds"][
-        "example_feature"
-    ] == pytest.approx(
-        basic_outlier_dataframe["example_feature"].mean()
-        + basic_outlier_dataframe["example_feature"].std(ddof=0)
-    )
+    assert "filter_columns" not in result._custom_attrs["display_options"]
+    assert "filter_plot_thresholds" not in result._custom_attrs["display_options"]
 
 
 def test_find_outliers_retains_custom_attrs_with_dropna_path(
@@ -929,8 +903,8 @@ def test_label_outliers_sets_filter_display_options_multiple_conditions(
         data=basic_outlier_dataframe.assign(
             example_feature_two=basic_outlier_dataframe["example_feature"]
         ),
-        display_options={"existing_setting": "keep"},
     )
+    cdf._custom_attrs["display_options"] = {"existing_setting": "keep"}
     result = analyze.label_outliers(
         df=cdf,
         feature_thresholds={

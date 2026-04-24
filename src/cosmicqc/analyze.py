@@ -190,6 +190,20 @@ def _build_filter_display_options(
     Thresholds are provided to coSMicQC as z-scores, but CytoDataFrame plot lines
     should use feature-scale values. We therefore convert each z-score threshold to
     the corresponding feature value using ``mean + z * std``.
+
+    Args:
+        threshold_sets: List[Dict[str, float]]
+            One or more threshold mappings from feature name to z-score threshold.
+        source_df: pd.DataFrame
+            DataFrame containing feature columns used to compute feature-scale
+            thresholds.
+        existing_display_options: Optional[Dict[str, object]]
+            Existing plot display options to preserve and extend.
+
+    Returns:
+        Dict[str, object]
+            Display options including ``filter_columns`` and
+            ``filter_plot_thresholds`` for threshold overlays.
     """
     filter_plot_thresholds: Dict[str, float] = {}
     for thresholds in threshold_sets:
@@ -413,9 +427,7 @@ def find_outliers(
 
     Returns:
         CytoDataFrame:
-            Outlier data frame for the given conditions with
-            CytoDataFrame ``display_options`` configured for filtering by the
-            thresholded feature columns.
+            Outlier data frame for the given conditions.
     """
     _warn_if_inline_thresholds_ignore_file(
         feature_thresholds_file=feature_thresholds_file,
@@ -426,7 +438,6 @@ def find_outliers(
         if isinstance(df, CytoDataFrame)
         else None
     )
-
     # Convert input to CytoDataFrame if it's a file path or a pandas DataFrame
     if isinstance(feature_thresholds, str):
         feature_thresholds = read_thresholds_set_from_file(
@@ -481,13 +492,8 @@ def find_outliers(
         if isinstance(df, CytoDataFrame)
         else projected_custom_attrs
     )
-    custom_attrs["display_options"] = _build_filter_display_options(
-        threshold_sets=[feature_thresholds],
-        source_df=df,
-        existing_display_options=input_display_options
-        if input_display_options is not None
-        else custom_attrs.get("display_options"),
-    )
+    if input_display_options is not None:
+        custom_attrs["display_options"] = input_display_options
     result = CytoDataFrame(data=result, **custom_attrs)
 
     # Export if export_path is provided
