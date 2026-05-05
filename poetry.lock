@@ -3755,14 +3755,14 @@ test = ["jupyter-server (>=2.0.0)", "pytest (>=7.0)", "pytest-jupyter[server] (>
 
 [[package]]
 name = "jupyterlab"
-version = "4.5.6"
+version = "4.5.7"
 description = "JupyterLab computational environment"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "jupyterlab-4.5.6-py3-none-any.whl", hash = "sha256:d6b3dac883aa4d9993348e0f8e95b24624f75099aed64eab6a4351a9cdd1e580"},
-    {file = "jupyterlab-4.5.6.tar.gz", hash = "sha256:642fe2cfe7f0f5922a8a558ba7a0d246c7bc133b708dfe43f7b3a826d163cf42"},
+    {file = "jupyterlab-4.5.7-py3-none-any.whl", hash = "sha256:fba4cb0e2c44a52859669d8c98b45de029d5e515f8407bf8534d2a8fc5f0964d"},
+    {file = "jupyterlab-4.5.7.tar.gz", hash = "sha256:55a9822c4754da305f41e113452c68383e214dcf96de760146af89ce5d5117b0"},
 ]
 
 [package.dependencies]
@@ -6117,14 +6117,14 @@ testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "poethepoet"
-version = "0.44.0"
+version = "0.45.0"
 description = "A task runner that works well with poetry and uv."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "poethepoet-0.44.0-py3-none-any.whl", hash = "sha256:36d3d834708ed069ac1e4f8ed77915c55265b7b6e01aeb2fe617c9fe9cfd524a"},
-    {file = "poethepoet-0.44.0.tar.gz", hash = "sha256:c2667b513621788fb46482e371cdf81c0b04344e0e0bcb7aa8af45f84c2fce7b"},
+    {file = "poethepoet-0.45.0-py3-none-any.whl", hash = "sha256:8e25f6e834ecf25fe2ddca676a4e0207eeb2e19def0a8709fc5c7f18e86cd68c"},
+    {file = "poethepoet-0.45.0.tar.gz", hash = "sha256:cf2c2df4c185d33b619c2771de2b28c2b81c733f072226030c7fa4c273c040f8"},
 ]
 
 [package.dependencies]
@@ -10152,4 +10152,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "e369b7f638c4baa0a72f5011a236385a6a7343257bd48f6ef4338ffd07a8e31e"
+content-hash = "d12087378ae8be8f795b92101a1d3544c6b2d50f3026c40a39ac357b82fc2f29"
