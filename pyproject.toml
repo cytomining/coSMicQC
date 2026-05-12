@@ -62,7 +62,7 @@ isort = ">=5.13.2,<9.0.0"
 # added to generate test coverage reports
 coverage = "^7.6.0"
 # for standardizing various dev tasks
-poethepoet = ">=0.27,<0.45"
+poethepoet = ">=0.27,<0.46"
 # added for preparing data for cosmicqc in examples
 cytotable = ">=0.0.10,<1.2.1"
 # used to avoid dependency resolution issues during installs
@@ -83,7 +83,7 @@ dask = { version = ">=2024.8,<2027.0", extras = [ "dataframe" ] }
 selenium = "^4.24.0"
 # used by pandas for extracting metadata and platemap data from S3 through pandas
 s3fs = ">=2024.9,<2027.0"
-plotnine = "<=0.15.3"
+plotnine = "<=0.15.4"
 papermill = "^2.6.0"
 copairs = "^0.5.1"
 hdbscan = "^0.8.40"
