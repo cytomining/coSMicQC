@@ -62,7 +62,7 @@ isort = ">=5.13.2,<9.0.0"
 # added to generate test coverage reports
 coverage = "^7.6.0"
 # for standardizing various dev tasks
-poethepoet = ">=0.27,<0.46"
+poethepoet = ">=0.27,<0.47"
 # added for preparing data for cosmicqc in examples
 cytotable = ">=0.0.10,<1.2.1"
 # used to avoid dependency resolution issues during installs
