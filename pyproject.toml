@@ -83,7 +83,7 @@ dask = { version = ">=2024.8,<2027.0", extras = [ "dataframe" ] }
 selenium = "^4.24.0"
 # used by pandas for extracting metadata and platemap data from S3 through pandas
 s3fs = ">=2024.9,<2027.0"
-plotnine = "<=0.15.4"
+plotnine = "<=0.15.5"
 papermill = "^2.6.0"
 copairs = "^0.5.1"
 hdbscan = "^0.8.40"
