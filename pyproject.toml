@@ -64,7 +64,7 @@ coverage = "^7.6.0"
 # for standardizing various dev tasks
 poethepoet = ">=0.27,<0.47"
 # added for preparing data for cosmicqc in examples
-cytotable = ">=0.0.10,<1.2.1"
+cytotable = ">=0.0.10,<1.2.2"
 # used to avoid dependency resolution issues during installs
 botocore = ">=1.31.16,<1.31.65 || >=1.32.4,<1.34.35 || >=1.34.41,<1.34.163 || >=1.35.0,<1.35.8"
 # used for visualizing large plot data
@@ -83,7 +83,7 @@ dask = { version = ">=2024.8,<2027.0", extras = [ "dataframe" ] }
 selenium = "^4.24.0"
 # used by pandas for extracting metadata and platemap data from S3 through pandas
 s3fs = ">=2024.9,<2027.0"
-plotnine = "<=0.15.5"
+plotnine = "<=0.15.7"
 papermill = "^2.6.0"
 copairs = "^0.5.1"
 hdbscan = "^0.8.40"
