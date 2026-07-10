@@ -26,6 +26,7 @@ from plotnine import (
 from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
 
+
 # In[2]:
 
 
@@ -52,13 +53,19 @@ no_QC_df = no_QC_df.dropna(
 ).reset_index(drop=True)
 
 # Blind treatments for UMAP visualization
-# (DMSO = treatment1, TGFRi = treatment2, drug_X = treatment3)
+# (DMSO = control, TGFRi = treatment2, drug_X = treatment3)
 treatment_mapping = {
-    "DMSO": "treatment1",
-    "TGFRi": "treatment2",
-    "drug_x": "treatment3",
+    "DMSO": "control",
+    "TGFRi": "treatment1",
+    "drug_x": "treatment2",
 }
 no_QC_df["Metadata_treatment"] = no_QC_df["Metadata_treatment"].map(treatment_mapping)
+
+# Change cell type "failing" to "diseased" for better interpretability in the figure
+cell_type_mapping = {"failing": "diseased"}
+no_QC_df["Metadata_cell_type"] = no_QC_df["Metadata_cell_type"].map(
+    lambda x: cell_type_mapping.get(x, x)
+)
 
 # Create new column for treatment cell type ID for each unique combo
 no_QC_df["Metadata_Treatment_CellType_ID"] = (
@@ -84,6 +91,25 @@ print(
 # In[4]:
 
 
+# Update treatment-cell type IDs for plain English formatting
+no_QC_df["Metadata_Treatment_CellType_ID"] = no_QC_df["Metadata_Treatment_CellType_ID"].replace({
+    "control_diseased": "DMSO-control diseased",
+    "treatment1_diseased": "Treatment 1 diseased",
+    "treatment2_diseased": "Treatment 2 diseased",
+    "control_healthy": "DMSO-control healthy",
+    "treatment1_healthy": "Treatment 1 healthy",
+    "treatment2_healthy": "Treatment 2 healthy",
+})
+
+print(
+    "Unique Treatment_CellType_IDs:",
+    no_QC_df["Metadata_Treatment_CellType_ID"].unique(),
+)
+
+
+# In[5]:
+
+
 # Process cp_df to separate features and metadata
 cp_features = infer_cp_features(no_QC_df)
 meta_features = infer_cp_features(no_QC_df, metadata=True)
@@ -106,7 +132,7 @@ cp_umap_with_metadata_df = pd.concat(
 )
 
 
-# In[5]:
+# In[6]:
 
 
 # Add QC_status column and set all to "failed"
@@ -139,12 +165,27 @@ print(cp_umap_with_metadata_df.shape)
 cp_umap_with_metadata_df.head()
 
 
-# In[6]:
+# In[7]:
+
+
+# Update QC status for plain English formatting
+cp_umap_with_metadata_df["Metadata_QC_status"] = cp_umap_with_metadata_df["Metadata_QC_status"].replace({
+    "passed": "Passed QC",
+    "failed": "Failed QC",
+})
+
+print(
+    "Unique Metadata_QC_status:",
+    cp_umap_with_metadata_df["Metadata_QC_status"].unique(),
+)
+
+
+# In[10]:
 
 
 # Set the figure size
 height = 8
-width = 8
+width = 9
 set_option("figure_size", (width, height))
 
 # Plot UMAP of non-QC profiles labelled with QC status and
@@ -173,7 +214,7 @@ p = (
         strip_text=element_text(size=16),  # Adjust facet label size
     )
     + scale_color_manual(
-        values={"passed": "#0072B2", "failed": "#D55E00"}
+        values={"Passed QC": "#0072B2", "Failed QC": "#D55E00"}
     )  # Blue for passed, orange for failed (colorblind-friendly)
     + guides(
         color=guide_legend(
@@ -188,3 +229,4 @@ p = (
 p.save(figure_dir / "facet_umap_no_QC_plot.png", dpi=600, width=width, height=height)
 
 p.show()
+

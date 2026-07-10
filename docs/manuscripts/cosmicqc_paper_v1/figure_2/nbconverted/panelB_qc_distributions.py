@@ -2,13 +2,14 @@
 # coding: utf-8
 
 # ## Generate plots to show the distributions of the failed versus passing cells
-#
+# 
 # We use the `PCCMA optimization` dataset.
 
 # In[1]:
 
 
 import re
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -39,6 +40,7 @@ from plotnine.options import set_option
 from pycytominer import annotate
 
 from cosmicqc import find_outliers, identify_outliers
+
 
 # In[2]:
 
@@ -133,14 +135,14 @@ identify_nuclei_clustered_outliers = identify_outliers(
 pd.DataFrame(identify_nuclei_clustered_outliers).head()
 
 
-# In[ ]:
+# In[6]:
 
 
 # Rename for easier access
 rename_map = {
-    "cqc.custom.Z_Score.Nuclei_Intensity_IntegratedIntensity_CorrDNA": "zscore_intensity",  # noqa: E501
-    "cqc.custom.Z_Score.Nuclei_Intensity_MassDisplacement_CorrDNA": "zscore_displacement",  # noqa: E501
-    "cqc.custom.is_outlier": "is_outlier",
+    "Metadata_cqc_custom_Nuclei_Intensity_IntegratedIntensity_CorrDNA_zscore": "zscore_intensity",  # noqa: E501
+    "Metadata_cqc_custom_Nuclei_Intensity_MassDisplacement_CorrDNA_zscore": "zscore_displacement",  # noqa: E501
+    "Metadata_cqc_custom_is_outlier": "is_outlier",
 }
 df = identify_nuclei_clustered_outliers.rename(columns=rename_map)
 
@@ -166,8 +168,8 @@ p = (
         y="Z-score\n(nuclei mass displacement)",
         fill="Log10(Cell count)",
     )
-    + guides(color=False)  # 🔹 drop outlier/not outlier legend
-    + ggtitle("Condition 1: Over-segmented nuclei detection")
+    + guides(color=False)  # drop outlier/not outlier legend
+    + ggtitle("Condition 1: Under-segmented nuclei detection")
     + theme_light()
     + theme(
         legend_title=element_text(size=16),
@@ -188,12 +190,12 @@ p = (
 
 # Save the plot
 p.save(
-    output_dir / "over_segmented_nuclei_plot.png", dpi=600, width=width, height=height
+    output_dir / "under_segmented_nuclei_plot.png", dpi=600, width=width, height=height
 )
 
 # Save version without legend
 (p + theme(legend_position="none")).save(
-    output_dir / "over_segmented_nuclei_plot_no_legend.png",
+    output_dir / "under_segmented_nuclei_plot_no_legend.png",
     dpi=600,
     width=width,
     height=height,
@@ -224,8 +226,8 @@ pd.DataFrame(identify_poor_nuclei_shape_outliers).head()
 # Rename for easier access
 df = identify_poor_nuclei_shape_outliers.rename(
     columns={
-        "cqc.custom.Z_Score.Nuclei_AreaShape_Solidity": "zscore_solidity",
-        "cqc.custom.is_outlier": "is_outlier",
+        "Metadata_cqc_custom_Nuclei_AreaShape_Solidity_zscore": "zscore_solidity",
+        "Metadata_cqc_custom_is_outlier": "is_outlier",
     }
 )
 
@@ -280,8 +282,8 @@ p.show()
 # In[9]:
 
 
-# Find over-segmented cell outliers for the current plate
-over_segmented_cells_outliers = identify_outliers(
+# Find under-segmented cell outliers for the current plate
+under_segmented_cells_outliers = identify_outliers(
     df=filtered_plate_df,
     feature_thresholds={
         # Set low to detect instances of abnormally high int in nuclei for whole cells
@@ -290,17 +292,17 @@ over_segmented_cells_outliers = identify_outliers(
     include_threshold_scores=True,
 )
 
-pd.DataFrame(over_segmented_cells_outliers).head()
+pd.DataFrame(under_segmented_cells_outliers).head()
 
 
 # In[10]:
 
 
 # Rename for easier access
-df = over_segmented_cells_outliers.rename(
+df = under_segmented_cells_outliers.rename(
     columns={
-        "cqc.custom.Z_Score.Cells_Intensity_IntegratedIntensity_CorrDNA": "zscore_integrated_intensity",  # noqa: E501
-        "cqc.custom.is_outlier": "is_outlier",
+        "Metadata_cqc_custom_Cells_Intensity_IntegratedIntensity_CorrDNA_zscore": "zscore_integrated_intensity",  # noqa: E501
+        "Metadata_cqc_custom_is_outlier": "is_outlier",
     }
 )
 
@@ -328,7 +330,7 @@ p = (
         y="Single-cell count",
         fill="Outlier status",
     )
-    + ggtitle("Condition 3: Over-segmented cells detection")
+    + ggtitle("Condition 3: Under-segmented cells detection")
     + theme_light()
     + theme(
         legend_title=element_text(size=16),
@@ -345,12 +347,12 @@ p = (
 # Save the plot
 # Save the plot
 p.save(
-    output_dir / "over_segmented_cells_plot.png", dpi=600, width=width, height=height
+    output_dir / "under_segmented_cells_plot.png", dpi=600, width=width, height=height
 )
 
 # Save version without legend
 (p + theme(legend_position="none")).save(
-    output_dir / "over_segmented_cells_plot_no_legend.png",
+    output_dir / "under_segmented_cells_plot_no_legend.png",
     dpi=600,
     width=width,
     height=height,
@@ -442,10 +444,10 @@ nuclei_clustered_outliers_cdf = CytoDataFrame(
 print(nuclei_clustered_outliers_cdf.shape)
 nuclei_clustered_outliers_cdf.sort_values(
     by="Nuclei_Intensity_MassDisplacement_CorrDNA", ascending=True
-).sample(n=2, random_state=42)
+).sample(n=2, random_state=42).T
 
 
-# In[ ]:
+# In[14]:
 
 
 # Find low nuclei solidity outliers for the current plate
@@ -560,7 +562,7 @@ for col in filtered_plate_df.columns:
 print(filtered_plate_df["Image_PathName_OrigDNA"].dropna().iloc[0])
 
 
-# In[ ]:
+# In[17]:
 
 
 # Find cell outliers for the current plate
@@ -606,6 +608,9 @@ platemap_file = Path(
 )
 platemap_df = pd.read_csv(platemap_file)
 
+# Rename Image_Metadata_Site to Metadata_Site prior to annotation
+filtered_plate_df = filtered_plate_df.rename(columns={"Image_Metadata_Site": "Metadata_Site"})
+
 # Annotate the filtered_plate_df with metadata from platemap
 annotated_plate_df = annotate(
     profiles=filtered_plate_df,
@@ -645,7 +650,7 @@ annotated_plate_df.loc[
         [
             "Metadata_Plate",
             "Metadata_Well",
-            "Image_Metadata_Site",
+            "Metadata_Site",
             "Metadata_Nuclei_Number_Object_Number",
         ]
     ]
@@ -661,8 +666,7 @@ annotated_plate_df["failed_qc"].value_counts()
 # In[20]:
 
 
-# Group by cell line and seeding density, and calculate
-# total nuclei segmented and failed QC
+# Group by cell line & seeding density, & calculate total nuclei segmented and failed QC
 failure_stats = (
     annotated_plate_df.groupby(
         [
@@ -712,9 +716,13 @@ p = (
     + labs(
         x="Seeding density",
         y="Proportion of failed cells",
-        fill="Cell count",
+        fill="Observed\ncell count\n(log10 scale)",
     )
-    + scale_fill_gradient(low="#C6DBEF", high="#08306B")
+    + scale_fill_gradient(
+        low="#C6DBEF",
+        high="#08306B",
+        trans="log10",
+    )
     + theme_bw(base_size=16)
     + theme(axis_text_x=element_text(rotation=45, hjust=1))
 )
@@ -722,3 +730,86 @@ p = (
 # Save the plot
 p.save(f"{output_dir}/failed_qc_summary.png", dpi=600, width=width, height=height)
 p.show()
+
+
+# ## Export sub-sampled dataset of equal passing and failing QC cells for manual annotation
+# 
+# To compare failed and passed QC cells, we use a balanced stratified random sample. The sample includes the same number of failed and passed cells, and within each QC group the cells are split evenly across cell lines represented in both groups.
+
+# In[21]:
+
+
+# Define parameters for stratified sampling
+n_cells_per_qc_group = 200
+stratify_column = "Metadata_cell_line"
+qc_column = "failed_qc"
+random_seed = 0
+
+# Check that both QC groups are present and get the unique cell lines in each group
+strata_by_qc = annotated_plate_df.groupby(qc_column)[stratify_column].unique()
+expected_qc_groups = {False, True}
+
+# Validate that both expected QC groups are present
+if set(strata_by_qc.index) != expected_qc_groups:
+    raise ValueError(
+        f"Expected both passed and failed QC groups, found {set(strata_by_qc.index)}."
+    )
+
+# Get the shared cell lines across both QC groups to ensure we can stratify properly
+shared_cell_lines = sorted(set.intersection(*[set(x) for x in strata_by_qc]))
+
+# Ensure there are shared cell lines to stratify on
+if not shared_cell_lines:
+    raise ValueError(
+        "No cell lines are represented in both passed and failed QC groups."
+    )
+
+# Calculate the number of samples to draw from each stratum
+base_n, extra_n = divmod(n_cells_per_qc_group, len(shared_cell_lines))
+# Instantiate list to hold sampled dataframes
+sampled_dfs = []
+
+# Perform stratified sampling within each QC group and cell line
+for qc_idx, qc_value in enumerate(sorted(expected_qc_groups)):
+    for cell_line_idx, cell_line in enumerate(shared_cell_lines):
+        # Calculate the number of samples to draw from this stratum,
+        # adding one more sample to the first 'extra_n' strata to account for any remainder  # noqa: E501
+        n_to_sample = base_n + int(cell_line_idx < extra_n)
+        # Subset the dataframe for the current stratum
+        stratum_df = annotated_plate_df.loc[
+            (annotated_plate_df[qc_column] == qc_value)
+            & (annotated_plate_df[stratify_column] == cell_line)
+        ]
+
+        # Sample from the stratum and append to the list
+        sampled_dfs.append(
+            stratum_df.sample(
+                n=n_to_sample,
+                replace=False,  # Do not replace to avoid duplicates in the sample
+                random_state=random_seed + qc_idx * 1000 + cell_line_idx,
+            )
+        )
+
+# Combine the sampled dataframes into one
+qc_sample_df = pd.concat(sampled_dfs, ignore_index=True)
+
+# Save the stratified sample for use manual annotation of QC status
+subset_output_dir = Path("./data")
+subset_output_dir.mkdir(parents=True, exist_ok=True)
+# Set output path
+output_path = subset_output_dir / "stratified_qc_sample.parquet"
+
+# Will not overwrite if file already exists
+if output_path.exists():
+    warnings.warn(
+        f"{output_path} already exists. Skipping save to avoid overwrite.", UserWarning
+    )
+else:
+    qc_sample_df.to_parquet(output_path, index=False)
+    print("Stratified sample saved to:", output_path)
+
+    # Verify the stratified sampling worked as expected
+    print(
+        qc_sample_df.groupby([stratify_column, qc_column]).size().unstack(fill_value=0)
+    )
+

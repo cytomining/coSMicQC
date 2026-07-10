@@ -3,6 +3,7 @@ This function were derived from the `cellpainting_predicts_cardiac_fibrois`
 GitHub repository.
 """
 
+import pathlib
 from typing import Tuple, Union
 
 import numpy as np
@@ -39,6 +40,7 @@ def get_X_y_data(
 
     # If shuffle is True, shuffled the columns independently for the feature space
     if shuffle:
+        X = X.copy()  # Create a copy of X to avoid modifying the original data
         for column in X.T:
             np.random.shuffle(column)
 
@@ -88,3 +90,28 @@ def bootstrap_roc_auc(
         bootstrapped_scores.append(score)
 
     return np.array(bootstrapped_scores)
+
+def downsample_data(
+    df: pd.DataFrame,
+    label: str,
+    random_state: int = 0,
+) -> pd.DataFrame:
+    """Downsample all classes to the size of the smallest class.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        label (str): Name of the metadata column being used as the predicting class.
+        random_state (int): Random seed for reproducible sampling.
+
+    Returns:
+        pd.DataFrame: Downsampled DataFrame.
+    """
+    min_samples = df[label].value_counts().min()
+
+    sampled_idx = (
+        df.groupby(label)
+        .sample(n=min_samples, random_state=random_state)
+        .index
+    )
+
+    return df.loc[sampled_idx].reset_index(drop=True)

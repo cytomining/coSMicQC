@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Using the manifest, convert all plate SQLite files into parquet files for processing
-#
+# 
 # This code is derived from the `JUMP-single-cell` repository, which can be found [here](https://github.com/WayScience/JUMP-single-cell/blob/main/0.download_data/1.process_JUMP_plates_with_CytoTable.py).
 
 # In[1]:
@@ -16,6 +16,7 @@ from cytotable import convert, presets
 from parsl.config import Config
 from parsl.executors import ThreadPoolExecutor
 from pyarrow import parquet
+
 
 # In[2]:
 
@@ -109,3 +110,4 @@ if not all(
     ).to_records()
 ):
     shutil.rmtree("./lincs_sqlite_s3_cache/")
+

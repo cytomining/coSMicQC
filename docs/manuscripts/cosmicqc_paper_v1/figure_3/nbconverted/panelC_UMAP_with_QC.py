@@ -25,6 +25,7 @@ from plotnine import (
 from plotnine.options import set_option
 from pycytominer.cyto_utils import infer_cp_features
 
+
 # In[2]:
 
 
@@ -51,13 +52,19 @@ QC_df = QC_df.dropna(
 ).reset_index(drop=True)
 
 # Blind treatments for UMAP visualization
-# (DMSO = treatment1, TGFRi = treatment2, drug_X = treatment3)
+# (DMSO = control, TGFRi = treatment2, drug_X = treatment3)
 treatment_mapping = {
-    "DMSO": "treatment1",
-    "TGFRi": "treatment2",
-    "drug_x": "treatment3",
+    "DMSO": "control",
+    "TGFRi": "treatment1",
+    "drug_x": "treatment2",
 }
 QC_df["Metadata_treatment"] = QC_df["Metadata_treatment"].map(treatment_mapping)
+
+# Change cell type "failing" to "diseased" for better interpretability in the figure
+cell_type_mapping = {"failing": "diseased"}
+QC_df["Metadata_cell_type"] = QC_df["Metadata_cell_type"].map(
+    lambda x: cell_type_mapping.get(x, x)
+)
 
 # Create new column for treatment cell type ID for each unique combo
 QC_df["Metadata_Treatment_CellType_ID"] = (
@@ -70,6 +77,25 @@ QC_df.head()
 
 
 # In[3]:
+
+
+# Update treatment-cell type IDs for plain English formatting
+QC_df["Metadata_Treatment_CellType_ID"] = QC_df["Metadata_Treatment_CellType_ID"].replace({
+    "control_diseased": "DMSO-control diseased",
+    "treatment1_diseased": "Treatment 1 diseased",
+    "treatment2_diseased": "Treatment 2 diseased",
+    "control_healthy": "DMSO-control healthy",
+    "treatment1_healthy": "Treatment 1 healthy",
+    "treatment2_healthy": "Treatment 2 healthy",
+})
+
+print(
+    "Unique Treatment_CellType_IDs:",
+    QC_df["Metadata_Treatment_CellType_ID"].unique(),
+)
+
+
+# In[4]:
 
 
 # Process cp_df to separate features and metadata
@@ -110,7 +136,7 @@ p = (
         aes(x="UMAP0", y="UMAP1", color="Metadata_Treatment_CellType_ID"),
     )
     + labs(
-        color="Cell type\nand treatment",
+        color="Cell type\n& treatment",
     )
     + geom_point(alpha=0.2, size=2)
     + theme_bw()
@@ -137,3 +163,4 @@ p = (
 p.save(figure_dir / "facet_umap_with_QC_plot.png", dpi=400, width=width, height=height)
 
 p.show()
+

@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Generate ROC AUC plot demonstrating improvement in `performance` after QC
-#
+# 
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 
 # In[1]:
@@ -28,11 +28,13 @@ from plotnine import (
     theme_bw,
 )
 from plotnine.options import set_option
-from scipy.stats import ttest_ind
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import (
+    roc_auc_score,
+)
 
 sys.path.append("./")
 from figure3_utils import bootstrap_roc_auc, get_X_y_data
+
 
 # In[2]:
 
@@ -138,7 +140,7 @@ y_probs_modelQC = QC_model.predict_proba(X)[:, 1]
 
 
 # ## Calculate ROC AUC score by applying the model to their respective dataset
-#
+# 
 # e.g., QC model applyied on QC heldout wells dataset and vice versa.
 
 # In[6]:
@@ -153,8 +155,8 @@ print(f"AUC Model 2: {aucQC}")
 
 
 # ## Apply bootstrapping method to evaluate performance between models
-#
-# We apply this method to 20% of the datasets, without replacement, and 1000 iterations for the bootstrapping method.  # noqa: E501
+# 
+# We apply this method to 20% of the datasets, without replacement, and 1000 iterations for the bootstrapping method.
 # T-Test is used to see if the distributions are significantly different.
 
 # In[7]:
@@ -166,24 +168,39 @@ scores_model1 = bootstrap_roc_auc(y_binary_no_QC, y_probs_modelNoQC)
 # QC model
 scores_model2 = bootstrap_roc_auc(y_binary_QC, y_probs_modelQC)
 
-# Compare distributions
-t_stat, p_value = ttest_ind(scores_model1, scores_model2)
-print(f"T-statistic: {t_stat}, P-value: {p_value}")
+
+# Compare distributions (means)
+mean1 = scores_model1.mean()
+mean2 = scores_model2.mean()
+
+# Confidence intervals for each model
+ci1 = np.percentile(scores_model1, [2.5, 97.5])
+ci2 = np.percentile(scores_model2, [2.5, 97.5])
+
+# ---- Bootstrap difference distribution ----
+diff_scores = scores_model2 - scores_model1
+mean_diff = diff_scores.mean()
+ci_diff = np.percentile(diff_scores, [2.5, 97.5])
+
+# Probability QC > no QC (bootstrap superiority probability)
+prob_better = np.mean(scores_model2 > scores_model1[:, None])
+
+# Reporting
+print(f"Model 1 AUC: {mean1:.3f} (95% CI: {ci1[0]:.3f} - {ci1[1]:.3f})")
+print(f"Model 2 AUC: {mean2:.3f} (95% CI: {ci2[0]:.3f} - {ci2[1]:.3f})")
+print(
+    f"Mean AUC difference (QC - no QC): {mean_diff:.3f} "
+    f"(95% CI: {ci_diff[0]:.3f} - {ci_diff[1]:.3f})"
+)
+print(f"P(QC > no QC): {prob_better:.3f}")
 
 
 # In[8]:
 
 
-print(f"Mean ROC AUC for Model No-QC: {np.mean(scores_model1)}")
-print(f"Mean ROC AUC for Model QC: {np.mean(scores_model2)}")
-
-
-# In[9]:
-
-
 # Prepare the data
 df_model1 = pd.DataFrame({"score": scores_model1, "model": "Model No-QC"})
-df_model2 = pd.DataFrame({"score": scores_model2, "model": "Model QC"})
+df_model2 = pd.DataFrame({"score": scores_model2, "model": "Model coSMicQC"})
 df_all = pd.concat([df_model1, df_model2])
 
 # Set the figure size
@@ -199,9 +216,11 @@ p = (
         xintercept=[np.mean(scores_model1), np.mean(scores_model2)],
         linetype="dashed",
         size=1.5,
-        color=["steelblue", "coral"],
+        color=["#414141", "#D666A3"],
     )
-    + scale_fill_manual(values={"Model No-QC": "steelblue", "Model QC": "coral"})
+    + scale_fill_manual(
+        values={"Model No-QC": "#6B6B6B", "Model coSMicQC": "#CC79A7"}
+    )
     + labs(
         x="ROC AUC score",
         y="Frequency",
@@ -221,3 +240,4 @@ p = (
 # Save and show
 p.save(f"{figure_path}/bootstrap_ROC_AUC_QC_versus_no_QC.png", dpi=600)
 p.show()
+

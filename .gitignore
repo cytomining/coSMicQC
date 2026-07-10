@@ -140,7 +140,8 @@ cython_debug/
 *.parquet
 *.zip
 *.csv
-
+*.csv.gz
+*.npy
 .DS_Store
 
 # jupyter notebook build files from myst-nb

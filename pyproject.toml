@@ -88,6 +88,7 @@ papermill = "^2.6.0"
 copairs = "^0.5.1"
 hdbscan = "^0.8.40"
 pre-commit = ">=3,<5"
+pycomplexheatmap = "^1.8.1"
 
 [tool.poetry.group.docs.dependencies]
 # used for rendering docs into docsite
