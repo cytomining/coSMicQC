@@ -2,6 +2,8 @@
 # See https://pre-commit.com/hooks.html for more hooks
 default_language_version:
   python: python3.11
+# globally exclude manuscript sources from all hooks (see docs/manuscripts)
+exclude: ^docs/manuscripts/
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -31,8 +33,7 @@ repos:
               .*\.lock |
               .*\.json |
               .*\.ipynb |
-              .*\.cppipe |
-              .*cosmicqc_paper_v1/.*   # skip everything inside this folder
+              .*\.cppipe
           )$
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.18
@@ -58,9 +59,7 @@ repos:
     rev: "v0.15.17"
     hooks:
     -   id: ruff-format
-        exclude: ^docs/manuscripts/
     -   id: ruff-check
-        exclude: ^docs/manuscripts/
 -   repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.16'
     hooks:
