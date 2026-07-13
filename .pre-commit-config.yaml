@@ -58,7 +58,9 @@ repos:
     rev: "v0.15.17"
     hooks:
     -   id: ruff-format
+        exclude: ^docs/manuscripts/
     -   id: ruff-check
+        exclude: ^docs/manuscripts/
 -   repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.16'
     hooks:
