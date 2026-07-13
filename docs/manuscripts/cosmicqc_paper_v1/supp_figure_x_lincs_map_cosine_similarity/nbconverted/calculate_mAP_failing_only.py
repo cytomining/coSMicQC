@@ -26,7 +26,7 @@ from plotnine import (
     theme_bw,
 )
 from plotnine.options import set_option
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu, norm, wilcoxon
 from tqdm import tqdm
 
 
@@ -418,8 +418,10 @@ final_map_postQC.head()
 
 
 # Load in mAP scores only passing cells
-pre_QC_map = pd.read_parquet("./mAP_results/final_map_scores_preQC.parquet")
-passing_post_QC_map = pd.read_parquet("./mAP_results/final_map_scores_postQC.parquet")
+pre_QC_map = pd.read_parquet("../figure_5/mAP_results/final_map_scores_preQC.parquet")
+passing_post_QC_map = pd.read_parquet(
+    "../figure_5/mAP_results/final_map_scores_postQC.parquet"
+)
 
 # Merge preQC and postQC results on sample and dose
 merged_map = pd.merge(
@@ -449,9 +451,7 @@ merged_map["mAP_trend"] = np.select(
 )
 
 # Keep only trend mapping
-trend_map = merged_map[
-    ["Metadata_broad_sample", "Metadata_dose_recode", "mAP_trend"]
-]
+trend_map = merged_map[["Metadata_broad_sample", "Metadata_dose_recode", "mAP_trend"]]
 
 # Merge into final post-QC dataframe
 final_map_postQC_trend = final_map_postQC.merge(
@@ -461,7 +461,7 @@ final_map_postQC_trend = final_map_postQC.merge(
 )
 
 
-# In[ ]:
+# In[10]:
 
 
 # -----------------------------
@@ -554,48 +554,74 @@ p.save("./figures/only_failing_vs_passing_mAP_scores_dist_by_trend.png", dpi=600
 p.show()
 
 
-# In[ ]:
+# In[11]:
 
 
-failed = plot_df.loc[
-    plot_df["QC_state"] == "Only failing cells",
-    "mean_average_precision",
-]
-
-passed = plot_df.loc[
-    plot_df["QC_state"] == "Only passing cells",
-    "mean_average_precision",
-]
-
-print(len(failed), len(passed))
-print(failed.median(), passed.median())
-print(failed.mean(), passed.mean())
-
-
-# In[ ]:
-
-
-failed = plot_df.loc[
-    plot_df["QC_state"] == "Only failing cells",
-    "mean_average_precision",
-]
-
-passed = plot_df.loc[
-    plot_df["QC_state"] == "Only passing cells",
-    "mean_average_precision",
-]
-
-stat, p = mannwhitneyu(
-    failed,
-    passed,
-    alternative="greater",  # tests if failing > passing
+# Build an explicit paired table: one row per compound+dose condition, with
+# both the "only failing cells" and "only passing cells" mAP scores as
+# separate columns. `failed` and `passed` below come straight out of this
+# merge (rather than being independently re-filtered from `plot_df`), so
+# `failed[i]` and `passed[i]` are guaranteed to refer to the same
+# compound+dose -- this matters once we treat the two mAP scores as a
+# matched pair rather than two unrelated samples (see the next cell).
+paired_map = final_map_postQC_trend_labeled.merge(
+    post_qc_labeled,
+    on=["Metadata_broad_sample", "Metadata_dose_recode"],
+    suffixes=("_failed", "_passed"),
 )
 
-print(f"Mann-Whitney U = {stat:.0f}")
-print(f"p-value = {p:.3e}")
+failed = paired_map["mean_average_precision_failed"]
+passed = paired_map["mean_average_precision_passed"]
+
+print(f"n paired compound+dose conditions: {len(paired_map)}")
+print(f"median: failed={failed.median():.4f}, passed={passed.median():.4f}")
+print(f"mean:   failed={failed.mean():.4f}, passed={passed.mean():.4f}")
 
 
-# In[ ]:
+# In[12]:
+
+
+# `failed` and `passed` are two mAP scores computed for the SAME compound+dose
+# condition -- only the cells feeding the aggregate profile differ, but the
+# compound+dose identity (and any shared, condition-level signal) is
+# identical across the pair. That makes this a matched-pairs design, not two
+# independent samples: a rank-sum test (Mann-Whitney U) ignores the pairing
+# and is not the appropriate primary test here. The matched-pairs analogue is
+# the Wilcoxon signed-rank test on the per-condition differences
+# (failed - passed).
+#
+# At n ~ 8e3 pairs, the p-value underflows double precision and prints as
+# exactly 0.0 either way, which is never literally true for a continuous test
+# statistic -- we recompute it in log-space from the normal approximation so
+# we can report an actual (if extreme) order of magnitude instead of "p = 0".
+stat, p = wilcoxon(failed, passed, alternative="greater", zero_method="wilcox")
+
+diff = (failed - passed).to_numpy()
+diff_nz = diff[diff != 0]
+n = len(diff_nz)
+ranks = pd.Series(np.abs(diff_nz)).rank().to_numpy()
+z = (ranks[diff_nz > 0].sum() - n * (n + 1) / 4) / np.sqrt(
+    n * (n + 1) * (2 * n + 1) / 24
+)
+log10_p = norm.logsf(z) / np.log(10)
+
+print(f"Wilcoxon signed-rank statistic = {stat:.0f}")
+print(f"n pairs (nonzero differences) = {n}")
+print(f"z = {z:.2f}")
+print(f"p-value (scipy, underflows past ~1e-308): {p:.3e}")
+print(f"p-value (normal approximation, log-space): < 1e{np.ceil(log10_p):.0f}")
+
+# Secondary, independent-samples framing shown only for comparison with the
+# original analysis. Mann-Whitney U discards the compound+dose pairing above
+# and should not be reported as the primary test.
+stat_mw, p_mw = mannwhitneyu(failed, passed, alternative="greater")
+print(
+    f"[secondary, independent-samples framing] "
+    f"Mann-Whitney U = {stat_mw:.0f}, p = {p_mw:.3e}"
+)
+
+
+# In[13]:
 
 
 def cliffs_delta(x, y):
@@ -607,6 +633,14 @@ def cliffs_delta(x, y):
 
     return (gt - lt) / (len(x) * len(y))
 
+
+# Cliff's delta treats `failed` and `passed` as independent samples -- kept
+# here for comparability with the original (unpaired) framing.
 delta = cliffs_delta(failed, passed)
-print(f"Cliff's delta = {delta:.3f}")
+print(f"Cliff's delta (unpaired framing) = {delta:.3f}")
+
+# Matched rank-biserial correlation: the effect-size analogue of the
+# Wilcoxon signed-rank test above, appropriate for the paired design.
+r_matched = z / np.sqrt(n)
+print(f"Matched rank-biserial correlation (paired framing) = {r_matched:.3f}")
 

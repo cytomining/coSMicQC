@@ -3,7 +3,7 @@
 
 # ## Compare results applying ECOD to the retransplantation plate with coSMicQC
 
-# In[1]:
+# In[ ]:
 
 
 import time
@@ -12,6 +12,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from cytodataframe import CytoDataFrame
+from ipython.display import display
 from plotnine import (
     aes,
     element_text,
@@ -33,7 +34,7 @@ from pyod.models.ecod import ECOD
 from skimage import exposure
 
 
-# In[2]:
+# In[ ]:
 
 
 # Set correlation cache directory to avoid rerunning every time
@@ -43,7 +44,7 @@ cache_dir.mkdir(exist_ok=True)
 
 # ## Helper functions
 
-# In[3]:
+# In[ ]:
 
 
 # -----------------------------
@@ -566,7 +567,7 @@ def classify_comparison(group: str) -> str:
         return "Failed cells only"
 
 
-# In[4]:
+# In[ ]:
 
 
 # Set figure directory
@@ -602,7 +603,7 @@ print(no_QC_df.shape)
 no_QC_df.head()
 
 
-# In[5]:
+# In[ ]:
 
 
 # Identify columns to drop (metadata only)
@@ -630,7 +631,7 @@ no_QC_df["ECOD_flag"] = np.nan
 no_QC_df.loc[X_clean.index, "ECOD_flag"] = ecod_labels
 
 
-# In[6]:
+# In[ ]:
 
 
 # Assign ECOD labels directly (same row order preserved)
@@ -646,7 +647,7 @@ print(f"Flagged cells (ECOD): {flagged_cells}")
 print(f"Fraction flagged: {fraction_flagged:.4f}")
 
 
-# In[7]:
+# In[ ]:
 
 
 # Load in dataframe with each cell that passed or failed QC from coSMicQC
@@ -656,7 +657,7 @@ print(cosmicqc_df.shape)
 cosmicqc_df.head()
 
 
-# In[8]:
+# In[ ]:
 
 
 # Filter for rows where ECOD flagged cells as outliers
@@ -698,7 +699,7 @@ print("ECOD overlap fraction:", len(overlap) / len(ecod_set))
 print("coSMicQC overlap fraction:", len(overlap) / len(cosmic_set))
 
 
-# In[9]:
+# In[ ]:
 
 
 # --- normalize column names so key_cols exist in both dfs ---
@@ -751,7 +752,7 @@ print("ECOD missing:", (cosmicqc_df["ECOD_flag"] == -1).sum())
 cosmicqc_df.head()
 
 
-# In[10]:
+# In[ ]:
 
 
 cosmicqc_df["QC_combined_group"] = "unknown"
@@ -774,7 +775,7 @@ cosmicqc_df["QC_combined_group"] = pd.Categorical(
 cosmicqc_df.head()
 
 
-# In[11]:
+# In[ ]:
 
 
 # Filter cosmicqc_df
@@ -818,7 +819,7 @@ failed_ecod_df_cdf = CytoDataFrame(
 failed_ecod_df_cdf.sample(n=5, random_state=42)
 
 
-# In[12]:
+# In[ ]:
 
 
 # Filter cosmicqc_df
@@ -862,7 +863,7 @@ failed_cosmicqc_df_cdf = CytoDataFrame(
 failed_cosmicqc_df_cdf.sample(n=5, random_state=42)
 
 
-# In[13]:
+# In[ ]:
 
 
 # Update QC_combined_group to have more descriptive labels
@@ -895,7 +896,7 @@ print(
 )
 
 
-# In[14]:
+# In[ ]:
 
 
 order = {
@@ -923,7 +924,7 @@ cosmicqc_df = cosmicqc_df.assign(
 )
 
 
-# In[15]:
+# In[ ]:
 
 
 # Set the figure size
@@ -1009,7 +1010,7 @@ p.save(
 p.show()
 
 
-# In[16]:
+# In[ ]:
 
 
 # Compare QC failure rates
@@ -1034,13 +1035,13 @@ qc_rates["ECOD_fail_rate"] *= 100
 qc_rates["coSMicQC_fail_rate"] *= 100
 
 
-# In[17]:
+# In[ ]:
 
 
 qc_rates.sort_values("ECOD_fail_rate", ascending=False)
 
 
-# In[18]:
+# In[ ]:
 
 
 # Filter out treatment2_healthy
@@ -1098,7 +1099,7 @@ mean_method_diff = filtered_qc_rates["method_abs_diff"].mean()
 print("Mean absolute ECOD vs coSMicQC difference:", mean_method_diff)
 
 
-# In[19]:
+# In[ ]:
 
 
 # Standard deviation (spread across condition/treatment IDs)
@@ -1137,7 +1138,7 @@ print("Mean absolute ECOD vs coSMicQC difference:", mean_method_diff)
 
 # ## Load in no QC feature-selected profile for retransplantation plate for pairwise comparison
 
-# In[20]:
+# In[ ]:
 
 
 # Load in feature selected QC profile for retransplanation plate (no_QC_fs_df)
@@ -1175,7 +1176,7 @@ no_QC_fs_df.head()
 
 # ## Separate in groups
 
-# In[21]:
+# In[ ]:
 
 
 # Extract feature columns
@@ -1220,7 +1221,7 @@ print("ecod failed:", len(failed_ecod_features))
 print("ecod passed:", len(passed_ecod_features))
 
 
-# In[22]:
+# In[ ]:
 
 
 rng = np.random.default_rng(0)
@@ -1248,7 +1249,7 @@ print("ecod failed:", len(failed_ecod_features))
 print("ecod passed (matched):", len(passed_ecod_features))
 
 
-# In[23]:
+# In[ ]:
 
 
 # Call dataframe plot dataframe for saving correlations
@@ -1352,7 +1353,7 @@ else:
     print("Saved plot_df:", plot_df.shape)
 
 
-# In[24]:
+# In[ ]:
 
 
 # Print summary statistics on FULL dataset
@@ -1371,7 +1372,7 @@ plot_df["comparison"] = plot_df["group"].apply(
 )
 
 
-# In[25]:
+# In[ ]:
 
 
 # -----------------------------
@@ -1498,7 +1499,7 @@ p.save(
 p.show()
 
 
-# In[26]:
+# In[ ]:
 
 
 # -----------------------------
@@ -1565,7 +1566,7 @@ else:
     print("\nBoth methods have identical effect sizes.")
 
 
-# In[27]:
+# In[ ]:
 
 
 effect_size_ratio = d_cosmicqc / d_ecod
@@ -1576,7 +1577,7 @@ print(
 )
 
 
-# In[28]:
+# In[ ]:
 
 
 # -----------------------------
@@ -1608,7 +1609,7 @@ effect_size_df = pd.DataFrame(
 display(effect_size_df.round(3))
 
 
-# In[29]:
+# In[ ]:
 
 
 # -----------------------------
@@ -1686,7 +1687,7 @@ print(
 )
 
 
-# In[30]:
+# In[ ]:
 
 
 result_cross_group = permutation_test_cross_group_between_methods_fast(

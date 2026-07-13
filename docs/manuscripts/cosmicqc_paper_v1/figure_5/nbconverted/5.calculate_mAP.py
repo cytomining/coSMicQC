@@ -20,17 +20,13 @@ from plotnine import (
     facet_wrap,
     geom_abline,
     geom_bar,
-    geom_density,
     geom_hline,
     geom_point,
-    geom_smooth,
     geom_text,
     ggplot,
     labs,
     scale_color_gradientn,
-    scale_fill_gradient2,
     scale_fill_manual,
-    scale_size_continuous,
     theme,
     theme_bw,
 )
@@ -628,7 +624,7 @@ replicate_cosine_df["mean_pairwise_cosine_similarity_change"] = (
 merged_map_with_cosine = replicate_cosine_df.merge(
     merged_map,
     on=["Metadata_broad_sample", "Metadata_dose_recode"],
-    how="left",
+    how="inner",
 )
 
 
@@ -1101,7 +1097,6 @@ target_profiles["well_id"] = (
 target_profiles[
     ["Metadata_broad_sample", "Metadata_dose_recode", "Metadata_Plate", "Metadata_Well"]
 ].drop_duplicates()
-
 
 
 # ## Compute pairwise cosine similairy scores per well for these compounds

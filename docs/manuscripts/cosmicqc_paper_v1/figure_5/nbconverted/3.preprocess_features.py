@@ -8,6 +8,8 @@
 # Then all plates are  merged together as one batch for feature selection and spherization.
 # 
 # We generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).
+# 
+# This code was updated from the original code from the LINCS paper: https://github.com/broadinstitute/lincs-cell-painting
 
 # In[1]:
 

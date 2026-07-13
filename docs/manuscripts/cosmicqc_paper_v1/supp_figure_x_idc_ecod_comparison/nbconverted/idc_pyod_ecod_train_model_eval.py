@@ -28,8 +28,6 @@ from sklearn.preprocessing import LabelEncoder
 
 sys.path.append("../figure_3")
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from figure3_utils import downsample_data, get_X_y_data
 from PyComplexHeatmap import (
     ClusterMapPlotter,
@@ -264,33 +262,35 @@ holdout_df_wells.head()
 # In[10]:
 
 
-# Remove all rows from holdout data (using the data frame itself was not working)
-idc_norm_fs_df_dropped_holdout = idc_norm_fs_df[
-    ~(
-        (
-            (idc_norm_fs_df["Metadata_heart_number"] == 29)
-            & (idc_norm_fs_df["Metadata_cell_type"] == "Failing")
-        )
-        | (
-            (idc_norm_fs_df["Metadata_heart_number"] == 7)
-            & (idc_norm_fs_df["Metadata_treatment"] == "DMSO")
-        )
-        | (
-            (
-                idc_norm_fs_df["Metadata_heart_number"].isin(
-                    random_wells["Metadata_heart_number"]
-                )
-            )
-            & (
-                idc_norm_fs_df["Metadata_Well"].isin(
-                    random_wells["Random_Metadata_Well"]
-                )
-            )
-        )
+# Build the holdout mask (same conditions as above)
+holdout_mask = (
+    (
+        (idc_norm_fs_df["Metadata_heart_number"] == 29)
+        & (idc_norm_fs_df["Metadata_cell_type"] == "Failing")
     )
-]
+    | (
+        (idc_norm_fs_df["Metadata_heart_number"] == 7)
+        & (idc_norm_fs_df["Metadata_treatment"] == "DMSO")
+    )
+    | (
+        (idc_norm_fs_df["Metadata_heart_number"].isin(random_wells["Metadata_heart_number"]))
+        & (idc_norm_fs_df["Metadata_Well"].isin(random_wells["Random_Metadata_Well"]))
+    )
+)
+
+# Rows NOT matching the mask = data used for training
+idc_norm_fs_df_dropped_holdout = idc_norm_fs_df[~holdout_mask]
+
+# Rows matching the mask = the held-out cells only
+idc_holdout_df = idc_norm_fs_df[holdout_mask]
+
+# Save the held-out data as its own dataframe for later use
+idc_holdout_df.to_parquet(
+    model_dir / "idc_holdout_data.parquet", index=False
+)
 
 print(idc_norm_fs_df_dropped_holdout.shape)
+print(idc_holdout_df.shape)
 idc_norm_fs_df_dropped_holdout.head()
 
 
@@ -309,6 +309,14 @@ training_data, testing_data = train_test_split(
     test_size=test_ratio,
     stratify=idc_norm_fs_df_dropped_holdout[["Metadata_cell_type"]],
     random_state=random_state,
+)
+
+# Save the training and testing data as separate parquet files for later use
+training_data.to_parquet(
+    model_dir / "idc_training_data.parquet", index=False
+)
+testing_data.to_parquet(
+    model_dir / "idc_testing_data.parquet", index=False
 )
 
 # View shapes and example output

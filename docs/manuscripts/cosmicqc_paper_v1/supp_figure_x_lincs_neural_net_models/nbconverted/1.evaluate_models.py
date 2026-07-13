@@ -5,7 +5,7 @@
 # 
 # This notebook compares the test-set precision-recall performance of the saved `pre-QC final`, `post-QC final`, and shuffled-control MLP models.
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -14,6 +14,7 @@ import sys
 import joblib
 import numpy as np
 import pandas as pd
+from iPython.display import display
 from pycytominer.cyto_utils import infer_cp_features
 from sklearn.metrics import average_precision_score
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -22,7 +23,7 @@ sys.path.append(("../figure_5/utils"))
 import eval_neural_net_models as eval_nn
 
 
-# In[2]:
+# In[ ]:
 
 
 # Output and input paths
@@ -41,7 +42,7 @@ test_targets_path = pathlib.Path(
 )
 
 
-# In[3]:
+# In[ ]:
 
 
 # Load targets and prepare test sets
@@ -54,7 +55,7 @@ test_targets_df["moa_list"] = eval_nn.split_moas(test_targets_df["Metadata_moa"]
 print("Ground truth splits loaded!")
 
 
-# In[4]:
+# In[ ]:
 
 
 # Fit the MultiLabelBinarizer on the training MOA lists to establish the label space
@@ -92,7 +93,7 @@ print("Post-QC test shape:", X_post_test.shape, y_post_test.shape)
 print("MOA classes:", len(mlb.classes_))
 
 
-# In[5]:
+# In[ ]:
 
 
 # Load saved models and define evaluation inputs
@@ -126,7 +127,7 @@ model_inputs = {
 list(model_inputs.keys())
 
 
-# In[6]:
+# In[ ]:
 
 
 # Get predicted scores for each model and store them with true labels and colors
@@ -147,7 +148,7 @@ for label, (model, X_eval, y_eval, color) in model_inputs.items():
 # 
 # This scatterplot compares one-vs-rest AUCPR for every evaluable MOA in the final `pre-QC` and `post-QC` models using test-set predictions. It gives each class equal weight, which is a better check of broad QC improvement than the pooled PR curve alone. Point size is proportional to the number of test compounds for that MOA.
 
-# In[7]:
+# In[ ]:
 
 
 pre_final = model_scores["pre-QC final"]
@@ -230,7 +231,7 @@ aucpr_scatter_plot = eval_nn.make_aucpr_scatter_plot(
 display(aucpr_scatter_plot)
 
 
-# In[8]:
+# In[ ]:
 
 
 failed_fraction_aucpr_output_path = (
@@ -243,7 +244,7 @@ failed_fraction_aucpr_plot = eval_nn.make_aucpr_change_vs_failed_fraction_plot(
 display(failed_fraction_aucpr_plot)
 
 
-# In[9]:
+# In[ ]:
 
 
 # Define a no-change threshold using the same half-standard-deviation rule
@@ -302,7 +303,7 @@ print(f"  Mean avg compound failed fraction: {no_change_summary['avg_compound_fa
 print(f"  Number of MOAs: {no_change_summary['moa'].nunique()}")
 
 
-# In[10]:
+# In[ ]:
 
 
 # Compound-level follow-up: identify compounds with the highest failed-cell fraction
@@ -402,7 +403,7 @@ top_compounds[
 # 
 # These panels show one-vs-rest PR curves for top or bottom performing MoAs after QC, with each MOA plotted side by side.
 
-# In[11]:
+# In[ ]:
 
 
 # Get the top 3 MOAs with largest improvement (delta_aucpr) post-QC
@@ -428,7 +429,7 @@ selected_moa_plot = eval_nn.make_pr_curve_plot(
 display(selected_moa_plot)
 
 
-# In[12]:
+# In[ ]:
 
 
 # Get the top 3 MOAs with lowest improvement (delta_aucpr) post-QC

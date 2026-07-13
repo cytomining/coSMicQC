@@ -5,7 +5,7 @@
 
 # ## Import libraries
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from pycytominer.cyto_utils import infer_cp_features
 from sklearn.metrics import f1_score
-from sklearn.model_selection import KFold, train_test_split
+from sklearn.model_selection import KFold
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 

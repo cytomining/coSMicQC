@@ -92,6 +92,7 @@ holdout_no_QC_data = plate_4_no_QC[
     )
     | (plate_4_no_QC["Metadata_heart_number"] == failing_heart_number)
 ]
+print(f"Holdout no QC data shape: {holdout_no_QC_data.shape}")
 
 # Load in X and y data from dataset
 X, y = get_X_y_data(df=holdout_no_QC_data, label="Metadata_cell_type")
@@ -132,6 +133,7 @@ holdout_QC_data = plate_4_QC[
     )
     | (plate_4_QC["Metadata_heart_number"] == failing_heart_number)
 ]
+print(f"Holdout QC data shape: {holdout_QC_data.shape}")
 
 # Load in X and y data from dataset
 X, y = get_X_y_data(df=holdout_QC_data, label="Metadata_cell_type")
@@ -172,6 +174,7 @@ holdout_ECOD_data = plate_4_ECOD[
     )
     | (plate_4_ECOD["Metadata_heart_number"] == failing_heart_number)
 ]
+print(f"Holdout ECOD data shape: {holdout_ECOD_data.shape}")
 
 # Load in X and y data from dataset
 X, y = get_X_y_data(df=holdout_ECOD_data, label="Metadata_cell_type")
