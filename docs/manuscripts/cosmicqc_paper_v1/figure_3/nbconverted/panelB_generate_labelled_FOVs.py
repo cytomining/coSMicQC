@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # ## Generate labelled FOVs for failing or passing single-cells
-#
+# 
 # Do not use `Run All` if you want to run in sequential order.
 # We make manual changes in some images prior to running the last code cell.
 
@@ -25,6 +25,7 @@ os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(
 )
 
 import napari
+
 
 # In[2]:
 
@@ -253,3 +254,4 @@ plt.savefig(
     f"figures/{well}{site}_{compartment}.png", bbox_inches="tight", pad_inches=0
 )
 plt.close()
+

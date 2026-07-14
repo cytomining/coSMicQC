@@ -2,12 +2,14 @@
 # coding: utf-8
 
 # # Preprocess the features into two sets of data per plate: Post- or Pre-QC
-#
+# 
 # The features will be preprocessed using [Pycytominer](https://github.com/cytomining/pycytominer).
 # We use aggregate, annotate, normalize w/ MAD robustize for each plate.
-# Then all plates are  merged together as one batch for feature selection and spherization.  # noqa: E501
-#
-# We generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).  # noqa: E501
+# Then all plates are  merged together as one batch for feature selection and spherization.
+# 
+# We generate these profiles for either the full profiles (pre-QC) and only the non-flagged cells (post-QC).
+# 
+# This code was updated from the original code from the LINCS paper: https://github.com/broadinstitute/lincs-cell-painting
 
 # In[1]:
 
@@ -19,8 +21,9 @@ import pandas as pd
 from pycytominer import aggregate, annotate, feature_select, normalize
 from pycytominer.cyto_utils import output
 
+
 # ## Helper functions
-#
+# 
 # These functions comes from the LINCS profiling repository.
 
 # In[2]:
@@ -170,16 +173,29 @@ barcode_platemap_df = pd.read_csv(barcode_platemap_file)
 # Set path for output and input profiles main directory
 profiles_dir = pathlib.Path("/home/jenna/mnt/bandicoot/LINCS_data/processed_profiles")
 
-# Pertubation info file
+# Perturbation info file
 pertinfo_file = pathlib.Path("./utils/aligned_moa_CP_L1000.csv").resolve(strict=True)
 
 # Output path for single-cell profiles
 output_dir = pathlib.Path(f"{profiles_dir}/single_cell_profiles")
 output_dir.mkdir(parents=True, exist_ok=True)
 
+# QC filtering mode: either keep post-QC passing cells or only failing cells
+qc_filter_mode = "only_failed_cells"  # options: "post" or "only_failed_cells"
+if qc_filter_mode not in {"post", "only_failed_cells"}:
+    raise ValueError(
+        "qc_filter_mode must be one of {'post', 'only_failed_cells'}"
+    )
+qc_suffix = "" if qc_filter_mode == "post" else "_only_failing_cells"
+qc_filter_description = (
+    "passing cells (post-QC)"
+    if qc_filter_mode == "post"
+    else "only failing cells"
+)
+
 
 # ## First, perform operations on each individual plate first
-#
+# 
 # 1. Aggregate (median)
 # 2. Annotate
 # 3. Normalize (MAD robustize) -> whole plate
@@ -188,101 +204,64 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 
 qc_profiles_dir = profiles_dir / "qc_profiles"
-profile_files = qc_profiles_dir.rglob("*_qc_labeled.parquet")
+profile_files = list(qc_profiles_dir.rglob("*_qc_labeled.parquet"))
 
-# Lists to collect normalized data across all plates
+# Separate lists for pre and post QC
 all_pre_qc = []
 all_post_qc = []
 
+# ========== PRE-QC PROCESSING ==========
+print("\n" + "="*50)
+print("PHASE 1: PRE-QC PROCESSING")
+print("="*50)
+
 for profile_file in profile_files:
     plate_name = profile_file.stem.split("_")[0]
-    print(f"Processing {plate_name}...")
+    print(f"\nProcessing {plate_name} (PRE-QC)...")
 
-    # Define all expected output files for this plate
-    expected_outputs = [
-        output_dir / f"{plate_name}_pre_qc_agg.parquet",
-        output_dir / f"{plate_name}_post_qc_agg.parquet",
-        output_dir / f"{plate_name}_pre_qc_agg_annotated.parquet",
-        output_dir / f"{plate_name}_post_qc_agg_annotated.parquet",
-        output_dir / f"{plate_name}_pre_qc_agg_normalized.parquet",
-        output_dir / f"{plate_name}_post_qc_agg_normalized.parquet",
-    ]
+    pre_agg_path = output_dir / f"{plate_name}_pre_qc_agg.parquet"
+    pre_annotated_path = output_dir / f"{plate_name}_pre_qc_agg_annotated.parquet"
+    pre_normalized_path = output_dir / f"{plate_name}_pre_qc_agg_normalized.parquet"
 
-    # Skip plate if all outputs already exist
-    if all(f.exists() for f in expected_outputs):
-        print(f"Skipping {plate_name}, all outputs already exist.")
+    # Skip only if ALL outputs exist
+    if (
+        pre_agg_path.exists()
+        and pre_annotated_path.exists()
+        and pre_normalized_path.exists()
+    ):
+        print(f"  Skipping {plate_name}: all pre-QC outputs already exist.")
         continue
 
-    # Load the profile data
-    print("Loading profile data...")
+    # If nothing has been processed, then run
+    print("  Loading profile data...")
     df = pd.read_parquet(profile_file, engine="pyarrow")
-
-    # Drop columns with TableNumber in the name
     df = df.loc[:, ~df.columns.str.contains("TableNumber")]
 
-    print("Starting aggregation...")
-    # --- Pre-QC aggregation ---
+    print("  Starting aggregation...")
     pre_qc_agg = aggregate(
         population_df=df,
         operation=aggregate_method,
         strata=strata,
         float_format=float_format,
     )
-
-    # Add column for pre-QC data that says how many single-cells were in each well
     pre_qc_agg["Metadata_sc_count"] = pre_qc_agg["Image_Metadata_Well"].map(
         df.groupby("Image_Metadata_Well").size()
     )
 
-    # --- Post-QC aggregation ---
-    cqc_cols = [col for col in df.columns if col.startswith("cqc.")]
-    post_qc_df = df[~df[cqc_cols].any(axis=1)]
-    post_qc_agg = aggregate(
-        population_df=post_qc_df,
-        operation=aggregate_method,
-        strata=strata,
-        float_format=float_format,
-    )
-
-    # Add column for post-QC data that says how many single-cells were in each well
-    # prior to QC filtering
-    post_qc_agg["Metadata_sc_count"] = post_qc_agg["Image_Metadata_Well"].map(
-        df.groupby("Image_Metadata_Well").size()
-    )
-
-    # Count failed QC cells per well
-    post_qc_agg["Metadata_sc_count_failed_qc"] = post_qc_agg["Image_Metadata_Well"].map(
-        df[df[cqc_cols].any(axis=1)].groupby("Image_Metadata_Well").size()
-    )
-
-    # Count passed QC cells per well
-    post_qc_agg["Metadata_sc_count_passed_qc"] = post_qc_agg["Image_Metadata_Well"].map(
-        df[~df[cqc_cols].any(axis=1)].groupby("Image_Metadata_Well").size()
-    )
-
     output(
         df=pre_qc_agg,
-        output_filename=output_dir / f"{plate_name}_pre_qc_agg.parquet",
-        float_format=float_format,
-        output_type="parquet",
-    )
-    output(
-        df=post_qc_agg,
-        output_filename=output_dir / f"{plate_name}_post_qc_agg.parquet",
+        output_filename=pre_agg_path,
         float_format=float_format,
         output_type="parquet",
     )
 
-    del df, post_qc_df  # free memory
-
-    print("Starting annotation...")
-    # --- Annotate pre- and post-QC ---
+    print("  Starting annotation...")
     platemap_info = barcode_platemap_df.query("Assay_Plate_Barcode == @plate_name")
     if platemap_info.empty:
         raise FileNotFoundError(f"No platemap found for plate {plate_name}")
     txt_filename = platemap_info["Plate_Map_Name"].iloc[0]
     txt_path = pathlib.Path("./metadata/platemaps") / f"{txt_filename}.txt"
-    platemap = pd.read_csv(txt_path, sep="\t")
+    platemap = pd.read_csv(txt_path, sep="	")
 
     pre_annotated_df = annotate(
         profiles=pre_qc_agg,
@@ -291,24 +270,10 @@ for profile_file in profile_files:
         float_format=float_format,
         format_broad_cmap=True,
         external_metadata=moa_df,
-        external_join_left=["Metadata_broad_sample"],
-        external_join_right=["Metadata_broad_sample"],
+        external_join_on=["Metadata_broad_sample"],
         cmap_args={"cell_id": "A549", "perturbation_mode": "chemical"},
     )
 
-    post_annotated_df = annotate(
-        profiles=post_qc_agg,
-        platemap=platemap,
-        join_on=["Metadata_well_position", "Image_Metadata_Well"],
-        float_format=float_format,
-        format_broad_cmap=True,
-        external_metadata=moa_df,
-        external_join_left=["Metadata_broad_sample"],
-        external_join_right=["Metadata_broad_sample"],
-        cmap_args={"cell_id": "A549", "perturbation_mode": "chemical"},
-    )
-
-    # Add dose recoding information to the annotated DataFrames
     pre_annotated_df = pre_annotated_df.assign(
         Metadata_dose_recode=(
             pre_annotated_df.Metadata_mmoles_per_liter.apply(
@@ -317,36 +282,144 @@ for profile_file in profile_files:
         )
     )
 
-    post_annotated_df = post_annotated_df.assign(
-        Metadata_dose_recode=(
-            post_annotated_df.Metadata_mmoles_per_liter.apply(
-                lambda x: recode_dose(x, primary_dose_mapping, return_level=False)
-            )
-        )
-    )
-
-    # Save the annotated DataFrames
     output(
         df=pre_annotated_df,
-        output_filename=output_dir / f"{plate_name}_pre_qc_agg_annotated.parquet",
-        float_format=float_format,
-        output_type="parquet",
-    )
-    output(
-        df=post_annotated_df,
-        output_filename=output_dir / f"{plate_name}_post_qc_agg_annotated.parquet",
+        output_filename=pre_annotated_path,
         float_format=float_format,
         output_type="parquet",
     )
 
-    print("Starting normalization...")
-    # --- Normalize pre- and post-QC ---
+    print("  Starting normalization...")
     pre_normalized_df = normalize(
         profiles=pre_annotated_df,
         samples="all",
         float_format=float_format,
         method="mad_robustize",
     )
+
+    output(
+        df=pre_normalized_df,
+        output_filename=pre_normalized_path,
+        float_format=float_format,
+        output_type="parquet",
+    )
+
+    all_pre_qc.append(pre_normalized_df)
+    print(f"  Finished processing {plate_name} (PRE-QC).")
+
+
+# In[5]:
+
+
+# ========== POST-QC PROCESSING ==========
+print("\n" + "="*50)
+print("PHASE 2: POST-QC PROCESSING")
+print(f"Mode: {qc_filter_mode} {qc_filter_description}")
+print("="*50)
+
+for profile_file in profile_files:
+    plate_name = profile_file.stem.split("_")[0]
+    print(f"\nProcessing {plate_name} (POST-QC{qc_suffix})...")
+
+    post_agg_path = output_dir / f"{plate_name}_post_qc_agg{qc_suffix}.parquet"
+    post_annotated_path = output_dir / f"{plate_name}_post_qc_agg_annotated{qc_suffix}.parquet"
+    post_normalized_path = output_dir / f"{plate_name}_post_qc_agg_normalized{qc_suffix}.parquet"
+
+    # Skip only if ALL outputs exist
+    if (
+        post_agg_path.exists()
+        and post_annotated_path.exists()
+        and post_normalized_path.exists()
+    ):
+        print(f"  Skipping {plate_name}: all post-QC outputs already exist.")
+        continue
+
+    print("  Loading profile data...")
+    df = pd.read_parquet(profile_file, engine="pyarrow")
+    df = df.loc[:, ~df.columns.str.contains("TableNumber")]
+
+    print("  Starting aggregation...")
+    cqc_cols = [col for col in df.columns if col.startswith("cqc.")]
+    post_qc_df = (
+        df[~df[cqc_cols].any(axis=1)]
+        if qc_filter_mode == "post"
+        else df[df[cqc_cols].any(axis=1)]
+    )
+    print(f"  Filtering for {qc_filter_description}...")
+
+    post_qc_agg = aggregate(
+        population_df=post_qc_df,
+        operation=aggregate_method,
+        strata=strata,
+        float_format=float_format,
+    )
+
+    post_qc_agg["Metadata_sc_count"] = post_qc_agg["Image_Metadata_Well"].map(
+        df.groupby("Image_Metadata_Well").size()
+    )
+    post_qc_agg["Metadata_sc_count_failed_qc"] = post_qc_agg["Image_Metadata_Well"].map(
+        df[df[cqc_cols].any(axis=1)].groupby("Image_Metadata_Well").size()
+    )
+    post_qc_agg["Metadata_sc_count_passed_qc"] = post_qc_agg["Image_Metadata_Well"].map(
+        df[~df[cqc_cols].any(axis=1)].groupby("Image_Metadata_Well").size()
+    )
+
+    output(
+        df=post_qc_agg,
+        output_filename=post_agg_path,
+        float_format=float_format,
+        output_type="parquet",
+    )
+
+    print("  Starting annotation...")
+
+    platemap_info = barcode_platemap_df.query(
+        "Assay_Plate_Barcode == @plate_name"
+    )
+    if platemap_info.empty:
+        raise FileNotFoundError(
+            f"No platemap found for plate {plate_name}"
+        )
+
+    txt_filename = platemap_info["Plate_Map_Name"].iloc[0]
+    txt_path = pathlib.Path("./metadata/platemaps") / f"{txt_filename}.txt"
+    platemap = pd.read_csv(txt_path, sep="\t")
+
+    post_annotated_df = annotate(
+        profiles=post_qc_agg,
+        platemap=platemap,
+        join_on=["Metadata_well_position", "Image_Metadata_Well"],
+        float_format=float_format,
+        format_broad_cmap=True,
+        external_metadata=moa_df,
+        external_join_on=["Metadata_broad_sample"],
+        cmap_args={
+            "cell_id": "A549",
+            "perturbation_mode": "chemical",
+        },
+    )
+
+    post_annotated_df = post_annotated_df.assign(
+        Metadata_dose_recode=(
+            post_annotated_df.Metadata_mmoles_per_liter.apply(
+                lambda x: recode_dose(
+                    x,
+                    primary_dose_mapping,
+                    return_level=False,
+                )
+            )
+        )
+    )
+
+    output(
+        df=post_annotated_df,
+        output_filename=post_annotated_path,
+        float_format=float_format,
+        output_type="parquet",
+    )
+
+    print("  Starting normalization...")
+
     post_normalized_df = normalize(
         profiles=post_annotated_df,
         samples="all",
@@ -354,58 +427,66 @@ for profile_file in profile_files:
         method="mad_robustize",
     )
 
-    # Append to the batch lists
-    all_pre_qc.append(pre_normalized_df)
-    all_post_qc.append(post_normalized_df)
-
-    output(
-        df=pre_normalized_df,
-        output_filename=output_dir / f"{plate_name}_pre_qc_agg_normalized.parquet",
-        float_format=float_format,
-        output_type="parquet",
-    )
     output(
         df=post_normalized_df,
-        output_filename=output_dir / f"{plate_name}_post_qc_agg_normalized.parquet",
+        output_filename=post_normalized_path,
         float_format=float_format,
         output_type="parquet",
     )
-    print(f"Finished processing {plate_name}.")
+
+    all_post_qc.append(post_normalized_df)
+
+    print(f"  Finished processing {plate_name} (POST-QC).")
+
+print(f"\nPre-QC plates collected: {len(all_pre_qc)}")
+print(f"Post-QC plates collected: {len(all_post_qc)}")
 
 
-# In[5]:
+# In[6]:
 
 
 # --- Merge all plates into single DataFrames for the batch ---
-if all_pre_qc and all_post_qc:  # only run if both lists have data
+if all_pre_qc:
+    print("\nMerging pre-QC plates into single batch...")
     batch_pre_qc_df = pd.concat(all_pre_qc, ignore_index=True)
-    batch_post_qc_df = pd.concat(all_post_qc, ignore_index=True)
-
-    # Save the merged batch-level DataFrames
     output(
         df=batch_pre_qc_df,
         output_filename=output_dir / "whole_batch_pre_qc_norm.parquet",
         float_format=float_format,
         output_type="parquet",
     )
+    print("Finished merging pre-QC plates.")
+else:
+    print("No pre-QC plates to merge.")
+    batch_pre_qc_df = None
+
+if all_post_qc:
+    print(f"\nMerging post-QC plates into single batch ({qc_filter_description})...")
+    batch_post_qc_df = pd.concat(all_post_qc, ignore_index=True)
     output(
         df=batch_post_qc_df,
-        output_filename=output_dir / "whole_batch_post_qc_norm.parquet",
+        output_filename=output_dir / f"whole_batch_post_qc_norm{qc_suffix}.parquet",
         float_format=float_format,
         output_type="parquet",
     )
-    print("Finished merging all plates into one batch.")
+    print("Finished merging post-QC plates.")
 else:
-    print("No new plates were processed. Skipping batch merge.")
+    print("No post-QC plates to merge.")
+    batch_post_qc_df = None
 
 
 # ## Perform preprocessing on merged data pre and post QC
 
-# In[6]:
+# In[7]:
 
 
 # --- Perform feature selection and spherization for whole batches ---
-if all_pre_qc and all_post_qc:  # only run if both lists had data merged
+# PRE-QC BATCH PROCESSING
+if batch_pre_qc_df is not None:
+    print("\n" + "="*50)
+    print("BATCH PRE-QC PROCESSING")
+    print("="*50)
+    
     batch_pre_qc_fs_df = feature_select(
         profiles=batch_pre_qc_df,
         operation=feature_select_ops,
@@ -421,22 +502,6 @@ if all_pre_qc and all_post_qc:  # only run if both lists had data merged
         output_type="parquet",
     )
 
-    batch_post_qc_fs_df = feature_select(
-        profiles=batch_post_qc_df,
-        operation=feature_select_ops,
-        na_cutoff=na_cut,
-        corr_threshold=corr_threshold,
-        blocklist_file=full_blocklist_file,
-    )
-
-    output(
-        df=batch_post_qc_fs_df,
-        output_filename=output_dir / "whole_batch_post_qc_agg_norm_fs.parquet",
-        float_format=float_format,
-        output_type="parquet",
-    )
-
-    # --- Perform spherization for whole batches ---
     batch_pre_qc_spherized_df = normalize(
         profiles=batch_pre_qc_fs_df,
         features="infer",
@@ -448,6 +513,31 @@ if all_pre_qc and all_post_qc:  # only run if both lists had data merged
     output(
         df=batch_pre_qc_spherized_df,
         output_filename=output_dir / "whole_batch_pre_qc_agg_norm_fs_spherized.parquet",
+        float_format=float_format,
+        output_type="parquet",
+    )
+    print("Finished pre-QC batch processing.")
+else:
+    print("No pre-QC batch data to process.")
+    batch_pre_qc_spherized_df = None
+
+# POST-QC BATCH PROCESSING
+if batch_post_qc_df is not None:
+    print("\n" + "="*50)
+    print(f"BATCH POST-QC PROCESSING ({qc_filter_description})")
+    print("="*50)
+    
+    batch_post_qc_fs_df = feature_select(
+        profiles=batch_post_qc_df,
+        operation=feature_select_ops,
+        na_cutoff=na_cut,
+        corr_threshold=corr_threshold,
+        blocklist_file=full_blocklist_file,
+    )
+
+    output(
+        df=batch_post_qc_fs_df,
+        output_filename=output_dir / f"whole_batch_post_qc_agg_norm_fs{qc_suffix}.parquet",
         float_format=float_format,
         output_type="parquet",
     )
@@ -463,71 +553,86 @@ if all_pre_qc and all_post_qc:  # only run if both lists had data merged
     output(
         df=batch_post_qc_spherized_df,
         output_filename=output_dir
-        / "whole_batch_post_qc_agg_norm_fs_spherized.parquet",
+        / f"whole_batch_post_qc_agg_norm_fs_spherized{qc_suffix}.parquet",
         float_format=float_format,
         output_type="parquet",
     )
-
-    print("Finished processing batch-level data.")
+    print("Finished post-QC batch processing.")
 else:
-    print(
-        "No batch-level data to process. Skipping feature selection and spherization."
-    )
+    print("No post-QC batch data to process.")
+    batch_post_qc_spherized_df = None
 
 
 # ## Output one dataframe to inspect
 
-# In[7]:
+# In[8]:
 
 
 # Path to the spherized file we want to inspect
-spherized_file = output_dir / "whole_batch_post_qc_agg_norm_fs_spherized.parquet"
+spherized_file = output_dir / f"whole_batch_post_qc_agg_norm_fs_spherized{qc_suffix}.parquet"
 
 if spherized_file.exists():
     print("Spherized batch file already exists. Loading for inspection...")
     batch_post_qc_spherized_df = pd.read_parquet(spherized_file, engine="pyarrow")
     print(batch_post_qc_spherized_df.shape)
-    display(batch_post_qc_spherized_df.head())  # noqa: F821
+    display(batch_post_qc_spherized_df.head())
 elif all_pre_qc and all_post_qc:  # only print after processing if new data exists
     print(batch_post_qc_spherized_df.shape)
-    display(batch_post_qc_spherized_df.head())  # noqa: F821
+    display(batch_post_qc_spherized_df.head())
 else:
     print("No spherized batch data available to inspect.")
 
 
 # ## Final preprocessing steps
 
-# In[8]:
+# In[9]:
 
 
-# Paths to the final merged files
+# --- Final preprocessing: feature selection and merge ---
+
+# PRE-QC FINAL PROCESSING
+print("\n" + "="*50)
+print("FINAL PRE-QC PROCESSING")
+print("="*50)
+
 pre_merged_file = output_dir / "whole_batch_pre_qc_cpd_replicates.parquet"
-post_merged_file = output_dir / "whole_batch_post_qc_cpd_replicates.parquet"
-
-# --- Perform feature selection and merge for pre-QC spherized batch ---
-if pre_merged_file.exists():
-    print("Pre-QC merged batch file already exists. Skipping processing.")
+if batch_pre_qc_spherized_df is not None:
+    if pre_merged_file.exists():
+        print("Pre-QC final file already exists. Skipping.")
+    else:
+        print("Processing pre-QC spherized batch...")
+        pre_selected_df = feature_selection(batch_pre_qc_spherized_df, qc_status="pre")
+        pre_qc_cpd_replicates_merged_df, _ = merge_dataframe(pre_selected_df, pertinfo_file)
+        output(
+            df=pre_qc_cpd_replicates_merged_df,
+            output_filename=pre_merged_file,
+            float_format=float_format,
+            output_type="parquet",
+        )
+        print("Finished pre-QC final processing.")
 else:
-    pre_selected_df = feature_selection(batch_pre_qc_spherized_df, qc_status="pre")
-    pre_qc_cpd_replicates_merged_df, _ = merge_dataframe(pre_selected_df, pertinfo_file)
-    output(
-        df=pre_qc_cpd_replicates_merged_df,
-        output_filename=pre_merged_file,
-        float_format=float_format,
-        output_type="parquet",
-    )
+    print("No pre-QC spherized data to process.")
 
-# --- Perform feature selection and merge for post-QC spherized batch ---
-if post_merged_file.exists():
-    print("Post-QC merged batch file already exists. Skipping processing.")
+# POST-QC FINAL PROCESSING
+print("\n" + "="*50)
+print(f"FINAL POST-QC PROCESSING ({qc_filter_description})")
+print("="*50)
+
+post_merged_file = output_dir / f"whole_batch_post_qc_cpd_replicates{qc_suffix}.parquet"
+if batch_post_qc_spherized_df is not None:
+    if post_merged_file.exists():
+        print("Post-QC final file already exists. Skipping.")
+    else:
+        print("Processing post-QC spherized batch...")
+        post_selected_df = feature_selection(batch_post_qc_spherized_df, qc_status="post")
+        post_qc_cpd_replicates_merged_df, _ = merge_dataframe(post_selected_df, pertinfo_file)
+        output(
+            df=post_qc_cpd_replicates_merged_df,
+            output_filename=post_merged_file,
+            float_format=float_format,
+            output_type="parquet",
+        )
+        print("Finished post-QC final processing.")
 else:
-    post_selected_df = feature_selection(batch_post_qc_spherized_df, qc_status="post")
-    post_qc_cpd_replicates_merged_df, _ = merge_dataframe(
-        post_selected_df, pertinfo_file
-    )
-    output(
-        df=post_qc_cpd_replicates_merged_df,
-        output_filename=post_merged_file,
-        float_format=float_format,
-        output_type="parquet",
-    )
+    print("No post-QC spherized data to process.")
+

@@ -2,6 +2,8 @@
 # See https://pre-commit.com/hooks.html for more hooks
 default_language_version:
   python: python3.11
+# globally exclude manuscript sources from all hooks (see docs/manuscripts)
+exclude: ^docs/manuscripts/
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -31,8 +33,7 @@ repos:
               .*\.lock |
               .*\.json |
               .*\.ipynb |
-              .*\.cppipe |
-              .*cosmicqc_paper_v1/.*   # skip everything inside this folder
+              .*\.cppipe
           )$
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.18
@@ -55,7 +56,7 @@ repos:
     hooks:
     -   id: actionlint
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.20"
+    rev: "v0.15.21"
     hooks:
     -   id: ruff-format
     -   id: ruff-check
@@ -76,12 +77,6 @@ repos:
     hooks:
     -   id: almanack-check
         args: [--exclude_paths=docs]
--   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
-    rev: v0.6.0
-    hooks:
-    -   id: pre-commit-update
-        args: ["--keep", "mdformat", "--keep", "pre-commit-update", "--keep", "cffconvert",
-          "--keep", "pyproject-fmt"]
 -   repo: local
     hooks:
     -   id: code-cov-gen

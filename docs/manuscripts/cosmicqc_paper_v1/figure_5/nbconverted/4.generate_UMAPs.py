@@ -26,6 +26,7 @@ from plotnine import (
 from pycytominer.cyto_utils import infer_cp_features
 from sklearn.decomposition import PCA
 
+
 # In[2]:
 
 
@@ -85,7 +86,7 @@ pre_qc_df.head()
 
 # ## Pre-QC UMAPs (Panels A and B)
 
-# In[5]:
+# In[ ]:
 
 
 cp_features = infer_cp_features(pre_qc_df)
@@ -111,7 +112,8 @@ pre_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 # print percent explained variance accounted for by top 50 components
 explained_variance = pca.explained_variance_ratio_.sum() * 100
 print(
-    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"  # noqa: E501
+    f"Percent explained variance accounted for by top "
+    f"{n_components} components: {explained_variance:.2f}%"
 )
 print(pre_qc_pca_df.shape)
 pre_qc_pca_df.head()
@@ -288,7 +290,7 @@ p_failed_qc.show()
 
 # ## UMAP for post-QC
 
-# In[11]:
+# In[ ]:
 
 
 cp_features = infer_cp_features(post_qc_df)
@@ -311,7 +313,8 @@ post_qc_pca_df.columns = [f"PCA_{x}" for x in range(0, n_components)]
 # print percent explained variance accounted for by top 50 components
 explained_variance = pca.explained_variance_ratio_.sum() * 100
 print(
-    f"Percent explained variance accounted for by top {n_components} components: {explained_variance:.2f}%"  # noqa: E501
+    f"Percent explained variance accounted for by top "
+    f"{n_components} components: {explained_variance:.2f}%"
 )
 
 print(post_qc_pca_df.shape)
@@ -400,3 +403,4 @@ p = (
 )
 p.save(filename=figure_output_dir / "post_qc_moa_umap.png", dpi=600)
 p.show()
+

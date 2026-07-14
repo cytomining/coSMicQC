@@ -88,6 +88,7 @@ papermill = "^2.6.0"
 copairs = "^0.5.1"
 hdbscan = "^0.8.40"
 pre-commit = ">=3,<5"
+pycomplexheatmap = "^1.8.1"
 
 [tool.poetry.group.docs.dependencies]
 # used for rendering docs into docsite
@@ -157,7 +158,6 @@ lint.per-file-ignores."docs/" = [ "E402", "F401" ]
 # ignore long line and func def warnings with notebooks
 lint.per-file-ignores."docs/src/examples/*.ipynb" = [ "E501", "E703", "F821", "PLR0913" ]
 lint.per-file-ignores."docs/src/examples/*.py" = [ "E501", "E703", "PLR0913" ]
-# ignore typing rules for tests
 lint.per-file-ignores."tests/*" = [ "ANN201", "ANN202", "PLR0913", "PLR2004" ]
 
 [tool.isort]

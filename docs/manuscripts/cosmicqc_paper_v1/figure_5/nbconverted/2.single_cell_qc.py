@@ -2,14 +2,14 @@
 # coding: utf-8
 
 # ## Perform single cell quality control on the profiles
-#
+# 
 # We utilize the conditions used in the ALSF project repository.
 # We detect poor quality nuclei segmentations.
-#
-# NOTE: We run this notebook via `papermill` through this [bash script](./run_single_cell_qc.sh).  # noqa: E501
+# 
+# NOTE: We run this notebook via `papermill` through this [bash script](./run_single_cell_qc.sh). 
 # We found it was easier to run through all 136 plates in this format over a for loop.
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -224,3 +224,4 @@ print(f"Labeled dataframe for plate {plate_id} saved to {labeled_path}")
 # print the shape and head of the updated DataFrame
 print(plate_df.shape)
 plate_df.head()
+

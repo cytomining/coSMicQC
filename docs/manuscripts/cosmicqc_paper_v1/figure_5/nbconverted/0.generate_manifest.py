@@ -2,10 +2,10 @@
 # coding: utf-8
 
 # # Generate manifest file with paths to SQLite files for CytoTable processing
-#
+# 
 # A manifest file is a simple CSV that tracks the plate names in the dataset.
 # It contains the correct paths to their respective SQLite file.
-#
+# 
 # Code derived from the `JUMP-single-cell` repository, which can be found [here](https://github.com/WayScience/JUMP-single-cell/blob/main/0.download_data/0.generate_jump_dataset_manifest.ipynb).
 
 # In[1]:
@@ -18,6 +18,7 @@ import pandas as pd
 import s3fs
 from botocore import UNSIGNED
 from botocore.config import Config
+
 
 # In[2]:
 
@@ -101,3 +102,4 @@ for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
                 s3.download_file(bucket, key, str(local_path))
             else:
                 print(f"Skipping (already exists): {filename}")
+
