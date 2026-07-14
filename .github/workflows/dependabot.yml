@@ -8,6 +8,13 @@ permissions:
   pull-requests: write
   contents: write
 
+# Serialize runs for the same PR so that this workflow's own push (which
+# re-triggers it via the `synchronize` event) does not race with a later run
+# updating the same branch ref, a common source of rejected pushes.
+concurrency:
+  group: dependabot-pre-commit-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   pre-commit:
     if: github.actor == 'dependabot[bot]'
@@ -56,7 +63,22 @@ jobs:
             "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "chore: auto-apply pre-commit fixes"
-          git push
+          # Push with retries to tolerate transient GitHub-side failures
+          # (e.g. "remote: fatal error in commit_refs") and to recover from a
+          # branch that moved underneath us by rebasing before each retry.
+          branch="${{ github.event.pull_request.head.ref }}"
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:${branch}"; then
+              echo "Push succeeded on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; refreshing branch and retrying..."
+            git fetch origin "${branch}"
+            git rebase "origin/${branch}" || git rebase --abort
+            sleep $((attempt * 5))
+          done
+          echo "Push failed after multiple attempts."
+          exit 1
       # raise error if there were no changes and pre-commit failed
       - name: Errors detected
         if: ${{ env.changes_detected == 'false' &&
