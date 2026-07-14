@@ -581,18 +581,18 @@ print(f"mean:   failed={failed.mean():.4f}, passed={passed.mean():.4f}")
 # In[12]:
 
 
-# `failed` and `passed` are two mAP scores computed for the SAME compound+dose
-# condition -- only the cells feeding the aggregate profile differ, but the
+# `failed cells` and `passed cells` are two mAP scores computed for the SAME
+# compound+dose condition. Only the cells feeding the aggregate profile differ, but the
 # compound+dose identity (and any shared, condition-level signal) is
 # identical across the pair. That makes this a matched-pairs design, not two
 # independent samples: a rank-sum test (Mann-Whitney U) ignores the pairing
 # and is not the appropriate primary test here. The matched-pairs analogue is
 # the Wilcoxon signed-rank test on the per-condition differences
-# (failed - passed).
+# (failed cells - passed cells).
 #
 # At n ~ 8e3 pairs, the p-value underflows double precision and prints as
 # exactly 0.0 either way, which is never literally true for a continuous test
-# statistic -- we recompute it in log-space from the normal approximation so
+# statistic. We recompute it in log-space from the normal approximation so
 # we can report an actual (if extreme) order of magnitude instead of "p = 0".
 stat, p = wilcoxon(failed, passed, alternative="greater", zero_method="wilcox")
 
@@ -611,20 +611,22 @@ print(f"z = {z:.2f}")
 print(f"p-value (scipy, underflows past ~1e-308): {p:.3e}")
 print(f"p-value (normal approximation, log-space): < 1e{np.ceil(log10_p):.0f}")
 
-# Secondary, independent-samples framing shown only for comparison with the
-# original analysis. Mann-Whitney U discards the compound+dose pairing above
-# and should not be reported as the primary test.
-stat_mw, p_mw = mannwhitneyu(failed, passed, alternative="greater")
-print(
-    f"[secondary, independent-samples framing] "
-    f"Mann-Whitney U = {stat_mw:.0f}, p = {p_mw:.3e}"
-)
-
 
 # In[13]:
 
 
-def cliffs_delta(x, y):
+def cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
+    """
+    Calculate Cliff's delta, a non-parametric effect size
+    measure for two independent samples.
+
+    Args:
+        x (np.ndarray): First sample.
+        y (np.ndarray): Second sample.
+
+    Returns:
+        float: Cliff's delta value, ranging from -1 to 1.
+    """
     x = np.asarray(x)
     y = np.asarray(y)
 
