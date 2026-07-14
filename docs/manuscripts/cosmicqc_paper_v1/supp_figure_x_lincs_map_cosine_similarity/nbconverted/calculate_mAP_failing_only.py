@@ -221,9 +221,9 @@ post_qc_df = pd.read_parquet(post_qc_file)
 post_qc_df = post_qc_df.drop(
     columns=["broad_id", "pert_iname", "moa", "replicate_name"]
 )
-post_qc_df["Metadata_sc_count_failed_qc"] = (
-    post_qc_df["Metadata_sc_count_failed_qc"].fillna(0)
-)
+post_qc_df["Metadata_sc_count_failed_qc"] = post_qc_df[
+    "Metadata_sc_count_failed_qc"
+].fillna(0)
 
 failing_qc_file = pathlib.Path(
     input_dir,
@@ -233,6 +233,9 @@ failing_qc_df = pd.read_parquet(failing_qc_file)
 failing_qc_df = failing_qc_df.drop(
     columns=["broad_id", "pert_iname", "moa", "replicate_name"]
 )
+failing_qc_df["Metadata_sc_count_failed_qc"] = failing_qc_df[
+    "Metadata_sc_count_failed_qc"
+].fillna(0)
 
 failing_qc_df.loc[
     failing_qc_df["Metadata_broad_sample"] == "DMSO",
@@ -247,7 +250,9 @@ post_features = set(post_dmso_df.columns) - set(meta_cols)
 failing_features = set(failing_qc_df.columns) - set(meta_cols)
 
 shared_features = list(post_features & failing_features)
-shared_meta = list(set(meta_cols) & set(failing_qc_df.columns) & set(post_dmso_df.columns))
+shared_meta = list(
+    set(meta_cols) & set(failing_qc_df.columns) & set(post_dmso_df.columns)
+)
 
 post_dmso_df = pd.concat(
     [post_dmso_df[shared_meta], post_dmso_df[shared_features]],
@@ -594,16 +599,32 @@ print(f"mean:   failed={failed.mean():.4f}, passed={passed.mean():.4f}")
 # exactly 0.0 either way, which is never literally true for a continuous test
 # statistic. We recompute it in log-space from the normal approximation so
 # we can report an actual (if extreme) order of magnitude instead of "p = 0".
+# The variance term includes scipy's tie correction (sum(t_i**3 - t_i) over
+# groups of tied |diff| values) so the z/p-value matches what
+# scipy.stats.wilcoxon computes internally when differences repeat; with no
+# ties this reduces exactly to the untied n(n+1)(2n+1)/24 formula.
 stat, p = wilcoxon(failed, passed, alternative="greater", zero_method="wilcox")
 
 diff = (failed - passed).to_numpy()
 diff_nz = diff[diff != 0]
 n = len(diff_nz)
-ranks = pd.Series(np.abs(diff_nz)).rank().to_numpy()
-z = (ranks[diff_nz > 0].sum() - n * (n + 1) / 4) / np.sqrt(
-    n * (n + 1) * (2 * n + 1) / 24
-)
-log10_p = norm.logsf(z) / np.log(10)
+abs_diff = np.abs(diff_nz)
+ranks = pd.Series(abs_diff).rank()  # average ranks for ties, matches scipy's approach
+
+# Sum of signed ranks (positive differences)
+T = ranks[diff_nz > 0].sum()
+
+mean_T = n * (n + 1) / 4
+
+# Tie correction: group tied |diff| values and compute sum(t_i^3 - t_i)
+_, counts = np.unique(abs_diff, return_counts=True)
+tie_correction = np.sum(counts**3 - counts)
+
+var_T = (n * (n + 1) * (2 * n + 1) - tie_correction / 2) / 24
+se_T = np.sqrt(var_T)
+
+z = (T - mean_T) / se_T
+log10_p = norm.logsf(z) / np.log(10)  # for alternative="greater"
 
 print(f"Wilcoxon signed-rank statistic = {stat:.0f}")
 print(f"n pairs (nonzero differences) = {n}")
@@ -641,8 +662,12 @@ def cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
 delta = cliffs_delta(failed, passed)
 print(f"Cliff's delta (unpaired framing) = {delta:.3f}")
 
-# Matched rank-biserial correlation: the effect-size analogue of the
-# Wilcoxon signed-rank test above, appropriate for the paired design.
-r_matched = z / np.sqrt(n)
-print(f"Matched rank-biserial correlation (paired framing) = {r_matched:.3f}")
+# Matched-pairs rank-biserial correlation, the effect-size analogue of the
+# Wilcoxon signed-rank test above. Computed from the signed-rank sums:
+# W+ (already computed as T in the previous cell) and W- (sum of ranks for
+# negative differences).
+w_plus = T
+w_minus = ranks[diff_nz < 0].sum()
+rank_biserial = (w_plus - w_minus) / (w_plus + w_minus)
+print(f"Matched rank-biserial correlation (paired framing) = {rank_biserial:.4f}")
 
