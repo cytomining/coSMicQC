@@ -57,6 +57,10 @@ jobs:
       - name: Commit and push changes
         if: ${{ env.changes_detected == 'true' &&
           steps.pre_commit.outcome == 'failure' }}
+        # Pass the (potentially untrusted) branch name via the environment
+        # rather than interpolating it directly into the script.
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email \
@@ -66,15 +70,14 @@ jobs:
           # Push with retries to tolerate transient GitHub-side failures
           # (e.g. "remote: fatal error in commit_refs") and to recover from a
           # branch that moved underneath us by rebasing before each retry.
-          branch="${{ github.event.pull_request.head.ref }}"
           for attempt in 1 2 3 4 5; do
-            if git push origin "HEAD:${branch}"; then
+            if git push origin "HEAD:${BRANCH}"; then
               echo "Push succeeded on attempt ${attempt}."
               exit 0
             fi
-            echo "Push attempt ${attempt} failed; refreshing branch and retrying..."
-            git fetch origin "${branch}"
-            git rebase "origin/${branch}" || git rebase --abort
+            echo "Push failed (attempt ${attempt}); refreshing and retrying."
+            git fetch origin "${BRANCH}"
+            git rebase "origin/${BRANCH}" || git rebase --abort
             sleep $((attempt * 5))
           done
           echo "Push failed after multiple attempts."
