@@ -1,117 +1,124 @@
 [build-system]
-build-backend = "poetry_dynamic_versioning.backend"
-requires = [ "poetry-core>=1", "poetry-dynamic-versioning>=1,<2" ]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=77", "setuptools-scm>=8" ]
 
-[tool.poetry]
-name = "coSMicQC"
-version = "0.0.0"
+[project]
+name = "cosmicqc"
 description = "coSMicQC is a software tool for single-cell quality control of morphology datasets."
-license = "BSD-3-Clause"
-authors = [ "Way Science Community" ]
 readme = "README.md"
-packages = [ { include = "cosmicqc", from = "src" } ]
-dependencies.python = ">=3.10,<3.14"
-# used for assisting single-cell profile and image analysis
-dependencies.cytodataframe = [
-  { version = ">=0.0.25", python = "<3.11" },
-  { version = ">=0.3.0,<0.4", python = ">=3.11" },
+license = "BSD-3-Clause"
+license-files = [ "LICENSE" ]
+authors = [ { name = "Way Science Community" } ]
+requires-python = ">=3.10,<3.14"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
-# used for CLI generation
-dependencies.fire = ">=0.6,<0.8"
-# sub-dependency which required lock for numpy installation with py313
-dependencies.llvmlite = "0.48.0"
-dependencies.matplotlib = "^3.10.3"
-dependencies.pandas = [
-  { version = "<2.2.2", python = "<3.9" },
-  { version = "^2.2.2", python = ">=3.9" },
-]  # used for data management
-# used for data ingest and export
-dependencies.pyarrow = [
-  { version = ">=16,<21", python = "<3.11" },
+dynamic = [ "version" ]
+dependencies = [
+  # used for assisting single-cell profile and image analysis
+  "cytodataframe>=0.0.25; python_version<'3.11'",
+  "cytodataframe>=0.3,<0.4; python_version>='3.11'",
+  # used for CLI generation
+  "fire>=0.6,<0.8",
+  # sub-dependency which required lock for numpy installation with py313
+  "llvmlite==0.48",
+  "matplotlib>=3.10.3,<4",
+  # used for data management
+  "pandas>=2.2.2,<3",
+  # used for data ingest and export
+  "pyarrow>=16,<21; python_version<'3.11'",
   # pyarrow 21.x is excluded for Python >=3.11 because cytodataframe>=0.3.0
   # requires ome-arrow, which currently resolves to pyarrow >=22.
-  { version = ">=22,<23", python = ">=3.11" },
+  "pyarrow>=22,<23; python_version>='3.11'",
+  # used for reading yaml configuration files
+  "pyyaml>=6.0.1,<7",
+  # used for calculations
+  "scipy>=1.13,<2",
+  "seaborn>=0.13.2,<0.14",
+  # used for rendering tabular summaries in contamination detection output
+  "tabulate>=0.9,<1",
 ]
-# used for reading yaml configuration files
-dependencies.pyyaml = "^6.0.1"
-dependencies.scipy = [
-  { version = "<1.13.0", python = "<3.9" },
-  { version = "^1.13.0", python = ">=3.9" },
-]  # used for calculations
-dependencies.seaborn = "^0.13.2"
-# used for rendering tabular summaries in contamination detection output
-dependencies.tabulate = ">=0.9,<1"
-# used for example notebook formatting
-group.dev.dependencies.black = ">=24.4.2,<27.0.0"
-# used to avoid dependency resolution issues during installs
-group.dev.dependencies.botocore = ">=1.31.16,<1.31.65 || >=1.32.4,<1.34.35 || >=1.34.41,<1.34.163 || >=1.35.0,<1.35.8"
-group.dev.dependencies.copairs = "^0.5.1"
-# added to generate test coverage reports
-group.dev.dependencies.coverage = "^7.6.0"
-# added for preparing data for cosmicqc in examples
-group.dev.dependencies.cytotable = ">=0.0.10,<1.2.4"
-# added to avoid warnings from datashader implementation
-group.dev.dependencies.dask = { version = ">=2024.8,<2027.0", extras = [ "dataframe" ] }
-# used for visualization options with hvplot
-group.dev.dependencies.datashader = ">=0.16.3,<0.20.0"
-group.dev.dependencies.hdbscan = "^0.8.40"
-# used for report html export to image for tests
-group.dev.dependencies.html2image = "^2.0.4.3"
-# used for visualizing large plot data
-group.dev.dependencies.hvplot = ">=0.10,<0.13"
-# added for compatibility in notebooks with umap-learn dependency tqdm
-group.dev.dependencies.ipywidgets = "^8.1.5"
-# used for example notebook formatting
-group.dev.dependencies.isort = ">=5.13.2,<9.0.0"
-# used for example notebook work
-group.dev.dependencies.jupyterlab = "^4.2.3"
-# used for example notebook formatting
-group.dev.dependencies.jupyterlab-code-formatter = ">=2.2.1,<4.0.0"
-# used for example notebook formatting
-group.dev.dependencies.jupytext = "^1.16.2"
-group.dev.dependencies.papermill = "^2.6.0"
-group.dev.dependencies.plotnine = "<=0.15.7"
-# for standardizing various dev tasks
-group.dev.dependencies.poethepoet = ">=0.27,<0.49"
-group.dev.dependencies.pre-commit = ">=3,<5"
-group.dev.dependencies.pycomplexheatmap = "^1.8.1"
-# added for demonstrating results with cosmicqc
-group.dev.dependencies.pycytominer = "^1.1.0"
-# provides testing capabilities for project
-group.dev.dependencies.pytest = ">=8.2,<10.0"
-# used by pandas for extracting metadata and platemap data from S3 through pandas
-group.dev.dependencies.s3fs = ">=2024.9,<2027.0"
-# used for rendering plots as images within example notebooks
-group.dev.dependencies.selenium = "^4.24.0"
-# used for test data generation
-group.dev.dependencies.sqlalchemy = ">=1.3.6,<3"
-# added for demonstrating results after using cosmicqc
-group.dev.dependencies.umap-learn = "^0.5.6"
-# used for gathering version data for docsite
-group.docs.dependencies.dunamai = "^1.22.0"
-# used for rendering notebooks through myst parser
-group.docs.dependencies.myst-nb = "^1.1.1"
-# used for rendering markdown through sphinx
-group.docs.dependencies.myst-parser = ">=3,<5"
-# used for rendering docs into docsite
-group.docs.dependencies.sphinx = ">=7,<9"
-# used for extension sphinx-multiversion and to fix git-based challenges with default branch handling
-group.docs.dependencies.sphinx-multiversion = { git = "https://github.com/J-RN/sphinx-multiversion", rev = "a77f0c862dace3a62c18fc866da60ef7dde3873d" }
-# used for theming the docsite
-group.docs.dependencies.sphinx-wagtail-theme = "^6.3.0"
 scripts.cosmicqc = "cosmicqc.cli:cli_analyze"
-requires-plugins.poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = [ "plugin" ] }
 
-[tool.poetry-dynamic-versioning]
-enable = true
-style = "pep440"
-vcs = "git"
-# specify where version replacement is performed
-substitution.files = [ "src/cosmicqc/__init__.py" ]
+[dependency-groups]
+dev = [
+  # used for example notebook formatting
+  "black>=24.4.2,<27",
+  "copairs>=0.5.1,<0.6",
+  # added to generate test coverage reports
+  "coverage>=7.6,<8",
+  # added for preparing data for cosmicqc in examples
+  "cytotable>=0.0.10,<1.2.4",
+  # added to avoid warnings from datashader implementation
+  "dask[dataframe]>=2024.8,<2027",
+  # used for visualization options with hvplot
+  "datashader>=0.16.3,<0.20",
+  "hdbscan>=0.8.40,<0.9",
+  # used for report html export to image for tests
+  "html2image>=2.0.4.3,<3",
+  # used for visualizing large plot data
+  "hvplot>=0.10,<0.13",
+  # added for compatibility in notebooks with umap-learn dependency tqdm
+  "ipywidgets>=8.1.5,<9",
+  # used for example notebook formatting
+  "isort>=5.13.2,<9",
+  # used for example notebook work
+  "jupyterlab>=4.2.3,<5",
+  # used for example notebook formatting
+  "jupyterlab-code-formatter>=2.2.1,<4",
+  # used for example notebook formatting
+  "jupytext>=1.16.2,<2",
+  "papermill>=2.6,<3",
+  "plotnine<=0.15.7",
+  # for standardizing various dev tasks
+  "poethepoet>=0.27,<0.49",
+  "pre-commit>=3,<5",
+  "pycomplexheatmap>=1.8.1,<2",
+  # added for demonstrating results with cosmicqc
+  "pycytominer>=1.1,<2",
+  # provides testing capabilities for project
+  "pytest>=8.2,<10",
+  # used by pandas for extracting metadata and platemap data from S3 through pandas
+  "s3fs>=2024.9,<2027",
+  # used for rendering plots as images within example notebooks
+  "selenium>=4.24,<5",
+  # used for test data generation
+  "sqlalchemy>=1.3.6,<3",
+  # added for demonstrating results after using cosmicqc
+  "umap-learn>=0.5.6,<0.6",
+]
+docs = [
+  # used for gathering version data for docsite
+  "dunamai>=1.22,<2",
+  # used for rendering notebooks through myst parser
+  "myst-nb>=1.1.1,<2",
+  # used for rendering markdown through sphinx
+  "myst-parser>=3,<5",
+  # used for rendering docs into docsite
+  "sphinx>=7,<9",
+  # used for extension sphinx-multiversion and to fix git-based challenges with
+  # default branch handling (see [tool.uv.sources] for the pinned git revision)
+  "sphinx-multiversion",
+  # used for theming the docsite
+  "sphinx-wagtail-theme>=6.3,<7",
+]
 
-# defines various development tasks
+[tool.setuptools]
+packages.find.where = [ "src" ]
+package-data.cosmicqc = [ "**/*.yml" ]
+
+# set dynamic versioning capabilities for project based on git
 [tool.setuptools_scm]
 root = "."
+
+[tool.uv]
+# pinned fork of sphinx-multiversion to fix git-based challenges with default
+# branch handling in the upstream project.
+sources.sphinx-multiversion = { git = "https://github.com/J-RN/sphinx-multiversion", rev = "a77f0c862dace3a62c18fc866da60ef7dde3873d" }
 
 [tool.ruff]
 target-version = "py310"
@@ -155,7 +162,6 @@ profile = "black"
 paths = [ "src/cosmicqc", "tests" ]
 min_confidence = 90
 
-# set dynamic versioning capabilities for project
 [tool.bandit]
 exclude_dirs = [ "tests" ]
 

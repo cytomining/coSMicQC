@@ -27,7 +27,7 @@ echo "Number of plates found: ${#plates[@]}"
 
 # Using papermill, run single cell quality control on all plates
 for plate in "${plates[@]}"; do
-    poetry run papermill \
+    uv run papermill \
     2.single_cell_qc.ipynb \
     2.single_cell_qc.ipynb \
     -p plate_id $plate

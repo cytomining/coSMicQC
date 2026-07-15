@@ -6,7 +6,7 @@
 [![Build Status](https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml?query=branch%3Amain)
 ![Coverage Status](https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Preprint DOI badge](https://img.shields.io/badge/Preprint_DOI-10.1101/2025.10.14.682427-blue)](https://doi.org/10.1101/2025.10.14.682427)
 [![Software DOI badge](https://img.shields.io/badge/Software_DOI-10.5281/zenodo.14888111-blue)](https://doi.org/10.5281/zenodo.14797008)
 
@@ -68,8 +68,8 @@ pip install coSMicQC
 
 ```shell
 pip install git+https://github.com/cytomining/coSMicQC.git
-# or with poetry for local development
-poetry install --with dev
+# or with uv for local development
+uv sync
 ```
 
 ## Demo
