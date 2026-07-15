@@ -63,7 +63,10 @@ jobs:
           python -m pip install poetry
           poetry self add "poetry-dynamic-versioning[plugin]"
       - name: Install environment
-        run: poetry install --no-interaction --no-ansi
+        # exclude the docs group: it is not needed to run tests and pulls a
+        # git-based dependency (sphinx-multiversion) whose anonymous fetch is
+        # rate-limited to a 403 when the matrix installs it in parallel.
+        run: poetry install --no-interaction --no-ansi --without docs
       - name: Run pytest
         # run all tests except those marked generate_report_image
         run: poetry run pytest -m "not generate_report_image"
