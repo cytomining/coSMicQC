@@ -125,11 +125,11 @@ See below for some examples of how to build documentation locally.
 ```shell
 # build single-version sphinx documentation
 # (useful for troubleshooting potential issues)
-uv run --group docs sphinx-build docs/src docs/build
+uv run --no-default-groups --group docs sphinx-build docs/src docs/build
 
 # build multi-version sphinx documentation
 # (used in production)
-uv run --group docs sphinx-multiversion docs/src docs/build
+uv run --no-default-groups --group docs sphinx-multiversion docs/src docs/build
 ```
 
 After the docs build, navigate the `docs/build` folder and open the HTML files with your browser.

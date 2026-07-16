@@ -27,6 +27,9 @@ jobs:
           python-version: "3.11"
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v8.2.0
+        with:
+          # publish runs are one-off; skip cache upload
+          enable-cache: false
       - name: uv build distribution content
         run: uv build
       - name: Publish package distributions to PyPI
