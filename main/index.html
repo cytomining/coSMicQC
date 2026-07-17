@@ -1,0 +1,514 @@
+<!-- extends sphinx page to include docs version warnings if not viewing latest released documentation -->
+<!-- referenced from: https://github.com/wagtail/sphinx-wagtail-theme/blob/main/sphinx_wagtail_theme/layout.html
+ in order to preload plotly javascript dependency for rendering --><!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Single cell Morphology Quality Control &mdash; coSMicQC  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=9cdaa676" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=76a74e97" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="coSMicQC  documentation" href="#" />
+            <link rel="next" title="Examples" href="examples.html" />
+    <!-- line added for plotly compatibility in cosmicqc -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="https://cytomining.github.io/coSMicQC"
+                        title="coSMicQC logo"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/just-icon.png" width="45" height="59" alt="coSMicQC logo"
+                            class="logo-img"
+                        />
+                        coSMicQC
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://github.com/cytomining/coSMicQC"><span class='fab fa-github'></span> GitHub Repository</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/contamination_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presentations.html">Presentations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="presentations/sbi2-2024.html">SBI2 Annual Confrerence 2024 Poster</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="examples.html"
+                          title="next chapter">Examples</a></p>
+  </div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
+
+<h4>Versions</h4>
+<select name="versions" id="versions" onchange="redirectToPage()">
+    <option value="../v0.0.11/index.html">v0.0.11</option>
+    <option value="../v0.1.0/index.html">v0.1.0</option>
+    <option value="../v0.1.1/index.html">v0.1.1</option>
+    <option value="../v0.1.2/index.html">v0.1.2</option>
+    <option value="../v0.1.3/index.html">v0.1.3</option>
+    <option value="../v0.1.4/index.html">v0.1.4</option>
+    <option value="../v0.1.5/index.html">v0.1.5</option>
+    <option value="../v1.0.0/index.html">v1.0.0</option>
+    <option value="../v1.0.1/index.html">v1.0.1</option>
+    <option value="../v1.0.2/index.html">v1.0.2</option>
+    <option value="../v1.0.3/index.html">v1.0.3</option>
+    <option value="index.html">main</option>
+</select>
+<script>
+/**
+ * Redirects the browser to the URL corresponding to the selected option in the dropdown.
+ *
+ * This function is triggered when the user changes the selection in the dropdown menu. It
+ * retrieves the selected option's value (which is a URL) and sets `window.location.href`
+ * to that URL, causing the browser to navigate to the new page.
+ */
+function redirectToPage() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the value of the selected option (the URL to redirect to)
+    var selectedValue = selectElement.value;
+
+    // If a valid option is selected (non-empty), redirect the browser to the URL
+    if (selectedValue) {
+        window.location.href = selectedValue;
+    }
+}
+
+/**
+ * Sets the default selection of the dropdown menu based on the current URL.
+ *
+ * This function checks the current page URL and compares it with the values (URLs) of the
+ * options in the dropdown menu. If the current URL contains "index.html" and matches an
+ * option's value, that option is selected as the default.
+ * This function runs automatically when the page loads.
+ */
+ function setDefaultSelection() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the current page URL
+    var currentUrl = window.location.href;
+
+    // Loop through all options in the dropdown
+    for (var i = 0; i < selectElement.options.length; i++) {
+        var option = selectElement.options[i];
+        var optionUrl = option.value;
+
+        // If the current URL includes "index.html" and matches the option's value, select that option
+        if (optionUrl == "index.html") {
+            selectElement.selectedIndex = i;  // Set the selected index to the matching option
+            break;  // Exit the loop after finding the match
+        }
+    }
+}
+
+// Automatically call setDefaultSelection() when the page finishes loading
+window.onload = setDefaultSelection;
+
+</script>
+
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="#">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Single cell Morphology Quality Control</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/cytomining/coSMicQC/tree/main/docs/srcindex.md" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/index.md.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+
+<p style="background:#E7C3EB;padding:5px 10px;">
+
+You're reading the documentation for a development version.
+For the latest released version, please have a look at <a href="../v1.0.3/index.html">v1.0.3</a>.
+
+</p>
+</span>
+
+
+    <!-- include contents from the root readme -->
+<img height="200" src="https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/logo/with-text-for-light-bg.png?raw=true">
+<section id="single-cell-morphology-quality-control">
+<h1>Single cell Morphology Quality Control<a class="headerlink" href="#single-cell-morphology-quality-control" title="Link to this heading">¶</a></h1>
+<p><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/cosmicqc" />
+<a class="reference external" href="https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml?query=branch%3Amain"><img alt="Build Status" src="https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml/badge.svg?branch=main" /></a>
+<img alt="Coverage Status" src="https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg" />
+<a class="reference external" href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" /></a>
+<a class="reference external" href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json" /></a>
+<a class="reference external" href="https://doi.org/10.1101/2025.10.14.682427"><img alt="Preprint DOI badge" src="https://img.shields.io/badge/Preprint_DOI-10.1101/2025.10.14.682427-blue" /></a>
+<a class="reference external" href="https://doi.org/10.5281/zenodo.14797008"><img alt="Software DOI badge" src="https://img.shields.io/badge/Software_DOI-10.5281/zenodo.14888111-blue" /></a></p>
+<blockquote>
+<div><p>🌠 Navigate the cosmos of single-cell morphology with confidence — coSMicQC keeps your data on course!</p>
+</div></blockquote>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
+<!--ts-->
+<ul class="simple">
+<li><p><a class="reference internal" href="#single-cell-morphology-quality-control">Single cell Morphology Quality Control</a></p>
+<ul>
+<li><p><a class="reference internal" href="#contents">Contents</a></p></li>
+<li><p><a class="reference internal" href="#overview">Overview</a></p></li>
+<li><p><a class="reference internal" href="#repo-contents">Repo Contents</a></p></li>
+<li><p><a class="reference internal" href="#system-requirements">System Requirements</a></p></li>
+<li><p><a class="reference internal" href="#installation-guide">Installation Guide</a></p>
+<ul>
+<li><p><a class="reference internal" href="#stable-release-pypi">Stable release (PyPI)</a></p></li>
+<li><p><a class="reference internal" href="#development-version-from-source">Development version (from source)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#demo">Demo</a></p></li>
+<li><p><a class="reference internal" href="#results">Results</a></p></li>
+<li><p><a class="reference internal" href="#license">License</a></p></li>
+<li><p><a class="reference internal" href="#issues">Issues</a></p></li>
+<li><p><a class="reference internal" href="#citation">Citation</a></p></li>
+</ul>
+</li>
+</ul>
+<!--te-->
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>coSMicQC is a Python package to evaluate converted single-cell morphology outputs from <a class="reference external" href="https://github.com/cytomining/CytoTable">CytoTable</a>.
+Technical artifacts can arise during segmentation, leading to issues such as under-segmentation, over-segmentation, or the erroneous segmentation of background noise, smudges, or bright artifacts.
+By utilizing specific morphological features extracted with CellProfiler, you can identify technically incorrect segmentations and label or remove them before downstream analysis.</p>
+<p>Please confer with our docsite for more comprehensive information about the project: https://cytomining.github.io/coSMicQC/main/</p>
+<blockquote>
+<div><p>🌟 Check out our <a class="reference external" href="https://waysciencelab.com/2024/12/20/cosmicqc.html">blog post</a> for a deeper background and how coSMicQC can help.</p>
+</div></blockquote>
+</section>
+<section id="repo-contents">
+<h2>Repo Contents<a class="headerlink" href="#repo-contents" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cosmicqc</span></code>: coSMicQC source code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests</span></code>: test suite.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs</span></code>: documentation sources and examples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">media</span></code>: project assets (e.g., coverage badge).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reports</span></code>: generated artifacts (figures, notebooks, or summaries).</p></li>
+</ul>
+</section>
+<section id="system-requirements">
+<h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Python: <code class="docutils literal notranslate"><span class="pre">&gt;=3.10</span></code> (tested through 3.13).</p></li>
+<li><p>RAM/CPU: standard laptop/desktop is sufficient for typical plate-sized datasets; larger screens benefit from more RAM/cores for faster QC/plotting.</p></li>
+<li><p>OS: Linux, macOS, and Windows are supported via Python; CI tests run on GitHub Actions.</p></li>
+</ul>
+</section>
+<section id="installation-guide">
+<h2>Installation Guide<a class="headerlink" href="#installation-guide" title="Link to this heading">¶</a></h2>
+<section id="stable-release-pypi">
+<h3>Stable release (PyPI)<a class="headerlink" href="#stable-release-pypi" title="Link to this heading">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>coSMicQC
+</pre></div>
+</div>
+</section>
+<section id="development-version-from-source">
+<h3>Development version (from source)<a class="headerlink" href="#development-version-from-source" title="Link to this heading">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cytomining/coSMicQC.git
+<span class="c1"># or with uv for local development</span>
+uv<span class="w"> </span>sync
+</pre></div>
+</div>
+</section>
+</section>
+<section id="demo">
+<h2>Demo<a class="headerlink" href="#demo" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Examples and notebooks live under <code class="docutils literal notranslate"><span class="pre">docs/src/examples</span></code> and the published docs: https://cytomining.github.io/coSMicQC</p></li>
+<li><p>Quickstart blog post: https://waysciencelab.com/2024/12/20/cosmicqc.html</p></li>
+</ul>
+</section>
+<section id="results">
+<h2>Results<a class="headerlink" href="#results" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Test and lint status: <img alt="Build Status" src="https://github.com/cytomining/coSMicQC/actions/workflows/run-tests.yml/badge.svg?branch=main" /></p></li>
+<li><p>Coverage: <img alt="Coverage Status" src="https://raw.githubusercontent.com/cytomining/coSMicQC/main/media/coverage-badge.svg" /></p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<p>BSD-3-Clause; see <a class="reference internal" href="#LICENSE"><span class="xref myst">LICENSE</span></a>.</p>
+</section>
+<section id="issues">
+<h2>Issues<a class="headerlink" href="#issues" title="Link to this heading">¶</a></h2>
+<p>Please open issues or feature requests at https://github.com/cytomining/coSMicQC/issues.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading">¶</a></h2>
+<p>If you use coSMicQC in your work, please cite:</p>
+<ul class="simple">
+<li><p>Software DOI: <a class="reference external" href="https://doi.org/10.5281/zenodo.14888111">10.5281/zenodo.14888111</a></p></li>
+<li><p>Preprint: <a class="reference external" href="https://doi.org/10.1101/2025.10.14.682427">10.1101/2025.10.14.682427</a></p></li>
+<li><p>Citation metadata: <a class="reference internal" href="#CITATION.cff"><span class="xref myst">CITATION.cff</span></a></p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/contamination_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">ContaminationDetector</span></code> in action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#outline">Outline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#define-utility-functions-for-use-within-this-notebook">Define utility functions for use within this notebook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#merge-single-cell-compartment-data-into-one-table">Merge single-cell compartment data into one table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#process-merged-single-cell-data-using-cosmicqc">Process merged single-cell data using coSMicQC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#prepare-data-for-analysis-with-pycytominer">Prepare data for analysis with pycytominer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presentations.html">Presentations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="presentations/sbi2-2024.html">SBI2 Annual Confrerence 2024 Poster</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python-api.html#module-src.cosmicqc.analyze">cosmicqc.analyze</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze._build_filter_display_options"><code class="docutils literal notranslate"><span class="pre">_build_filter_display_options()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze._convert_feature_threshold_input_to_named_threshold_dicts"><code class="docutils literal notranslate"><span class="pre">_convert_feature_threshold_input_to_named_threshold_dicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze._create_condition_map"><code class="docutils literal notranslate"><span class="pre">_create_condition_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze._warn_if_inline_thresholds_ignore_file"><code class="docutils literal notranslate"><span class="pre">_warn_if_inline_thresholds_ignore_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze.find_outliers"><code class="docutils literal notranslate"><span class="pre">find_outliers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze.identify_outliers"><code class="docutils literal notranslate"><span class="pre">identify_outliers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze.label_outliers"><code class="docutils literal notranslate"><span class="pre">label_outliers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.analyze.read_thresholds_set_from_file"><code class="docutils literal notranslate"><span class="pre">read_thresholds_set_from_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="python-api.html#module-src.cosmicqc.cli">cosmicqc.cli</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.cli.HasCustomRepr"><code class="docutils literal notranslate"><span class="pre">HasCustomRepr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.cli._PrintResult"><code class="docutils literal notranslate"><span class="pre">_PrintResult()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="python-api.html#src.cosmicqc.cli.cli_analyze"><code class="docutils literal notranslate"><span class="pre">cli_analyze()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="python-api.html#cosmicqc-frame">cosmicqc.frame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python-api.html#cosmicqc-image">cosmicqc.image</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code-of-conduct">Code of conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#development">Development</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#development-setup">Development setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#linting">Linting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#making-changes-to-this-repository">Making changes to this repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#creating-a-pull-request">Creating a pull request</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#pull-requests">Pull requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#versioning">Versioning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#releases">Releases</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_of_conduct.html">Contributor Covenant Code of Conduct</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#our-pledge">Our Pledge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#our-standards">Our Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#enforcement-responsibilities">Enforcement Responsibilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#scope">Scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#enforcement">Enforcement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#enforcement-guidelines">Enforcement Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="code_of_conduct.html#correction">1. Correction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code_of_conduct.html#warning">2. Warning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code_of_conduct.html#temporary-ban">3. Temporary Ban</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code_of_conduct.html#permanent-ban">4. Permanent Ban</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html#attribution">Attribution</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-right" href="examples.html" title="Next">
+        Examples <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Single cell Morphology Quality Control</a><ul>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#repo-contents">Repo Contents</a></li>
+<li><a class="reference internal" href="#system-requirements">System Requirements</a></li>
+<li><a class="reference internal" href="#installation-guide">Installation Guide</a><ul>
+<li><a class="reference internal" href="#stable-release-pypi">Stable release (PyPI)</a></li>
+<li><a class="reference internal" href="#development-version-from-source">Development version (from source)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demo">Demo</a></li>
+<li><a class="reference internal" href="#results">Results</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#issues">Issues</a></li>
+<li><a class="reference internal" href="#citation">Citation</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://www.cytomininglab.com/">Way Lab</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://github.com/cytomining/coSMicQC">coSMicQC GitHub Repository</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Cytomining Community
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.6.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 8.2.3
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9bcbadda"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
