@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Install environment
         run: uv sync
       # run pre-commit
@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Run pytest
         # run all tests except those marked generate_report_image.
         # uv installs only the default `dev` group here (not `docs`), so the
