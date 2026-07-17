@@ -43,6 +43,12 @@ jobs:
       - uses: pre-commit/action@v3.0.1
         id: pre_commit
         continue-on-error: true
+        env:
+          # skip the readme-toc hook in CI: it curls a third-party script and
+          # relies on GitHub's rate-limited markdown API, so it fails
+          # non-deterministically without producing a committable change. It
+          # still runs locally to keep the README TOC current.
+          SKIP: readme-toc
       - name: Check for changes
         if: ${{ steps.pre_commit.outcome == 'failure' }}
         id: check_changes
