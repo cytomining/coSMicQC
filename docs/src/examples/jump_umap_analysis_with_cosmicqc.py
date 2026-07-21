@@ -2,11 +2,11 @@
 # coding: utf-8
 
 # # JUMP UMAP analysis with coSMicQC
-# 
+#
 # This notebook analyzes [JUMP](https://jump-cellpainting.broadinstitute.org/) data (`cpg0000-jump-pilot`) by leveraging [UMAP](https://arxiv.org/abs/1802.03426) and [coSMicQC](https://github.com/cytomining/coSMicQC).
-# 
+#
 # ## Outline
-# 
+#
 # We focus on a single file from the JUMP dataset: [`BR00117012.sqlite`](https://open.quiltdata.com/b/cellpainting-gallery/tree/cpg0000-jump-pilot/source_4/workspace/backend/2020_11_04_CPJUMP1/BR00117012/BR00117012.sqlite).
 # This file is downloaded and prepared by [CytoTable](https://github.com/cytomining/CytoTable) to form a single-cell [Parquet](https://parquet.apache.org/) file which includes all compartment feature data at the single-cell level.
 # We use coSMicQC to find and remove erroneous outlier data in order to prepare for UMAP analysis.
@@ -791,4 +791,3 @@ plot_hvplot_scatter(
     ],
     clabel="density of single cells with (orange) and without outliers (blue)",
 )
-

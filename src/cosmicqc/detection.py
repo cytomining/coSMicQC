@@ -228,8 +228,7 @@ class PerinuclearSignalDetector:
             )
         else:
             interpretation = (
-                "No indication of abnormal perinuclear signal. "
-                "Plate appears clean 🫧!"
+                "No indication of abnormal perinuclear signal. Plate appears clean 🫧!"
             )
 
         print(f"Interpretation:\n{interpretation}")

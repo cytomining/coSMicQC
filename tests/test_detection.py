@@ -245,6 +245,5 @@ def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
     else:
         # If no partial abnormal, ensure step 3 is skipped
         assert not hasattr(detector, "partial_abnormal_texture_detected"), (
-            "Step 3 should not have been executed if no partial abnormal "
-            "was detected."
+            "Step 3 should not have been executed if no partial abnormal was detected."
         )
