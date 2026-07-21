@@ -428,7 +428,7 @@ class PerinuclearSignalDetector:
     def _find_texture_outliers(self) -> pd.DataFrame:
         """
         Use coSMicQC find_outliers function to identify single-cells with abnormal
-        perinuclear signal based on texture in the cytoplasm around the nucleus in 
+        perinuclear signal based on texture in the cytoplasm around the nucleus in
         partially abnormal plates.
 
         Returns:
