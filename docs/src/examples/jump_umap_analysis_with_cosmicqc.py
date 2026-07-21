@@ -1,29 +1,20 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
 # # JUMP UMAP analysis with coSMicQC
-#
+# 
 # This notebook analyzes [JUMP](https://jump-cellpainting.broadinstitute.org/) data (`cpg0000-jump-pilot`) by leveraging [UMAP](https://arxiv.org/abs/1802.03426) and [coSMicQC](https://github.com/cytomining/coSMicQC).
-#
+# 
 # ## Outline
-#
+# 
 # We focus on a single file from the JUMP dataset: [`BR00117012.sqlite`](https://open.quiltdata.com/b/cellpainting-gallery/tree/cpg0000-jump-pilot/source_4/workspace/backend/2020_11_04_CPJUMP1/BR00117012/BR00117012.sqlite).
 # This file is downloaded and prepared by [CytoTable](https://github.com/cytomining/CytoTable) to form a single-cell [Parquet](https://parquet.apache.org/) file which includes all compartment feature data at the single-cell level.
 # We use coSMicQC to find and remove erroneous outlier data in order to prepare for UMAP analysis.
 # Afterwards, we use UMAP to demonstrate patterns within the data.
 
-# + editable=true slideshow={"slide_type": ""}
+# In[1]:
+
+
 import logging
 import pathlib
 from typing import List, Optional
@@ -56,9 +47,9 @@ logging.getLogger("bokeh.io.export").setLevel(logging.ERROR)
 example_plate = "BR00117012"
 
 
-# -
-
 # ## Define utility functions for use within this notebook
+
+# In[2]:
 
 
 def generate_umap_embeddings(
@@ -121,6 +112,9 @@ def generate_umap_embeddings(
     )
 
     return embeddings
+
+
+# In[3]:
 
 
 def plot_hvplot_scatter(
@@ -197,7 +191,9 @@ def plot_hvplot_scatter(
 
 # ## Merge single-cell compartment data into one table
 
-# +
+# In[4]:
+
+
 # check if we already have prepared data
 if not pathlib.Path(f"./{example_plate}.parquet").is_file():
     # process BR00117012.sqlite using CytoTable to prepare data
@@ -225,16 +221,21 @@ else:
 
 # read only the metadata from parquet file
 parquet.ParquetFile(merged_single_cells).metadata
-# -
+
 
 # ## Process merged single-cell data using coSMicQC
 
-# + editable=true slideshow={"slide_type": ""}
+# In[5]:
+
+
 # show the first few columns for metadata column names
 schema_names = parquet.read_schema(merged_single_cells).names
 schema_names[:12]
 
-# +
+
+# In[6]:
+
+
 # set a list of metadata columns for use throughout
 metadata_cols = [
     "Metadata_ImageNumber",
@@ -257,7 +258,10 @@ df_merged_single_cells = pd.read_parquet(
     ],
 )
 df_merged_single_cells.head()
-# -
+
+
+# In[7]:
+
 
 # label outliers within the dataset
 print("Large nuclei outliers:")
@@ -267,6 +271,10 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     feature_thresholds="large_nuclei",
 )
 
+
+# In[8]:
+
+
 # label outliers within the dataset
 print("Elongated nuclei outliers:")
 df_labeled_outliers = cosmicqc.analyze.find_outliers(
@@ -275,6 +283,10 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     feature_thresholds="elongated_nuclei",
 )
 
+
+# In[9]:
+
+
 # label outliers within the dataset
 print("Small and low formfactor nuclei outliers:")
 df_labeled_outliers = cosmicqc.analyze.find_outliers(
@@ -282,6 +294,10 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     metadata_columns=metadata_cols,
     feature_thresholds="small_and_low_formfactor_nuclei",
 )
+
+
+# In[10]:
+
 
 # label outliers within the dataset
 df_labeled_outliers = cosmicqc.analyze.label_outliers(
@@ -293,7 +309,10 @@ df_labeled_outliers[
     [col for col in df_labeled_outliers.columns.tolist() if "cqc." in col]
 ].head()
 
-# +
+
+# In[11]:
+
+
 # create a column which indicates whether an erroneous outlier was detected
 # from all cosmicqc outlier threshold sets. For ex. True for is_outlier in
 # one threshold set out of three would show True for this column. False for
@@ -307,7 +326,10 @@ outliers_counts = df_labeled_outliers[
     "analysis.included_at_least_one_outlier"
 ].value_counts()
 outliers_counts
-# -
+
+
+# In[12]:
+
 
 # show the percentage of total dataset
 print(
@@ -318,9 +340,12 @@ print(
     "include erroneous outliers of some kind.",
 )
 
+
 # ## Prepare data for analysis with pycytominer
 
-# +
+# In[14]:
+
+
 parquet_sampled_with_outliers = f"./{example_plate}_sampled_with_outliers.parquet"
 
 # check if we already have normalized data
@@ -369,12 +394,19 @@ else:
     df_features_with_cqc_outlier_data = pd.read_parquet(parquet_sampled_with_outliers)
 
 df_features_with_cqc_outlier_data
-# -
+
+
+# In[15]:
+
 
 # show our data value counts regarding outliers vs inliers
 df_features_with_cqc_outlier_data[
     "analysis.included_at_least_one_outlier"
 ].value_counts()
+
+
+# In[16]:
+
 
 # prepare data for normalization and feature selection
 # by removing cosmicqc and analaysis focused columns.
@@ -385,6 +417,10 @@ df_for_normalize_and_feature_select = df_features_with_cqc_outlier_data[
 ]
 # show the modified column count
 len(df_for_normalize_and_feature_select.columns)
+
+
+# In[17]:
+
 
 # join JUMP metadata with platemap data to prepare for annotation
 df_platemap_and_metadata = pd.read_csv(
@@ -407,7 +443,10 @@ df_platemap_and_metadata = pd.read_csv(
     right_on="broad_sample",
 )
 
-# +
+
+# In[18]:
+
+
 parquet_pycytominer_annotated = f"./{example_plate}_annotated.parquet"
 
 # check if we already have annotated data
@@ -422,7 +461,10 @@ if not pathlib.Path(parquet_pycytominer_annotated).is_file():
         output_type="parquet",
     )
 
-# +
+
+# In[19]:
+
+
 parquet_pycytominer_normalized = f"./{example_plate}_normalized.parquet"
 
 # check if we already have normalized data
@@ -439,7 +481,10 @@ if not pathlib.Path(parquet_pycytominer_normalized).is_file():
         output_type="parquet",
     )
 
-# +
+
+# In[20]:
+
+
 parquet_pycytominer_feature_selected = f"./{example_plate}_feature_select.parquet"
 
 # check if we already have feature selected data
@@ -457,7 +502,10 @@ if not pathlib.Path(parquet_pycytominer_feature_selected).is_file():
         output_file=parquet_pycytominer_feature_selected,
         output_type="parquet",
     )
-# -
+
+
+# In[21]:
+
 
 # regather metadata columns to account for new additions
 all_metadata_cols = [
@@ -466,6 +514,10 @@ all_metadata_cols = [
     if col.startswith("Metadata_")
 ]
 all_metadata_cols
+
+
+# In[22]:
+
 
 # calculate UMAP embeddings from the data
 # which was prepared by pycytominer.
@@ -477,6 +529,10 @@ embeddings_with_outliers = generate_umap_embeddings(
 # show the shape and top values from the embeddings array
 print(embeddings_with_outliers.shape)
 embeddings_with_outliers[:3]
+
+
+# In[23]:
+
 
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
@@ -492,6 +548,10 @@ plot_hvplot_scatter(
 # conserve filespace by displaying export instead of dynamic plot
 Image(image_with_all_outliers)
 
+
+# In[24]:
+
+
 # show a UMAP for all outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
@@ -501,6 +561,10 @@ plot_hvplot_scatter(
     color_column="analysis.included_at_least_one_outlier",
     clabel="density of single cells classified as outliers",
 )
+
+
+# In[25]:
+
 
 # show small and low formfactor nuclei outliers within the data
 plot_hvplot_scatter(
@@ -517,6 +581,10 @@ plot_hvplot_scatter(
 # conserve filespace by displaying export instead of dynamic plot
 Image(plot_image)
 
+
+# In[26]:
+
+
 # show elongated nuclei outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
@@ -531,6 +599,10 @@ plot_hvplot_scatter(
 # conserve filespace by displaying export instead of dynamic plot
 Image(plot_image)
 
+
+# In[27]:
+
+
 # show small and large nuclei outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
@@ -543,7 +615,10 @@ plot_hvplot_scatter(
 # conserve filespace by displaying export instead of dynamic plot
 Image(plot_image)
 
-# +
+
+# In[28]:
+
+
 # prepare data for normalization and feature selection
 # by removing cosmicqc and analaysis focused columns.
 df_for_normalize_and_feature_select_without_outliers = (
@@ -560,7 +635,10 @@ df_for_normalize_and_feature_select_without_outliers = (
 len(df_for_normalize_and_feature_select_without_outliers.columns)
 
 df_for_normalize_and_feature_select_without_outliers
-# -
+
+
+# In[29]:
+
 
 print("Length of dataset with outliers: ", len(df_for_normalize_and_feature_select))
 print(
@@ -568,7 +646,10 @@ print(
     len(df_for_normalize_and_feature_select_without_outliers),
 )
 
-# +
+
+# In[30]:
+
+
 parquet_pycytominer_annotated_wo_outliers = (
     f"./{example_plate}_annotated_wo_outliers.parquet"
 )
@@ -585,7 +666,10 @@ if not pathlib.Path(parquet_pycytominer_annotated_wo_outliers).is_file():
         output_type="parquet",
     )
 
-# +
+
+# In[31]:
+
+
 parquet_pycytominer_normalized_wo_outliers = (
     f"./{example_plate}_normalized_wo_outliers.parquet"
 )
@@ -604,7 +688,10 @@ if not pathlib.Path(parquet_pycytominer_normalized_wo_outliers).is_file():
         output_type="parquet",
     )
 
-# +
+
+# In[32]:
+
+
 parquet_pycytominer_feature_selected_wo_outliers = (
     f"./{example_plate}_feature_select_wo_outliers.parquet"
 )
@@ -624,7 +711,10 @@ if not pathlib.Path(parquet_pycytominer_feature_selected_wo_outliers).is_file():
         output_file=parquet_pycytominer_feature_selected_wo_outliers,
         output_type="parquet",
     )
-# -
+
+
+# In[33]:
+
 
 # calculate UMAP embeddings from data without coSMicQC-detected outliers
 embeddings_without_outliers = generate_umap_embeddings(
@@ -635,6 +725,10 @@ embeddings_without_outliers = generate_umap_embeddings(
 # show the shape and top values from the embeddings array
 print(embeddings_without_outliers.shape)
 embeddings_without_outliers[:3]
+
+
+# In[34]:
+
 
 # plot UMAP for embeddings without outliers
 plot_hvplot_scatter(
@@ -651,6 +745,10 @@ plot_hvplot_scatter(
 # conserve filespace by displaying export instead of dynamic plot
 Image(image_without_all_outliers)
 
+
+# In[35]:
+
+
 # compare the UMAP images with and without outliers side by side
 HTML(
     f"""
@@ -661,7 +759,10 @@ HTML(
     """
 )
 
-# +
+
+# In[36]:
+
+
 # concatenate embeddings together
 combined_embeddings = np.vstack((embeddings_with_outliers, embeddings_without_outliers))
 
@@ -690,3 +791,4 @@ plot_hvplot_scatter(
     ],
     clabel="density of single cells with (orange) and without outliers (blue)",
 )
+

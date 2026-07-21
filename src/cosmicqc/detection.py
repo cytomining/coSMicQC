@@ -1,5 +1,6 @@
 """
-Module for detecting contamination (e.g., mycoplasma) from the morphology profiles.
+Module for detecting abnormal perinuclear signal (e.g., mycoplasma, channel
+bleedthrough) from the morphology profiles.
 """
 
 import matplotlib.pyplot as plt
@@ -12,26 +13,26 @@ from cosmicqc import find_outliers
 
 
 def bool_to_emoji(val: bool) -> str:
-    """Convert boolean string to emoji for printing.
+    """Convert boolean flag to emoji for printing.
 
     Args:
-        val (bool): boolean value to convert to emoji
+        val (bool): True indicates an issue/failure was detected, False indicates none.
 
     Returns:
-        str: emoji representing true or false
+        str: emoji representing the flag status
     """
-    return "✅" if val else "❌"
+    return "🔴" if val else "🟢"
 
 
-class ContaminationDetector:
+class PerinuclearSignalDetector:
     """
-    This class implements a contamination detection process for
-    high-content morphology data.
-    Contamination can be classified as many things, including
-    mycoplasma, which can impact the morphology of cells.
-    There are methods in the wet lab to detect mycoplasma,
-    but it is not always full-proof.
-    This class includes methods to detect contamination of
+    This class implements a abnormal perinuclear signal detection
+    process for high-content morphology data.
+    Abnormal pernuclear can be classified as many things, including
+    mycoplasma and channel bleedthough, which can impact the morphology
+    of cells. For example, there are methods in the wet lab to detect
+    mycoplasma, but it is not always full-proof.
+    This class includes methods to detect abnormal perinuclear signal of
     any form based on nucleus morphology features.
     There are three steps to the process:
 
@@ -41,8 +42,8 @@ class ContaminationDetector:
     2. Determine if the whole plate or partial plate is impacted by
     checking the mean values of the features.
     The process will move on to the last step only if partial
-    contamination is detected in the texture feature.
-    3. If partial contamination is detected for texture, find outliers
+    abnormal signal is detected in the texture feature.
+    3. If partial abnormal signal is detected for texture, find outliers
     and plot the proportion of outliers per well.
 
     Attributes:
@@ -71,12 +72,12 @@ class ContaminationDetector:
             Indicates if the distribution is skewed.
         is_variable : bool
             Indicates if the distribution is variable.
-        whole_plate_contamination_texture : bool
-            Indicates if whole plate contamination is detected in texture feature.
-        whole_plate_contamination_formfactor : bool
-            Indicates if whole plate contamination is detected in FormFactor feature.
-        partial_contamination_texture_detected : bool
-            Indicates if partial contamination is detected in the texture feature.
+        whole_plate_abnormal_texture : bool
+            Indicates if whole plate abnormal signal is detected in texture feature.
+        whole_plate_abnormal_formfactor : bool
+            Indicates if whole plate abnormal signal is detected in FormFactor feature.
+        partial_abnormal_texture_detected : bool
+            Indicates if partial abnormal signal is detected in the texture feature.
     """
 
     def __init__(  # noqa: PLR0913
@@ -91,7 +92,7 @@ class ContaminationDetector:
         outlier_std_threshold: float = 1.0,
     ) -> None:
         """
-        Initializer for the ContaminationDetector class.
+        Initializer for the PerinuclearSignalDetector class.
 
         Args:
             dataframe (pd.DataFrame): The input DataFrame containing the features
@@ -99,9 +100,9 @@ class ContaminationDetector:
             nucleus_channel_naming (str): Naming convention for the nucleus
                 channel in the DataFrame. Defaults to "DNA".
             lower_skew_threshold (float): Lower threshold for Bowley's
-                skewness to flag whole-plate contamination. Defaults to -0.15.
+                skewness to flag whole-plate abnormal signal. Defaults to -0.15.
             upper_skew_threshold (float): Upper threshold for Bowley's
-                skewness to flag partial-plate contamination. Defaults to 0.09.
+                skewness to flag partial-plate abnormal signal. Defaults to 0.09.
             variability_threshold (float): Threshold for acceptable
                 coefficient of variation in selected features. Defaults to 0.15.
             texture_mean_threshold (float): Mean texture value threshold
@@ -120,7 +121,7 @@ class ContaminationDetector:
         self.formfactor_mean_threshold = formfactor_mean_threshold
         self.outlier_std_threshold = outlier_std_threshold
 
-        # set the features to be used for contamination detection
+        # set the features to be used for abnormal perinuclear signal detection
         self.cyto_feature = (
             f"Cytoplasm_Texture_InfoMeas1_{self.nucleus_channel_naming}_3_02_256"
         )
@@ -147,7 +148,7 @@ class ContaminationDetector:
         q2 = np.percentile(self.dataframe[self.cyto_feature].dropna(), 50)
         q3 = np.percentile(self.dataframe[self.cyto_feature].dropna(), 75)
 
-        # calculate Bowley's skewness (to detect partial contamination)
+        # calculate Bowley's skewness (to detect partial abnormal texture)
         bowley_skewness = (q3 + q1 - 2 * q2) / (q3 - q1)
 
         # check if the distribution is skewed
@@ -165,7 +166,7 @@ class ContaminationDetector:
         More variability in this feature indicates a higher proportion
         of non-circular nuclei.
         This can be an indicator of poor segmentations due to non-optimal
-        segmentation parameters or contamination.
+        segmentation parameters or abnormal perinuclear signal.
         Threshold is set based on findings from multiple experiments
         (NF1 & CFReT, see citation file).
 
@@ -206,44 +207,47 @@ class ContaminationDetector:
         # set interpretation based on results
         if self.is_skewed and self.is_variable:
             interpretation = (
-                "Contamination detected! 🚨\n"
+                "Abnormal perinuclear signal detected! 🚨\n"
                 "Anomalous texture around nuclei detected and "
                 "nuclei segmentation is impacted.\n"
                 "Proceeding to step 2..."
             )
         elif self.is_skewed:
             interpretation = (
-                "Contamination detected! 🚨\n"
+                "Abnormal perinuclear signal detected! 🚨\n"
                 "Anomalous texture around nuclei detected but "
                 "nuclei segmentation not clearly impacted.\n"
                 "Proceeding to step 2..."
             )
         elif self.is_variable:
             interpretation = (
-                "Potential contamination detected! 🛑\n"
-                "This could indicate contamination, segmentation issues, "
+                "Potential abnormal perinuclear signal detected! 🛑\n"
+                "This could indicate abnormal signal, segmentation issues, "
                 "or an interesting phenotype.\n"
                 "Proceeding to step 2..."
             )
         else:
-            interpretation = "No indication of contamination. Plate appears clean 🫧!"
+            interpretation = (
+                "No indication of abnormal perinuclear signal. "
+                "Plate appears clean 🫧!"
+            )
 
         print(f"Interpretation:\n{interpretation}")
 
     def _calculate_texture_mean(self) -> bool:
         """
         Check the mean value of cytoplasm texture around a nucleus feature to
-        determine if whole plate or partial plate contamination is present.
+        determine if whole plate or partial plate abnormal texture is present.
         Threshold is set based on findings from multiple experiments
         (NF1 & CFReT, see citation file).
 
         Normal raw values of this feature range below 0. In a clean plate,
         it is noted that the normal values range from -0.5 to -0.3.
-        We set the threshold to -0.25 to detect whole plate contamination.
+        We set the threshold to -0.25 to detect whole plate abnormal texture.
 
         Returns:
-            boolean: True if whole plate contamination is detected, False otherwise
-            indicates partial contamination.
+            boolean: True if whole plate abnormal texture is detected, False otherwise
+            indicates partial abnormal texture.
         """
         # check if the mean value is above the threshold
         # True = whole plate, False = partial plate
@@ -252,17 +256,17 @@ class ContaminationDetector:
     def _calculate_formfactor_mean(self) -> bool:
         """
         Check the mean value of the FormFactor of the nucleus to determine
-        if whole plate or partial plate contamination is present.
+        if whole plate or partial plate abnormal signal is present.
         Threshold is set based on findings from multiple experiments
         (NF1 & CFReT, see citation file).
 
         Normal raw values of this feature range from 0 to 1. In a clean plate,
         it is noted that the normal values range from 0.8 to 1 (heavily skewed).
-        We set the threshold to 0.78 to detect whole plate contamination.
+        We set the threshold to 0.78 to detect whole plate abnormal signal.
 
         Returns:
-            boolean: True if whole plate contamination is detected, False otherwise
-            indicates partial contamination.
+            boolean: True if whole plate abnormal signal is detected, False otherwise
+            indicates partial abnormal signal.
         """
         # check if the mean value is below the threshold
         # True = whole plate, False = partial plate
@@ -277,15 +281,15 @@ class ContaminationDetector:
         partial plate is impacted using the mean values of the features.
 
         Main interpretations:
-        - If whole plate contamination detected in both texture and formfactor
+        - If whole plate abnormal signal detected in both texture and formfactor
             → major warning.
-        - If whole plate contamination detected in texture only
-            → check nucleus channel images for contamination.
-        - If whole plate contamination detected in formfactor only
-            → check segmentation parameters and/or images for contamination.
-        - If partial plate contamination detected in texture only
+        - If whole plate abnormal signal detected in texture only
+            → check nucleus channel images for abnormal signal.
+        - If whole plate abnormal signal detected in formfactor only
+            → check segmentation parameters and/or images for abnormal signal.
+        - If partial plate abnormal signal detected in texture only
             → proceed to step 3.
-        - If partial plate contamination detected in formfactor only
+        - If partial plate abnormal signal detected in formfactor only
             → recommend performing 'find_outliers' with FormFactor.
         """
         # run sanity check to ensure step one was ran prior to step two
@@ -294,20 +298,20 @@ class ContaminationDetector:
                 "You must run the skew and variable test before performing this test."
             )
 
-        # catch case where steps are used individually and no contamination is present
+        # catch case where steps are used individually and no abnormal signal is present
         if not self.is_skewed and not self.is_variable:
             print("Data is neither skewed nor variable based on step one.")
-            print("No indication of contamination. Plate appears clean 🫧.")
-            self.partial_contamination_texture_detected = False
+            print("No indication of abnormal signal. Plate appears clean 🫧.")
+            self.partial_abnormal_texture_detected = False
             return
 
         print("Running step 2...")
 
-        # Instantiate variables to check for whole plate contamination
-        self.whole_plate_contamination_texture = (
+        # Instantiate variables to check for whole plate abnormal signal
+        self.whole_plate_abnormal_texture = (
             self._calculate_texture_mean() if self.is_skewed else False
         )
-        self.whole_plate_contamination_formfactor = (
+        self.whole_plate_abnormal_formfactor = (
             self._calculate_formfactor_mean() if self.is_variable else False
         )
 
@@ -320,9 +324,10 @@ class ContaminationDetector:
                 True,
             ): (
                 "MAJOR WARNING! 💥\n"
-                "Contamination across entire plate detected in both texture and nuclei "
-                "shape features. Strongly suggest inspecting nucleus channel images "
-                "for contamination."
+                "Abnormal perinuclear signal across entire plate detected. "
+                "This is observed in both texture and nuclei shape features. "
+                "Strongly suggest inspecting nucleus channel images for "
+                "abnormal perinuclear signal."
             ),
             (
                 True,
@@ -330,7 +335,7 @@ class ContaminationDetector:
                 True,
                 False,
             ): (
-                "Whole plate texture contamination detected. "
+                "Whole plate abnormal perinuclear texture detected. "
                 "Please check your nucleus channel images."
             ),
             (
@@ -339,7 +344,7 @@ class ContaminationDetector:
                 False,
                 True,
             ): (
-                "Whole plate shape contamination detected. "
+                "Whole plate abnormal nuclear shape detected. "
                 "Check segmentation parameters and/or images."
             ),
             (
@@ -348,7 +353,7 @@ class ContaminationDetector:
                 True,
                 False,
             ): (
-                "Whole plate texture + partial plate shape contamination. "
+                "Whole plate abnormal texture + partial plate abnormal nuclear shape. "
                 "Inspect nucleus channel and segmentation in a subset of FOVs."
             ),
             (
@@ -357,7 +362,7 @@ class ContaminationDetector:
                 False,
                 False,
             ): (
-                "Partial contamination detected in both texture and shape. "
+                "Partial abnormal perinuclear signal detected in both texture and shape. "  # noqa: E501
                 "Proceed to step 3 and inspect FormFactor outliers separately."
             ),
             (
@@ -365,7 +370,7 @@ class ContaminationDetector:
                 False,
                 False,
                 False,
-            ): "Partial plate contamination in texture only. Proceed to step 3.",
+            ): "Partial plate abnormal perinuclear signal in texture only. Proceed to step 3.",  # noqa: E501
             (
                 False,
                 True,
@@ -379,10 +384,10 @@ class ContaminationDetector:
 
         # Set up key for lookup mapping to be applied
         key = (
-            self.is_skewed,  # checks texture contamination
-            self.is_variable,  # checks shape contamination
-            self.whole_plate_contamination_texture,
-            self.whole_plate_contamination_formfactor,
+            self.is_skewed,  # checks texture abnormal signal
+            self.is_variable,  # checks shape abnormal signal
+            self.whole_plate_abnormal_texture,
+            self.whole_plate_abnormal_formfactor,
         )
 
         # Get the interpretation from the lookup dictionary
@@ -403,11 +408,11 @@ class ContaminationDetector:
                     ["Nucleus shape variable?", bool_to_emoji(self.is_variable)],
                     [
                         "Whole plate contaminated due to abnormal texture?",
-                        bool_to_emoji(self.whole_plate_contamination_texture),
+                        bool_to_emoji(self.whole_plate_abnormal_texture),
                     ],
                     [
                         "Whole plate contaminated due to abnormal nucleus shape?",
-                        bool_to_emoji(self.whole_plate_contamination_formfactor),
+                        bool_to_emoji(self.whole_plate_abnormal_formfactor),
                     ],
                 ],
                 headers=["Check", "Result"],
@@ -417,8 +422,8 @@ class ContaminationDetector:
         print("Interpretation:\n" + interpretation)
 
         # Set flag used in step 3
-        self.partial_contamination_texture_detected = (
-            self.is_skewed and not self.whole_plate_contamination_texture
+        self.partial_abnormal_texture_detected = (
+            self.is_skewed and not self.whole_plate_abnormal_texture
         )
 
     def _find_texture_outliers(self) -> pd.DataFrame:
@@ -559,21 +564,21 @@ class ContaminationDetector:
         plt.colorbar(sm, ax=ax, label="Total Cell Count")
         plt.show()
 
-    def check_partial_contamination(self) -> None:
+    def check_partial_abnormal_signal(self) -> None:
         """
-        Step 3: If partial contamination detected, find outliers and plot the proportion
+        Step 3: If partial abnormal signal detected, find outliers and plot the proportion
         of outliers per well.
         """
         # run sanity check to ensure step two was ran prior to step three
-        if not hasattr(self, "partial_contamination_texture_detected"):
+        if not hasattr(self, "partial_abnormal_texture_detected"):
             raise RuntimeError(
                 "You must run the feature mean test before performing this test."
             )
 
         print("Running step 3...")
 
-        # check if partial contamination was detected
-        if self.partial_contamination_texture_detected:
+        # check if partial abnormal signal was detected
+        if self.partial_abnormal_texture_detected:
             print("Finding outlier cells with anomalous texture around the nucleus...")
             outliers = self._get_outlier_proportion_per_well()
             self._plot_outlier_proportions(outliers)
@@ -590,19 +595,19 @@ class ContaminationDetector:
             print("Wells in the top 25% of highest outlier proportions:")
             print(", ".join(top_outlier_wells["Well"]))
         else:
-            print("No partial contamination detected; no outliers to find.")
+            print("No partial abnormal signal detected; no outliers to find.")
 
     def run(self) -> None:
         """
-        Run all steps of the contamination detection process with conditional logic.
-        """
+        Run all steps of the perinuclear signal detection process with conditional logic.
+        """  # noqa: E501
         # Run the first step in the process to check for skewness and variability
         self.check_skew_and_variable()
 
         # Exit early if no skewness or variability detected
         if not self.is_skewed and not self.is_variable:
             print(
-                "No skewness or variability detected. Exiting contamination detector."
+                "No skewness or variability detected. Exiting perinuclear signal detector."  # noqa: E501
             )
             return
 
@@ -610,9 +615,9 @@ class ContaminationDetector:
         # Determines if the whole plate or partial plate is impacted
         self.check_feature_means()
 
-        # Only continue to step 3 if partial contamination texture was detected
+        # Only continue to step 3 if partial abnormal texture was detected
         if (
-            hasattr(self, "partial_contamination_texture_detected")
-            and self.partial_contamination_texture_detected
+            hasattr(self, "partial_abnormal_texture_detected")
+            and self.partial_abnormal_texture_detected
         ):
-            self.check_partial_contamination()
+            self.check_partial_abnormal_signal()

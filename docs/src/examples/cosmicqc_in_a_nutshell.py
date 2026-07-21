@@ -1,29 +1,31 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py:light
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.17.3
-#   kernelspec:
-#     display_name: cosmicqc-yMtnhZm3-py3.13
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
 # # `coSMicQC` in a nutshell
-#
+# 
 # This notebook demonstrates various capabilities of `coSMicQC` using examples.
 
-# +
+# In[1]:
+
+
 import pathlib
 
 import pandas as pd
 from cytodataframe import CytoDataFrame
 
 import cosmicqc
+
+
+# In[3]:
+
+
+from importlib.metadata import version
+
+version("cytodataframe")
+
+
+# In[2]:
+
 
 # set a path for the parquet-based dataset
 # (in this case, CellProfiler SQLite data processed by CytoTable)
@@ -45,7 +47,23 @@ scdf = CytoDataFrame(
 
 # display the dataframe
 scdf
-# -
+
+
+# In[ ]:
+
+
+bbox_cols = [
+    col for col in scdf.columns if "bbox" in col.lower() or "box" in col.lower()
+]
+
+print("bbox_col:", bbox_cols)
+print("bbox_cols:")
+for col in bbox_cols:
+    print(col)
+
+
+# In[ ]:
+
 
 # Identify which rows include outliers for a given threshold definition
 # which references a column name and a z-score number which is considered
@@ -55,6 +73,10 @@ cosmicqc.analyze.identify_outliers(
     feature_thresholds={"Nuclei_AreaShape_Area": -1},
 ).sort_values()
 
+
+# In[ ]:
+
+
 # Show the number of outliers given a column name and a specified threshold
 # via the `feature_thresholds` parameter and the `find_outliers` function.
 cosmicqc.analyze.find_outliers(
@@ -63,6 +85,10 @@ cosmicqc.analyze.find_outliers(
     feature_thresholds={"Nuclei_AreaShape_Area": -1},
 )
 
+
+# In[ ]:
+
+
 # create a labeled dataset which includes z-scores and whether those scores
 # are interpreted as outliers or inliers. We use pre-defined threshold sets
 # loaded from defaults (cosmicqc can accept user-defined thresholds too!).
@@ -70,6 +96,10 @@ labeled_scdf = cosmicqc.analyze.label_outliers(
     df=scdf, include_threshold_scores=True, feature_thresholds="large_nuclei"
 )
 labeled_scdf
+
+
+# In[ ]:
+
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
 # labeled_scdf._enbable_debug_mode()
@@ -84,8 +114,13 @@ labeled_scdf.sort_values(by="Metadata_cqc_large_nuclei_is_outlier", ascending=Fa
     ]
 ]
 
+
+# In[ ]:
+
+
 # One can convert from cosmicqc.CytoDataFrame to pd.DataFrame's
 # (when or if needed!)
 df = pd.DataFrame(scdf)
 print(type(df))
 df
+
