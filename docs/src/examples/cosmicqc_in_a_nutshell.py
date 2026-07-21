@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # `coSMicQC` in a nutshell
-# 
+#
 # This notebook demonstrates various capabilities of `coSMicQC` using examples.
 
 # In[1]:
@@ -10,16 +10,13 @@
 
 import pathlib
 
+# In[2]:
+from importlib.metadata import version
+
 import pandas as pd
 from cytodataframe import CytoDataFrame
 
 import cosmicqc
-
-
-# In[2]:
-
-
-from importlib.metadata import version
 
 version("cytodataframe")
 
@@ -122,4 +119,3 @@ labeled_scdf.sort_values(by="Metadata_cqc_large_nuclei_is_outlier", ascending=Fa
 # (when or if needed!)
 df = pd.DataFrame(scdf)
 print(type(df))
-
