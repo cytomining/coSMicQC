@@ -323,9 +323,9 @@ class PerinuclearSignalDetector:
                 True,
             ): (
                 "MAJOR WARNING! 💥\n"
-                "Abnormal perinuclear signal across entire plate detected. "
-                "This is observed in both texture and nuclei shape features. "
-                "Strongly suggest inspecting nucleus channel images for "
+                "Detected abnormal perinuclear signal across the entire plate. "
+                "We see this flagged by both texture and nuclei shape features. "
+                "We strongly suggest inspecting nucleus channel images for "
                 "abnormal perinuclear signal."
             ),
             (
@@ -429,7 +429,7 @@ class PerinuclearSignalDetector:
         """
         Use coSMicQC find_outliers function to identify single-cells with abnormal
         perinuclear signal based on texture in the cytoplasm around the nucleus in
-        partially abnormal plates.
+        partially abnormal plates (some abnormal wells).
 
         Returns:
             pd.DataFrame: DataFrame containing the outliers detected to use to plotting

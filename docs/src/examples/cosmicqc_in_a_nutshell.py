@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # `coSMicQC` in a nutshell
-#
+# 
 # This notebook demonstrates various capabilities of `coSMicQC` using examples.
 
 # In[1]:
@@ -10,18 +10,21 @@
 
 import pathlib
 
-# In[3]:
-from importlib.metadata import version
-
 import pandas as pd
 from cytodataframe import CytoDataFrame
 
 import cosmicqc
 
+
+# In[2]:
+
+
+from importlib.metadata import version
+
 version("cytodataframe")
 
 
-# In[2]:
+# In[3]:
 
 
 # set a path for the parquet-based dataset
@@ -46,7 +49,7 @@ scdf = CytoDataFrame(
 scdf
 
 
-# In[ ]:
+# In[4]:
 
 
 bbox_cols = [
@@ -59,7 +62,7 @@ for col in bbox_cols:
     print(col)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Identify which rows include outliers for a given threshold definition
@@ -71,7 +74,7 @@ cosmicqc.analyze.identify_outliers(
 ).sort_values()
 
 
-# In[ ]:
+# In[6]:
 
 
 # Show the number of outliers given a column name and a specified threshold
@@ -83,7 +86,7 @@ cosmicqc.analyze.find_outliers(
 )
 
 
-# In[ ]:
+# In[7]:
 
 
 # create a labeled dataset which includes z-scores and whether those scores
@@ -95,7 +98,7 @@ labeled_scdf = cosmicqc.analyze.label_outliers(
 labeled_scdf
 
 
-# In[ ]:
+# In[8]:
 
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
@@ -112,11 +115,11 @@ labeled_scdf.sort_values(by="Metadata_cqc_large_nuclei_is_outlier", ascending=Fa
 ]
 
 
-# In[ ]:
+# In[9]:
 
 
 # One can convert from cosmicqc.CytoDataFrame to pd.DataFrame's
 # (when or if needed!)
 df = pd.DataFrame(scdf)
 print(type(df))
-df
+
