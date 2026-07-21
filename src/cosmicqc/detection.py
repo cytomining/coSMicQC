@@ -406,11 +406,11 @@ class PerinuclearSignalDetector:
                     ["Texture skewed?", bool_to_emoji(self.is_skewed)],
                     ["Nucleus shape variable?", bool_to_emoji(self.is_variable)],
                     [
-                        "Whole plate contaminated due to abnormal texture?",
+                        "Whole plate has perinuclear signal due to abnormal texture?",
                         bool_to_emoji(self.whole_plate_abnormal_texture),
                     ],
                     [
-                        "Whole plate contaminated due to abnormal nucleus shape?",
+                        "Whole plate has perinuclear signal due to abnormal nucleus shape?",  # noqa: E501
                         bool_to_emoji(self.whole_plate_abnormal_formfactor),
                     ],
                 ],
@@ -427,8 +427,9 @@ class PerinuclearSignalDetector:
 
     def _find_texture_outliers(self) -> pd.DataFrame:
         """
-        Use coSMicQC find_outliers function to identify contaminated single-cells based
-        on texture in the cytoplasm around the nucleus in partially contaminated plates.
+        Use coSMicQC find_outliers function to identify single-cells with abnormal
+        perinuclear signal based on texture in the cytoplasm around the nucleus in 
+        partially abnormal plates.
 
         Returns:
             pd.DataFrame: DataFrame containing the outliers detected to use to plotting
@@ -565,8 +566,8 @@ class PerinuclearSignalDetector:
 
     def check_partial_abnormal_signal(self) -> None:
         """
-        Step 3: If partial abnormal signal detected, find outliers and plot the proportion
-        of outliers per well.
+        Step 3: If partial abnormal signal detected, find outliers and plot the
+        proportion of outliers per well.
         """
         # run sanity check to ensure step two was ran prior to step three
         if not hasattr(self, "partial_abnormal_texture_detected"):

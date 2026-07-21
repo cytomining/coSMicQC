@@ -190,12 +190,12 @@ def test_check_partial_abnormal_signal(
     detector.check_feature_means()
 
     # Mock the plotting functions to avoid rendering the plot
-    with patch("matplotlib.pyplot.show"):
+    with patch("matplotlib.pyplot.show") as mock_show:
         # Execute step 3
         detector.check_partial_abnormal_signal()
 
-    # Check if the results are as expected
-    assert detector.partial_abnormal_texture_detected
+        # Check that step 3 plotted the outliers
+        assert mock_show.called
 
 
 def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
@@ -209,7 +209,7 @@ def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
     )
 
     # Mock the plotting functions to avoid rendering the plot
-    with patch("matplotlib.pyplot.show"):
+    with patch("matplotlib.pyplot.show") as mock_show:
         # Execute the run method
         detector.run()
 
@@ -239,11 +239,11 @@ def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
 
     # If partial abnormal signal is detected, ensure step 3 is executed
     if detector.partial_abnormal_texture_detected:
-        assert hasattr(detector, "partial_abnormal_texture_detected"), (
+        assert mock_show.called, (
             "Step 3 should have been executed if partial abnormal was detected."
         )
     else:
         # If no partial abnormal, ensure step 3 is skipped
-        assert not hasattr(detector, "partial_abnormal_texture_detected"), (
+        assert not mock_show.called, (
             "Step 3 should not have been executed if no partial abnormal was detected."
         )
