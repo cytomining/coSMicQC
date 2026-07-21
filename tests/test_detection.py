@@ -1,5 +1,5 @@
 """
-Tests cosmicqc contamination detector module
+Tests cosmicqc abnormal perinuclear signal detector module
 """
 
 from unittest.mock import patch
@@ -16,8 +16,8 @@ def test_skewness_cytoplasm_texture(cytotable_NF1_contamination_data_df: pd.Data
     """
     Test skewness of cytoplasm texture
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -32,8 +32,8 @@ def test_variability_formfactor(cytotable_NF1_contamination_data_df: pd.DataFram
     """
     Test variability of cytoplasm texture
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -47,8 +47,8 @@ def test_variability_formfactor(cytotable_NF1_contamination_data_df: pd.DataFram
 def test_check_skew_and_variable_basic(
     cytotable_NF1_contamination_data_df: pd.DataFrame,
 ):
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
     detector.check_skew_and_variable()
@@ -59,43 +59,43 @@ def test_check_skew_and_variable_basic(
 
 def test_calculate_texture_mean(cytotable_NF1_contamination_data_df: pd.DataFrame):
     """
-    Test if there is whole plate or partial plate contamination based on texture mean.
+    Test if there is whole plate or partial plate abnormal signal based on texture mean.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
-    # Determine if whole plate is contaminated or partial
-    whole_plate_contamination_texture = detector._calculate_texture_mean()
+    # Determine if whole plate has abnormal signal or partial
+    whole_plate_abnormal_texture = detector._calculate_texture_mean()
 
-    # Assert the result is False as we expect partial plate contamination
-    assert not whole_plate_contamination_texture
+    # Assert the result is False as we expect partial plate abnormal signal
+    assert not whole_plate_abnormal_texture
 
 
 def test_calculate_formfactor_mean(cytotable_NF1_contamination_data_df: pd.DataFrame):
     """
-    Test if there is whole plate or partial plate contamination
+    Test if there is whole plate or partial plate abnormal signal
     based on nuclei shape mean.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
-    # Determine if whole plate is contaminated or partial
-    whole_plate_contamination_formfactor = detector._calculate_formfactor_mean()
+    # Determine if whole plate has abnormal signal or partial
+    whole_plate_abnormal_formfactor = detector._calculate_formfactor_mean()
 
     # Assert the result is False the data was not variable
-    assert not whole_plate_contamination_formfactor
+    assert not whole_plate_abnormal_formfactor
 
 
 def test_check_feature_means(cytotable_NF1_contamination_data_df: pd.DataFrame):
     """
-    Test the behavior of step 2 in the contamination detection process.
+    Test the behavior of step 2 in the perinuclear signal detection process.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -106,14 +106,14 @@ def test_check_feature_means(cytotable_NF1_contamination_data_df: pd.DataFrame):
     detector.check_feature_means()
 
     # Check if the results are as expected
-    assert not detector.whole_plate_contamination_texture
+    assert not detector.whole_plate_abnormal_texture
 
 
 def test_find_texture_outliers(
     cytotable_NF1_contamination_data_df: pd.DataFrame,
 ):
-    # Instantiate the ContaminationDetector with the DataFrame
-    detector = cd.ContaminationDetector(
+    # Instantiate the PerinuclearSignalDetector with the DataFrame
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
     outliers_df = detector._find_texture_outliers()
@@ -130,8 +130,8 @@ def test_get_outlier_proportion_per_well(
     """
     Test the get_outlier_proportion_per_well method.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -162,7 +162,7 @@ def test_plot_outlier_proportions_runs_and_shows(
     """
     Test the plot_outlier_proportions function returns a plot.
     """
-    detector = cd.ContaminationDetector(
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -172,14 +172,14 @@ def test_plot_outlier_proportions_runs_and_shows(
         mock_show.assert_called_once()
 
 
-def test_check_partial_contamination(
+def test_check_partial_abnormal_signal(
     cytotable_NF1_contamination_data_df: pd.DataFrame,
 ):
     """
-    Test the behavior of step 3 in the contamination detection process.
+    Test the behavior of step 3 in the perinuclear signal detection process.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -192,10 +192,10 @@ def test_check_partial_contamination(
     # Mock the plotting functions to avoid rendering the plot
     with patch("matplotlib.pyplot.show"):
         # Execute step 3
-        detector.check_partial_contamination()
+        detector.check_partial_abnormal_signal()
 
     # Check if the results are as expected
-    assert detector.partial_contamination_texture_detected
+    assert detector.partial_abnormal_texture_detected
 
 
 def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
@@ -203,8 +203,8 @@ def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
     Test the run method using real data to make sure the stepwise method
     runs correctly.
     """
-    # Create the ContaminationDetector object
-    detector = cd.ContaminationDetector(
+    # Create the PerinuclearSignalDetector object
+    detector = cd.PerinuclearSignalDetector(
         dataframe=cytotable_NF1_contamination_data_df, nucleus_channel_naming="DAPI"
     )
 
@@ -219,32 +219,32 @@ def test_run(cytotable_NF1_contamination_data_df: pd.DataFrame):
 
     # If no skewness or variability, ensure it exits early
     if not detector.is_skewed and not detector.is_variable:
-        assert not hasattr(detector, "whole_plate_contamination_texture"), (
+        assert not hasattr(detector, "whole_plate_abnormal_texture"), (
             "Step 2 should not have been executed if no skewness or "
             "variability was detected."
         )
-        assert not hasattr(detector, "partial_contamination_texture_detected"), (
+        assert not hasattr(detector, "partial_abnormal_texture_detected"), (
             "Step 3 should not have been executed if no skewness or "
             "variability was detected."
         )
         return
 
     # Assertions for step 2
-    assert hasattr(detector, "whole_plate_contamination_texture"), (
-        "Step 2 did not set 'whole_plate_contamination_texture'."
+    assert hasattr(detector, "partial_abnormal_texture_detected"), (
+        "Step 2 did not set 'partial_abnormal_texture_detected'."
     )
-    assert hasattr(detector, "whole_plate_contamination_formfactor"), (
-        "Step 2 did not set 'whole_plate_contamination_formfactor'."
+    assert hasattr(detector, "whole_plate_abnormal_formfactor"), (
+        "Step 2 did not set 'whole_plate_abnormal_formfactor'."
     )
 
-    # If partial contamination is detected, ensure step 3 is executed
-    if detector.partial_contamination_texture_detected:
-        assert hasattr(detector, "partial_contamination_texture_detected"), (
-            "Step 3 should have been executed if partial contamination was detected."
+    # If partial abnormal signal is detected, ensure step 3 is executed
+    if detector.partial_abnormal_texture_detected:
+        assert hasattr(detector, "partial_abnormal_texture_detected"), (
+            "Step 3 should have been executed if partial abnormal was detected."
         )
     else:
-        # If no partial contamination, ensure step 3 is skipped
-        assert not hasattr(detector, "partial_contamination_texture_detected"), (
-            "Step 3 should not have been executed if no partial contamination "
+        # If no partial abnormal, ensure step 3 is skipped
+        assert not hasattr(detector, "partial_abnormal_texture_detected"), (
+            "Step 3 should not have been executed if no partial abnormal "
             "was detected."
         )
