@@ -9,18 +9,19 @@
 import os
 import pathlib
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from copairs import map  # noqa: A004
 from copairs.matching import assign_reference_index
 from plotnine import (
     aes,
+    element_blank,
     element_text,
     facet_wrap,
     geom_abline,
     geom_bar,
     geom_hline,
+    geom_line,
     geom_point,
     geom_text,
     ggplot,
@@ -31,7 +32,6 @@ from plotnine import (
     theme_bw,
 )
 from plotnine.options import set_option
-from PyComplexHeatmap import ClusterMapPlotter, HeatmapAnnotation, anno_simple
 from scipy.stats import mannwhitneyu
 
 
@@ -41,40 +41,127 @@ from scipy.stats import mannwhitneyu
 
 
 # Perform mean average precision calculation
-def get_mean_average_precision(  # noqa: PLR0913
-    activity_df: pd.DataFrame,
+def compute_activity_ap(
+    treatment_df: pd.DataFrame,
     pos_sameby: list,
     pos_diffby: list,
     neg_sameby: list,
     neg_diffby: list,
-    seed: int = 0,
 ) -> pd.DataFrame:
-    """Calculate mean average precision for activity data.
+    """Compute per-profile average precision (AP) for one compound/dose group.
 
     Args:
-        activity_df (pd.DataFrame): Activity data.
+        treatment_df (pd.DataFrame): Rows for a single compound/dose group plus
+            the DMSO wells it should be compared against.
         pos_sameby (list): Positive samples to compare.
         pos_diffby (list): Positive samples to compare.
         neg_sameby (list): Negative samples to compare.
         neg_diffby (list): Negative samples to compare.
-        seed (int, optional): Random seed for reproducibility. Defaults to 0.
 
     Returns:
-        pd.DataFrame: Mean average precision results.
+        pd.DataFrame: Per-profile AP scores (DMSO query rows dropped).
     """
-    metadata = activity_df.filter(regex="^Metadata")
-    profiles = activity_df.filter(regex="^(?!Metadata)").values
+    metadata = treatment_df.filter(regex="^Metadata")
+    profiles = treatment_df.filter(regex="^(?!Metadata)").values
 
     activity_ap = map.average_precision(
         metadata, profiles, pos_sameby, pos_diffby, neg_sameby, neg_diffby
     )
-    activity_ap = activity_ap.query("Metadata_broad_sample != 'DMSO'")
+    return activity_ap.query("Metadata_broad_sample != 'DMSO'")
 
+
+def compute_map_scores(  # noqa: PLR0913
+    df_activity: pd.DataFrame,
+    pos_sameby: list,
+    pos_diffby: list,
+    neg_sameby: list,
+    neg_diffby: list,
+    min_replicates: int,
+    seed: int = 0,
+) -> pd.DataFrame:
+    """Calculate mAP scores for every compound/dose group vs. its own on-plate DMSO wells.
+
+    Each compound/dose group is compared only to the DMSO wells living on the
+    specific plate(s) that group's own replicates were run on.
+
+    AP is computed separately per compound/dose group, since each group has
+    its own comparison pool of DMSO wells, but all resulting AP scores are
+    concatenated and passed through `map.mean_average_precision` (p-values,
+    FDR correction) ONCE across the full batch.
+
+    Args:
+        df_activity (pd.DataFrame): Activity data with reference index assigned.
+        pos_sameby (list): Positive samples to compare.
+        pos_diffby (list): Positive samples to compare.
+        neg_sameby (list): Negative samples to compare.
+        neg_diffby (list): Negative samples to compare.
+        min_replicates (int): Minimum replicate wells (and minimum distinct
+            plates) required per compound/dose group for positive pairing.
+        seed (int, optional): Random seed for the null distribution. Defaults to 0.
+
+    Returns:
+        pd.DataFrame: One row per compound/dose group with mAP scores, p-values,
+            and average proportion of failed single cells.
+    """
+    non_dmso = df_activity[df_activity["Metadata_broad_sample"] != "DMSO"]
+
+    list_of_ap = []
+    failed_prop_records = []
+    for (treatment, dose), group_df in non_dmso.groupby(
+        ["Metadata_broad_sample", "Metadata_dose_recode"]
+    ):
+        dose_plates = group_df["Metadata_Plate"].unique()
+        unique_pos_diffby = group_df[pos_diffby].drop_duplicates()
+        if (
+            group_df.shape[0] < min_replicates
+            or unique_pos_diffby.shape[0] < min_replicates
+        ):
+            print(
+                f"Skipping {treatment} (dose {dose}): not enough replicates or "
+                f"not enough unique '{pos_diffby}' values for positive pairs."
+            )
+            continue
+
+        # Compare this compound/dose group only to DMSO wells from the same
+        # plate(s) its own replicates were run on
+        treatment_df = df_activity[
+            (
+                (df_activity["Metadata_broad_sample"] == treatment)
+                & (df_activity["Metadata_dose_recode"] == dose)
+            )
+            | (
+                (df_activity["Metadata_broad_sample"] == "DMSO")
+                & (df_activity["Metadata_Plate"].isin(dose_plates))
+            )
+        ]
+
+        list_of_ap.append(
+            compute_activity_ap(
+                treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
+            )
+        )
+        failed_prop_records.append(
+            {
+                "Metadata_broad_sample": treatment,
+                "Metadata_dose_recode": dose,
+                "Metadata_avg_prop_failed_single_cells": (
+                    group_df["Metadata_sc_count_failed_qc"]
+                    / group_df["Metadata_sc_count"]
+                ).mean(),
+            }
+        )
+
+    all_ap = pd.concat(list_of_ap, ignore_index=True)
     activity_map = map.mean_average_precision(
-        activity_ap, pos_sameby, seed=seed, null_size=10000, threshold=0.05
+        all_ap, pos_sameby, seed=seed, null_size=10000, threshold=0.05
     )
     activity_map["-log10(p-value)"] = -activity_map["corrected_p_value"].apply(np.log10)
-    return activity_map
+
+    return activity_map.merge(
+        pd.DataFrame(failed_prop_records),
+        on=["Metadata_broad_sample", "Metadata_dose_recode"],
+        how="left",
+    )
 
 
 # Calculate proportion of points above, below, and equal to y=x per dose
@@ -332,56 +419,14 @@ if os.path.exists(preqc_map_file):
     final_map_preQC = pd.read_parquet(preqc_map_file)
     print("Loaded preQC mAP results from file.")
 else:
-    list_of_dfs_map_preQC = []
-    for treatment in pre_qc_df_activity["Metadata_broad_sample"].unique():
-        if treatment == "DMSO":
-            continue
-        treatment_plates = pre_qc_df_activity.loc[
-            pre_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
-        ].unique()
-        treatment_df = pre_qc_df_activity[
-            (
-                (pre_qc_df_activity["Metadata_broad_sample"] == treatment)
-                | (pre_qc_df_activity["Metadata_broad_sample"] == "DMSO")
-            )
-            & (pre_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
-        ]
-        # Check if there are at least two replicates for positive pairing
-        n_replicates = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ].shape[0]
-        unique_pos_diffby = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ][pos_diffby].drop_duplicates()
-        if n_replicates < MIN_REPLICATES or unique_pos_diffby.shape[0] < MIN_REPLICATES:
-            print(
-                f"Skipping treatment {treatment}: not enough replicates or "
-                f"not enough unique '{pos_diffby}' values for positive pairs."
-            )
-            continue
-        # Calculate average proportion of failed single cells per dose
-        failed_cells = (
-            treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
-            .assign(
-                Metadata_failed_prop=lambda x: (
-                    x["Metadata_sc_count_failed_qc"] / x["Metadata_sc_count"]
-                )
-            )
-            .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
-            .mean()
-        )
-        # Perform mAP calculation per treatment (use defaults)
-        treatment_map = get_mean_average_precision(
-            treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
-        )
-        # Map average failed cells to treatment_map
-        treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
-            "Metadata_dose_recode"
-        ].map(failed_cells)
-        list_of_dfs_map_preQC.append(treatment_map)
-
-    # Concatenate all treatment mAP results
-    final_map_preQC = pd.concat(list_of_dfs_map_preQC, ignore_index=True)
+    final_map_preQC = compute_map_scores(
+        pre_qc_df_activity,
+        pos_sameby,
+        pos_diffby,
+        neg_sameby,
+        neg_diffby,
+        MIN_REPLICATES,
+    )
     final_map_preQC["QC_status"] = "pre-QC"
     # Save final mAP results to file
     final_map_preQC.to_parquet(preqc_map_file, index=False)
@@ -397,56 +442,14 @@ if os.path.exists(postqc_map_file):
     final_map_postQC = pd.read_parquet(postqc_map_file)
     print("Loaded postQC mAP results from file.")
 else:
-    list_of_dfs_map_postQC = []
-    for treatment in post_qc_df_activity["Metadata_broad_sample"].unique():
-        if treatment == "DMSO":
-            continue
-        treatment_plates = post_qc_df_activity.loc[
-            post_qc_df_activity["Metadata_broad_sample"] == treatment, "Metadata_Plate"
-        ].unique()
-        treatment_df = post_qc_df_activity[
-            (
-                (post_qc_df_activity["Metadata_broad_sample"] == treatment)
-                | (post_qc_df_activity["Metadata_broad_sample"] == "DMSO")
-            )
-            & (post_qc_df_activity["Metadata_Plate"].isin(treatment_plates))
-        ]
-        # Check if there are at least two replicates for positive pairing
-        n_replicates = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ].shape[0]
-        unique_pos_diffby = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ][pos_diffby].drop_duplicates()
-        if n_replicates < MIN_REPLICATES or unique_pos_diffby.shape[0] < MIN_REPLICATES:
-            print(
-                f"Skipping treatment {treatment}: not enough replicates or "
-                f"not enough unique '{pos_diffby}' values for positive pairs."
-            )
-            continue
-        # Calculate average proportion of failed single cells per dose
-        failed_cells = (
-            treatment_df[treatment_df["Metadata_broad_sample"] == treatment]
-            .assign(
-                Metadata_failed_prop=lambda x: (
-                    x["Metadata_sc_count_failed_qc"] / x["Metadata_sc_count"]
-                )
-            )
-            .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
-            .mean()
-        )
-        # Perform mAP calculation per treatment (use defaults)
-        treatment_map = get_mean_average_precision(
-            treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
-        )
-        # Map average failed cells to treatment_map
-        treatment_map["Metadata_avg_prop_failed_single_cells"] = treatment_map[
-            "Metadata_dose_recode"
-        ].map(failed_cells)
-        list_of_dfs_map_postQC.append(treatment_map)
-
-    # Concatenate all treatment mAP results
-    final_map_postQC = pd.concat(list_of_dfs_map_postQC, ignore_index=True)
+    final_map_postQC = compute_map_scores(
+        post_qc_df_activity,
+        pos_sameby,
+        pos_diffby,
+        neg_sameby,
+        neg_diffby,
+        MIN_REPLICATES,
+    )
     final_map_postQC["QC_status"] = "post-QC"
     # Save final mAP results to file
     final_map_postQC.to_parquet(postqc_map_file, index=False)
@@ -486,15 +489,9 @@ print(f"{num_improved} compounds with preQC ≤ 0.5 and an increase ≥ 0.2.")
 print(f"These rows represent {percent_improved:.1f}% of all compounds/doses.")
 
 
-# In[11]:
-
-
-merged_map
-
-
 # ## Generate plot of mAP scores pre= and post-QC
 
-# In[12]:
+# In[11]:
 
 
 # Drop dose 0 and 7 due to small number of samples
@@ -502,7 +499,7 @@ merged_map = merged_map.query("Metadata_dose_recode not in [0, 7]")
 
 # Set the figure size
 height = 4
-width = 14
+width = 20
 set_option("figure_size", (width, height))
 
 # Define the custom coSMic QC palette (lighter pink to purple to cyan)
@@ -527,7 +524,7 @@ p = (
     + geom_point(alpha=0.3, size=1.0)
     + geom_abline(slope=1, intercept=0, linetype="dashed", color="black", size=0.5)
     + facet_wrap(
-        "~Metadata_dose_recode", nrow=1, labeller=lambda x: f"Dose recode: {x}"
+        "~Metadata_dose_recode", nrow=1, labeller=lambda x: f"Dose: {x}"
     )
     + scale_color_gradientn(
         name="Avg. proportion\nfailed QC",
@@ -540,7 +537,12 @@ p = (
     )
     + theme_bw()
     + theme(
-        legend_position="bottom",
+        legend_position="right",
+        axis_title=element_text(size=16),
+        axis_text=element_text(size=14),
+        legend_title=element_text(size=16),
+        legend_text=element_text(size=16),
+        strip_text=element_text(size=18),
     )
 )
 
@@ -563,7 +565,7 @@ p.show()
 
 # # Determine the proportion above and below the line
 
-# In[13]:
+# In[12]:
 
 
 # Get proportion of points above and below y=x line
@@ -573,7 +575,7 @@ proportion_df
 
 # ## Calculate average cosine similarity across well-replicates per compound and dose
 
-# In[14]:
+# In[13]:
 
 
 # Compute replicate cosine similarity for pre-QC and post-QC datasets
@@ -628,7 +630,7 @@ merged_map_with_cosine = replicate_cosine_df.merge(
 )
 
 
-# In[15]:
+# In[14]:
 
 
 merged_map_with_cosine[
@@ -642,7 +644,7 @@ merged_map_with_cosine[
 
 # ## Map the mAP scores to the mean cosine similarity scores
 
-# In[16]:
+# In[15]:
 
 
 # Add single-cell counts to merged map for analysis of mAP change vs cell count
@@ -671,7 +673,7 @@ merged_map_cosine_sc_counts.to_parquet(
 )
 
 
-# In[17]:
+# In[16]:
 
 
 merged_map_cosine_sc_counts["mAP_direction"] = np.where(
@@ -691,535 +693,50 @@ print(f"mean increased: {increased.mean():.4f}, mean decreased: {decreased.mean(
 print(f"Mann-Whitney U p-value: {p:.11e}")
 
 
-# ## Plot mAP ranks
+# ## Export data for downstream ranking analysis
+# 
+# Exports used by `../supp_figure_11_lincs_ranking_changes/map_rank_changes.ipynb` to rank compounds within each dose and visualize pre- vs post-QC rank changes.
+# 
 
-# In[18]:
-
-
-# Rank independently within each dose based on post-QC mAP
-merged_map_sorted = merged_map.groupby("Metadata_dose_recode", group_keys=False).apply(
-    lambda df: df.sort_values("mean_average_precision_postQC", ascending=False).assign(
-        postQC_rank=lambda d: np.arange(1, len(d) + 1)
-    )
-)
-
-# Rank independently within each dose  each dose based on pre-QC mAP
-merged_map_sorted["preQC_rank"] = merged_map_sorted.groupby("Metadata_dose_recode")[
-    "mean_average_precision_preQC"
-].rank(ascending=False, method="first")
-
-# Keep top 20 compounds per dose based on preQC ranking
-merged_map_top = (
-    merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False)
-    .apply(lambda df: df.nsmallest(20, "preQC_rank"))
-    .copy()
-)
-
-# Use the custom palette
-p = (
-    ggplot(
-        merged_map_top,
-        aes(
-            x="preQC_rank",
-            y="postQC_rank",
-            color="Metadata_avg_prop_failed_single_cells_postQC",
-        ),
-    )
-    + geom_point(size=3, alpha=0.8)
-    + geom_abline(intercept=0, slope=1, linetype="--", color="black", size=0.7)
-    + scale_color_gradientn(
-        name="Avg. proportion\nfailed QC",
-        colors=cosmicqc_palette,
-        limits=(0, 1),
-    )
-    + labs(
-        x="Rank (pre-QC, 1 = highest)",
-        y="Rank (post-QC, 1 = highest)",
-        color="Avg prop failed cells",
-    )
-    + facet_wrap(
-        "~Metadata_dose_recode",
-        nrow=1,
-        labeller=lambda x: f"Dose recode: {x}",
-    )
-    + theme_bw()
-    + theme(
-        figure_size=(14, 4),
-        legend_position="bottom",
-        legend_title=element_text(size=10),
-        legend_text=element_text(size=9),
-    )
-)
-
-# Save plots
-p.save("figures/rank_mAP_preQC_vs_postQC_by_dose.png", dpi=400)
-fig = p.draw()
-
-for ax in fig.axes:
-    for coll in ax.collections:
-        coll.set_rasterized(True)
-
-fig.savefig("figures/rank_mAP_preQC_vs_postQC_by_dose.svg", dpi=400)
-
-p.show()
+# In[17]:
 
 
-# # Sort by ranks pre- and post-QC
+# Export the mAP results (doses 1-6, pre- and post-QC) for use in
+# ../supp_figure_11_lincs_ranking_changes/map_rank_changes.ipynb
+merged_map.to_parquet(output_dir / "merged_map_preQC_postQC.parquet", index=False)
 
-# In[19]:
-
-
-# Print for dose recode 1 the sample, and ranks pre and post QC
-merged_map_sorted.loc[
-    merged_map_sorted["Metadata_dose_recode"] == 4,  # noqa: PLR2004
-    [
-        "Metadata_broad_sample",
-        "preQC_rank",
-        "postQC_rank",
-    ],
-].sort_values("postQC_rank").head(10)
-
-
-# ## Find top 20 compounds pre- and post-QC and find rescued compounds
-
-# In[20]:
-
-
-# Step 1: Identify top 20 per dose
-top20_pre = merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False).apply(
-    lambda df: df.nsmallest(20, "preQC_rank")
-)[["Metadata_broad_sample", "Metadata_dose_recode", "preQC_rank"]]
-
-top20_post = merged_map_sorted.groupby("Metadata_dose_recode", group_keys=False).apply(
-    lambda df: df.nsmallest(20, "postQC_rank")
-)[["Metadata_broad_sample", "Metadata_dose_recode", "postQC_rank"]]
-
-# Step 2: Union of compounds
-rank_change = pd.merge(
-    top20_pre,
-    top20_post,
-    on=["Metadata_broad_sample", "Metadata_dose_recode"],
-    how="outer",
-)
-
-# Add back Metadata_moa from post_qc_df_activity
-moa_info = post_qc_df_activity[
-    ["Metadata_broad_sample", "Metadata_moa"]
-].drop_duplicates()
-rank_change = rank_change.merge(
-    moa_info, on="Metadata_broad_sample", how="left"
-)
-
-# Step 3: Attach full dataset ranks (ensures clean columns)
-rank_change = pd.merge(
-    rank_change,
-    merged_map_sorted[
-        ["Metadata_broad_sample", "Metadata_dose_recode", "preQC_rank", "postQC_rank"]
-    ],
-    on=["Metadata_broad_sample", "Metadata_dose_recode"],
-    how="left",
-    suffixes=("_top20", "")
-)
-
-# Enforce clean rank columns (avoid suffix confusion)
-rank_change["preQC_rank"] = rank_change["preQC_rank"].fillna(rank_change["preQC_rank_top20"])
-rank_change["postQC_rank"] = rank_change["postQC_rank"].fillna(rank_change["postQC_rank_top20"])
-
-# Drop helper columns
-rank_change = rank_change.drop(columns=[c for c in rank_change.columns if "_top20" in c])
-
-# Step 4: Keep ONLY compounds present in BOTH pre and post top 20
-rank_change = rank_change.dropna(subset=["preQC_rank", "postQC_rank"])
-
-# Step 5: Compute rank differences (pre - post → positive = improved)
-rank_change["rank_diff"] = rank_change["preQC_rank"] - rank_change["postQC_rank"]
-
-# Step 6: Define color (no gray category)
-def get_color(r: pd.Series) -> str:
-    return "blue" if r["rank_diff"] > 0 else "red"
-
-rank_change["color"] = rank_change.apply(get_color, axis=1)
-
-# Step 7: Order compounds per dose for plotting
-rank_change["sort_rank"] = rank_change["preQC_rank"]
-rank_change = rank_change.sort_values(["Metadata_dose_recode", "sort_rank"])
-print(rank_change.shape)
-rank_change.head(10)
-
-
-# In[21]:
-
-
-# Step 8: Plot per dose
-for dose, df_dose in rank_change.groupby("Metadata_dose_recode"):
-
-    if df_dose["rank_diff"].eq(0).all():
-        continue
-
-    # Create label position (inside bars)
-    df_dose["label_y"] = df_dose["rank_diff"] * 0.5  # halfway inside bar
-
-    p = (
-        ggplot(df_dose, aes(x="Metadata_broad_sample", y="rank_diff", fill="color"))
-        + geom_bar(stat="identity")
-        # Add text labels for improved ranks (blue bars) with MoA
-        + geom_text(
-            data=df_dose[df_dose["color"] == "blue"],
-            mapping=aes(
-                x="Metadata_broad_sample",
-                y="label_y",
-                label="Metadata_moa"
-            ),
-            color="white",
-            size=10,
-            angle=90,
-            ha="center",
-            va="center"
-        )
-
-        + geom_hline(yintercept=0, color="black", linetype="dashed")
-        + scale_fill_manual(
-            name="Rank change\n(pre-QC - post-QC)",
-            values={
-                "blue": "blue",
-                "red": "red"
-            },
-            labels=[
-                "Rank improved",
-                "Rank worsened"
-            ],
-        )
-        + theme(
-            figure_size=(14, 6),
-            title=element_text(size=14),
-            axis_text_x=element_text(rotation=90, hjust=1, size=8),
-            axis_title_x=element_text(size=12),
-            axis_title_y=element_text(size=12),
-            legend_title=element_text(size=12),
-            legend_text=element_text(size=10),
-        )
-        + labs(
-            title=f"Compound rank changes - dose {dose}",
-            x="Broad sample ID",
-            y="Rank change\n(pre-QC - post-QC)",
-        )
-    )
-
-    plot_path = f"figures/rank_change_dose_{dose}_bar_plot.png"
-    p.save(plot_path, width=14, height=6, dpi=600)
-    p.show()
-
-
-# In[22]:
-
-
-# Filter for compounds where rank_diff > 0 (rank improved) for dose 1 and 2
-improved_dose1 = rank_change[
-    (rank_change["Metadata_dose_recode"] == 1) & (rank_change["rank_diff"] > 0)
-]
-improved_dose2 = rank_change[
-    (rank_change["Metadata_dose_recode"] == 2)
-    & (rank_change["rank_diff"] > 0)  # noqa: PLR2004
-]
-# Concatenate and get unique broad samples
-# Only include broad sample as column
-improved_compounds = pd.concat([improved_dose1, improved_dose2])[
-    ["Metadata_broad_sample", "Metadata_dose_recode"]
-]
-broad_samples = improved_compounds["Metadata_broad_sample"].unique()
-
-print(f"Broad samples of the {len(broad_samples)} unique compounds that went up in ranks from dose 1 and 2:")
-for sample in broad_samples:
-    print(sample)
-
-
-# In[23]:
-
-
-# For each of the compounds at their respective dose, get the pre-QC rank
-preqc_ranks = []
-for _, row in improved_compounds.iterrows():
-    sample = row["Metadata_broad_sample"]
-    dose = row["Metadata_dose_recode"]
-    # Find the preQC_rank for this sample and dose
-    rank = merged_map_sorted.loc[
-        (merged_map_sorted["Metadata_broad_sample"] == sample)
-        & (merged_map_sorted["Metadata_dose_recode"] == dose),
-        "preQC_rank",
+# Export a compound/dose-level summary of cell counts and MoA annotations
+# for the same downstream ranking notebook
+preqc_counts_export = (
+    pre_qc_df_activity.groupby(["Metadata_broad_sample", "Metadata_dose_recode"])[
+        "Metadata_sc_count"
     ]
-    if not rank.empty:
-        preqc_ranks.append(rank.values[0])
-
-# Compute the average pre-QC rank
-avg_preqc_rank = np.mean(preqc_ranks)
-print(
-    "Average pre-QC mAP rank for the compounds at their respective doses: "
-    f"{avg_preqc_rank:.2f}"
+    .sum()
+    .reset_index(name="total_cells_preQC")
 )
 
-
-# In[24]:
-
-
-# Calculate total passed and failed cells per sample and dose
-cell_counts = (
+postqc_counts_export = (
     post_qc_df_activity.groupby(["Metadata_broad_sample", "Metadata_dose_recode"])
     .agg(
-        total_passed=("Metadata_sc_count_passed_qc", "sum"),
-        total_failed=("Metadata_sc_count_failed_qc", "sum"),
+        total_passed_postQC=("Metadata_sc_count_passed_qc", "sum"),
+        total_failed_postQC=("Metadata_sc_count_failed_qc", "sum"),
     )
     .reset_index()
 )
 
-# Calculate total and proportion failed
-cell_counts["total_cells"] = cell_counts["total_passed"] + cell_counts["total_failed"]
-cell_counts["proportion_failed"] = (
-    cell_counts["total_failed"] / cell_counts["total_cells"]
-)
-
-# Merge with improved_compounds
-improved_compounds = improved_compounds.merge(
-    cell_counts, on=["Metadata_broad_sample", "Metadata_dose_recode"], how="left"
-)
-
-# Add back Metadata_moa from post_qc_df_activity
-moa_info = post_qc_df_activity[
+moa_info_export = post_qc_df_activity[
     ["Metadata_broad_sample", "Metadata_moa"]
 ].drop_duplicates()
-improved_compounds = improved_compounds.merge(
-    moa_info, on="Metadata_broad_sample", how="left"
-)
 
-# Compute the average proportion failed across each compound in this list
-avg_proportion_failed = improved_compounds["proportion_failed"].mean()
-print(
-    f"Average proportion of failed cells across the compounds: "
-    f"{avg_proportion_failed:.4f}"
-)
-
-# Compute the average of the total passed across each compound in this list
-avg_total_passed = improved_compounds["total_passed"].mean()
-print(f"Average total passed cells across the compounds: {avg_total_passed:.0f}")
-
-# Quantify the number of duplicate compounds (same broad sample at different doses)
-duplicate_counts = improved_compounds["Metadata_broad_sample"].value_counts()
-num_duplicates = (duplicate_counts > 1).sum()
-print(
-    "Number of duplicate compounds (same broad sample at different doses): "
-    f"{num_duplicates}"
-)
-
-print(improved_compounds.shape)
-improved_compounds.head(10)
-
-
-# ## Only evaluate cosine similaity of the three compounds from the glucocorticoid receptor agonist MOA
-
-# In[25]:
-
-
-targets_df = pd.DataFrame(
-    [
-        ("BRD-A15297126-001-04-3", 1),
-        ("BRD-A15297126-001-04-3", 2),
-        ("BRD-A13133631-001-04-0", 2),
-    ],
-    columns=["Metadata_broad_sample", "Metadata_dose_recode"],
-)
-
-plates_for_targets = (
-    post_qc_df_activity.merge(
-        targets_df,
+compound_dose_summary = (
+    preqc_counts_export.merge(
+        postqc_counts_export,
         on=["Metadata_broad_sample", "Metadata_dose_recode"],
-        how="inner",
-    )
-    .loc[:, ["Metadata_broad_sample", "Metadata_dose_recode", "Metadata_Plate", "Metadata_Well"]]
-    .drop_duplicates()
-    .sort_values(["Metadata_broad_sample", "Metadata_dose_recode", "Metadata_Plate", "Metadata_Well"])
+        how="outer",
+    ).merge(moa_info_export, on="Metadata_broad_sample", how="left")
 )
 
-plates_for_targets["Metadata_Plate"].unique()
-plates_for_targets
-
-
-# ## Find all wells across plates for these three compounds
-
-# In[26]:
-
-
-target_moa = "glucocorticoid receptor agonist"
-target_doses = [1, 2]
-target_wells = pd.DataFrame(
-    [
-        ("SQ00015194", "G05"),
-        ("SQ00015214", "G05"),
-        ("SQ00015215", "G05"),
-        ("SQ00015216", "G05"),
-        ("SQ00015217", "G05"),
-        ("SQ00015194", "P11"),
-        ("SQ00015214", "P11"),
-        ("SQ00015215", "P11"),
-        ("SQ00015216", "P11"),
-        ("SQ00015217", "P11"),
-        ("SQ00015194", "P12"),
-        ("SQ00015214", "P12"),
-        ("SQ00015215", "P12"),
-        ("SQ00015216", "P12"),
-        ("SQ00015217", "P12"),
-    ],
-    columns=["Metadata_Plate", "Metadata_Well"],
+compound_dose_summary.to_parquet(
+    output_dir / "compound_dose_cell_counts_moa.parquet", index=False
 )
-
-metadata_cols = post_qc_df_activity.filter(regex="^Metadata").columns.tolist()
-post_qc_numeric_cols = post_qc_df_activity.select_dtypes(include="number").columns
-post_qc_profile_cols = [
-    col
-    for col in post_qc_numeric_cols
-    if col not in metadata_cols and col != "failed_proportion"
-]
-
-target_profiles = (
-    post_qc_df_activity.loc[
-        post_qc_df_activity["Metadata_moa"].eq(target_moa)
-        & post_qc_df_activity["Metadata_dose_recode"].isin(target_doses)
-    ]
-    .merge(target_wells, on=["Metadata_Plate", "Metadata_Well"], how="inner")
-    .sort_values(
-        ["Metadata_broad_sample", "Metadata_dose_recode", "Metadata_Plate", "Metadata_Well"]
-    )
-    .reset_index(drop=True)
-)
-
-target_profiles["well_id"] = (
-    target_profiles["Metadata_Plate"] + ":" + target_profiles["Metadata_Well"]
-)
-
-target_profiles[
-    ["Metadata_broad_sample", "Metadata_dose_recode", "Metadata_Plate", "Metadata_Well"]
-].drop_duplicates()
-
-
-# ## Compute pairwise cosine similairy scores per well for these compounds
-
-# In[27]:
-
-
-profiles = target_profiles[post_qc_profile_cols].to_numpy(dtype=float)
-profiles = np.nan_to_num(profiles, nan=0.0, posinf=0.0, neginf=0.0)
-norms = np.linalg.norm(profiles, axis=1, keepdims=True)
-normalized_profiles = np.divide(
-    profiles,
-    norms,
-    out=np.zeros_like(profiles),
-    where=norms > 0,
-)
-cosine_matrix = normalized_profiles @ normalized_profiles.T
-
-pairwise_cosine_df = pd.DataFrame(
-    cosine_matrix,
-    index=target_profiles["well_id"],
-    columns=target_profiles["well_id"],
-)
-pairwise_cosine_df
-
-
-# ## Generate complex heatmap comparing cosine similarity scores
-
-# In[28]:
-
-
-annotation_df = target_profiles[
-    ["well_id", "Metadata_broad_sample", "Metadata_dose_recode"]
-].drop_duplicates()
-
-annotation_df = annotation_df.set_index("well_id").loc[pairwise_cosine_df.index]
-
-mapping = {
-    "BRD-A15297126-001-04-3": "C2",
-    "BRD-A13133631-001-04-0": "C1",
-}
-
-annotation_df["Compound_short"] = annotation_df["Metadata_broad_sample"].map(mapping)
-
-sample_colors = {
-    "C1": "#1f77b4",
-    "C2": "#ff7f0e",
-}
-
-dose_colors = {1: "#ffa600", 2: "#58508d"}
-
-row_anno = HeatmapAnnotation(
-    **{
-        "": anno_simple(
-            annotation_df["Compound_short"],
-            colors=sample_colors,
-            legend=False,
-        ),
-        " ": anno_simple(
-            annotation_df["Metadata_dose_recode"],
-            colors=dose_colors,
-            legend=False,
-        ),
-    },
-    axis=0,
-)
-
-col_anno = HeatmapAnnotation(
-    **{
-        "Broad sample": anno_simple(
-            annotation_df["Compound_short"],
-            colors=sample_colors,
-            legend=True,
-        ),
-        "Dose": anno_simple(
-            annotation_df["Metadata_dose_recode"],
-            colors=dose_colors,
-            legend=True,
-        ),
-    },
-    axis=1,
-)
-
-plt.figure(figsize=(12, 10))
-
-ClusterMapPlotter(
-    data=pairwise_cosine_df,
-    top_annotation=col_anno,
-    left_annotation=row_anno,
-    cmap="magma",
-    vmin=0,
-    vmax=1,
-    row_cluster=True,
-    col_cluster=True,
-    row_dendrogram=True,
-    col_dendrogram=True,
-    show_rownames=False,
-    show_colnames=False,
-    xticklabels_kws={"labelrotation": 90, "labelsize": 10},
-    yticklabels_kws={"labelsize": 10},
-    label="Cosine\nsimilarity",
-    legend_side="right",
-    legend_anchor="ax_heatmap",
-    legend_width=5,
-    legend_hpad=2,
-    legend_vgap=5,
-    annot=True,
-    fmt=".2f",
-    annot_kws={"size": 6},
-)
-
-plt.savefig(
-    "./figures/heatmap_GCCRA_well_cosine_similarity.png",
-    bbox_inches="tight",
-    dpi=600,
-    pad_inches=0.5,
-)
-
-plt.show()
-
-
-# In[ ]:
-
-
-
 

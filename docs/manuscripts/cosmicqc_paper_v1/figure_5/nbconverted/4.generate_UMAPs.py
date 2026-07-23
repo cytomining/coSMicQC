@@ -13,12 +13,14 @@ import pandas as pd
 import umap
 from plotnine import (
     aes,
+    element_text,
     geom_point,
     ggplot,
     guide_legend,
     guides,
     scale_color_manual,
     scale_shape_manual,
+    theme,
     theme_bw,
     xlab,
     ylab,
@@ -86,7 +88,7 @@ pre_qc_df.head()
 
 # ## Pre-QC UMAPs (Panels A and B)
 
-# In[ ]:
+# In[5]:
 
 
 cp_features = infer_cp_features(pre_qc_df)
@@ -240,6 +242,13 @@ p = (
     )
     # Theme
     + theme_bw()
+    + theme(
+        figure_size=(9, 6),
+        axis_title=element_text(size=22),
+        axis_text=element_text(size=16),
+        legend_title=element_text(size=18),
+        legend_text=element_text(size=16),
+    )
 )
 p.save(filename=figure_output_dir / "pre_qc_moa_umap.png", dpi=600)
 p.show()
@@ -280,9 +289,16 @@ p_failed_qc = (
     + geom_point(size=1, alpha=0.3)
     + xlab("UMAP_0")
     + ylab("UMAP_1")
-    + scale_color_manual(values=manual_colors, name="Proportion cells\nfailed QC")
+    + scale_color_manual(values=manual_colors, name="Proportion of cells\n failing QC")
     + guides(color=guide_legend(override_aes={"size": 3}))  # increases legend dot size
     + theme_bw()
+    + theme(
+            figure_size=(8, 6),
+            axis_title=element_text(size=22),
+            axis_text=element_text(size=16),
+            legend_title=element_text(size=18),
+            legend_text=element_text(size=16),
+        )
 )
 p_failed_qc.save(filename=figure_output_dir / "pre_qc_failed_qc_umap.png", dpi=600)
 p_failed_qc.show()
@@ -290,7 +306,7 @@ p_failed_qc.show()
 
 # ## UMAP for post-QC
 
-# In[ ]:
+# In[11]:
 
 
 cp_features = infer_cp_features(post_qc_df)
@@ -400,6 +416,13 @@ p = (
     )
     # Theme
     + theme_bw()
+    + theme(
+            figure_size=(9, 6),
+            axis_title=element_text(size=22),
+            axis_text=element_text(size=16),
+            legend_title=element_text(size=18),
+            legend_text=element_text(size=16),
+        )
 )
 p.save(filename=figure_output_dir / "post_qc_moa_umap.png", dpi=600)
 p.show()
