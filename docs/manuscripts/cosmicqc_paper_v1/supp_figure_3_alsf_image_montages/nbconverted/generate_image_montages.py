@@ -12,9 +12,11 @@ from pathlib import Path
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from matplotlib.image import imread
 from pycytominer import annotate
+from scipy.ndimage import binary_dilation
 
 from cosmicqc import find_outliers
 
@@ -71,6 +73,62 @@ def add_highlight_box(ax: plt.Axes, color: str = "red", linewidth: int = 4) -> N
     ax.add_patch(rect)
 
 
+def overlay_outlines(
+    ax: plt.Axes,
+    plate: str,
+    well: str,
+    site: int,
+    outlines_dir: Path,
+    nuclei_color: tuple = (0, 255, 255),
+    cell_color: tuple = (0, 255, 0),
+    show_nuclei: bool = True,
+    show_cells: bool = True,
+    line_thickness: int = 1,
+) -> None:
+    """Overlay nuclei and cell segmentation outlines on an axes.
+
+    Expects CellProfiler-style outline TIFFs named
+    "NucleiOutlines_{plate}_{well}_{site}.tiff" and
+    "CellsOutlines_{plate}_{well}_{site}.tiff" in outlines_dir, where outline
+    pixels are non-zero in at least one channel and background pixels are zero.
+
+    Args:
+        ax (plt.Axes): The axes with the base image already drawn.
+        plate (str): Plate identifier used in the outline filenames.
+        well (str): Well identifier used in the outline filenames.
+        site (int): Site/field number used in the outline filenames.
+        outlines_dir (Path): Directory containing the outline TIFFs.
+        nuclei_color (tuple): RGB (0-255) color for nuclei outlines. Default cyan.
+        cell_color (tuple): RGB (0-255) color for cell outlines. Default green.
+        show_nuclei (bool): Whether to draw nuclei outlines. Default True.
+        show_cells (bool): Whether to draw cell outlines. Default True.
+        line_thickness (int): Outline thickness in pixels, via binary dilation.
+            Default 1 (no dilation).
+    """
+    overlays = []
+    if show_nuclei:
+        overlays.append(("NucleiOutlines", nuclei_color))
+    if show_cells:
+        overlays.append(("CellsOutlines", cell_color))
+
+    for prefix, color in overlays:
+        outline_path = outlines_dir / f"{prefix}_{plate}_{well}_{site}.tiff"
+        if not outline_path.exists():
+            continue
+        outline = imread(outline_path)
+        mask = outline.max(axis=-1) if outline.ndim == 3 else outline
+        mask = mask > 0
+        if line_thickness > 1:
+            mask = binary_dilation(mask, iterations=line_thickness - 1)
+
+        overlay = np.zeros((*mask.shape, 4))
+        overlay[..., 0] = color[0] / 255
+        overlay[..., 1] = color[1] / 255
+        overlay[..., 2] = color[2] / 255
+        overlay[..., 3] = mask.astype(float)
+        ax.imshow(overlay)
+
+
 # In[3]:
 
 
@@ -99,6 +157,13 @@ cell_line_map = {
 
 # set plate to analyze
 plate_id = "BR00145816"
+
+# directory containing per-FOV NucleiOutlines_*.tiff and CellsOutlines_*.tiff
+# segmentation outline images produced during feature extraction
+outlines_dir = Path(
+    "/media/18tbdrive/1.Github_Repositories/pediatric_cancer_atlas_profiling/"
+    "2.feature_extraction/sqlite_outputs/Round_2_data"
+) / plate_id
 
 
 # In[4]:
@@ -336,12 +401,23 @@ for col, cell_line in enumerate(cell_lines):
         image_path = cell_line_df.loc[row, "Image_PathName_OrigDNA"]
         image_filename = cell_line_df.loc[row, "Image_FileName_OrigDNA"]
         full_path = os.path.join(image_path, image_filename)
+        well = cell_line_df.loc[row, "Metadata_Well"]
+        site = cell_line_df.loc[row, "Metadata_Site"]
         failed = cell_line_df.loc[row, "failed_cells"]
         total = cell_line_df.loc[row, "total_cells"]
         pct_failed = 100 * failed / total if total > 0 else 0
         try:
             img = imread(full_path)
             ax.imshow(img, cmap="gray")
+            overlay_outlines(
+                ax,
+                plate_id,
+                well,
+                site,
+                outlines_dir,
+                show_cells=False,
+                line_thickness=3,
+            )
             add_scale_bar(ax, img.shape, SCALE_BAR_PX)
             seeding_density = cell_line_df.loc[row, "Metadata_seeding_density"]
             ax.set_title(
@@ -349,7 +425,7 @@ for col, cell_line in enumerate(cell_lines):
                     f"{blinded_name} | Seeding: {seeding_density}\n"
                     f"{failed}/{total} failed ({pct_failed:.1f}%)"
                 ),
-                fontsize=12,
+                fontsize=20,
             )
             ax.axis("off")
         except Exception:
@@ -359,7 +435,7 @@ for col, cell_line in enumerate(cell_lines):
                 f"Error loading image\n{blinded_name}",
                 ha="center",
                 va="center",
-                fontsize=12,
+                fontsize=20,
             )
             ax.axis("off")
 
@@ -429,6 +505,15 @@ for row_idx, density in enumerate(seeding_densities):
         try:
             img = imread(full_path)
             ax.imshow(img, cmap="gray")
+            overlay_outlines(
+                ax,
+                plate_id,
+                record["Metadata_Well"],
+                record["Metadata_Site"],
+                outlines_dir,
+                show_cells=False,
+                line_thickness=3,
+            )
             add_scale_bar(ax, img.shape, SCALE_BAR_PX)
         except Exception:
             ax.text(
@@ -441,9 +526,9 @@ for row_idx, density in enumerate(seeding_densities):
             )
         ax.axis("off")
         if row_idx == 0:
-            ax.set_title(blinded_name, fontsize=14, pad=12)
+            ax.set_title(blinded_name, fontsize=20, pad=12)
         if col_idx == 0:
-            ax.set_ylabel(str(density), fontsize=14, rotation=90, labelpad=20, va="center")
+            ax.set_ylabel(str(density), fontsize=20, rotation=90, labelpad=20, va="center")
             ax.axis("on")
             ax.set_xticks([])
             ax.set_yticks([])
