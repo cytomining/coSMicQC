@@ -6,7 +6,7 @@
 # This code is derived from the `cellpainting_predicts_cardiac_fibrosis` repository.
 # 
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -244,4 +244,3 @@ p = (
 
 p.save(f"{figure_path}/precision_recall_curves_holdout.png", dpi=600)
 p.show()
-
