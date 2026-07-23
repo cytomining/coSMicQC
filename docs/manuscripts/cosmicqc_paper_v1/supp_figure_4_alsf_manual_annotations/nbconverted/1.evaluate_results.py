@@ -303,7 +303,7 @@ plot_df = kappa_df.melt(
 # label cleanup
 # -----------------------------
 label_map = {
-    "kappa_A1_A2": "Human (A1 vs A2)",
+    "kappa_A1_A2": "Human (A2 vs A1)",
     "kappa_model_A1": "coSMicQC vs A1",
     "kappa_model_A2": "coSMicQC vs A2",
 }
@@ -320,7 +320,7 @@ overall = kappa_df[
 overall_df = pd.DataFrame({
     "cell_line": ["Overall"] * 3,
     "comparison": [
-        "Human (A1 vs A2)",
+        "Human (A2 vs A1)",
         "coSMicQC vs A1",
         "coSMicQC vs A2",
     ],
@@ -513,7 +513,7 @@ for cl in cell_lines:
             true_col="manual_segmentation_is_bad_a1"
         )
 
-        row["comparison"] = "Human (A1 vs A2)"
+        row["comparison"] = "Human (A2 vs A1)"
         row["cell_line"] = cl
         results.append(row)
 
@@ -622,9 +622,42 @@ p.save(
 p.show()
 
 
+# In[12]:
+
+
+human_df = metrics_df[metrics_df["comparison"] == "Human (A2 vs A1)"]
+model_df = metrics_df[metrics_df["comparison"].str.startswith("coSMicQC vs")]
+
+print("="*60)
+print("ACCURACY AND PRECISION RANGE SUMMARY")
+print("="*60)
+
+for metric in ["accuracy", "precision"]:
+    human_min = human_df[metric].min()
+    human_max = human_df[metric].max()
+
+    combined_vals = pd.concat([human_df[metric], model_df[metric]])
+    overall_min = combined_vals.min()
+    overall_max = combined_vals.max()
+
+    model_vals = model_df[metric]
+    n_total = len(model_vals)
+    n_within = ((model_vals >= human_min) & (model_vals <= human_max)).sum()
+    n_above = (model_vals > human_max).sum()
+    n_below = (model_vals < human_min).sum()
+
+    print(f"\n{metric.upper()}")
+    print(f"  Human annotator range:       {human_min:.2f}-{human_max:.2f}")
+    print(f"  coSMicQC comparisons within human range: {n_within}/{n_total}")
+    print(f"  coSMicQC comparisons ABOVE human range:   {n_above}/{n_total}")
+    print(f"  coSMicQC comparisons BELOW human range:   {n_below}/{n_total}")
+
+print("\n" + "="*60)
+
+
 # ## Generate confusion matrices comaparing coSMicQc to each annotator and the annotators to each other
 
-# In[12]:
+# In[13]:
 
 
 # --- long-format confusion matrix per cell line + annotator ---
@@ -702,7 +735,7 @@ cm_df_cell_line["count"] = cm_df_cell_line["count"].fillna(0).astype(int)
 cm_df_cell_line.head()
 
 
-# In[13]:
+# In[14]:
 
 
 # -----------------------------
@@ -753,7 +786,7 @@ p_cm.save(
 p_cm.show()
 
 
-# In[14]:
+# In[15]:
 
 
 # -----------------------------
@@ -791,7 +824,7 @@ wide_df = wide_df.merge(sample_meta, on=id_col, how="left")
 wide_df.head()
 
 
-# In[15]:
+# In[16]:
 
 
 # -----------------------------
@@ -855,7 +888,7 @@ cm_df_cell_line_collapsed["proportion"] = (
 cm_df_cell_line_collapsed.head()
 
 
-# In[16]:
+# In[17]:
 
 
 # -----------------------------
