@@ -51,13 +51,14 @@ def bootstrap_roc_auc(
     y_true: Union[np.ndarray, list],
     y_pred: Union[np.ndarray, list],
     n_bootstraps: int = 1000,
+    n_samples: Union[int, None] = None,
 ) -> np.ndarray:
     """
     Perform bootstrapping to compute the distribution of ROC AUC scores.
 
     This function generates a bootstrapped distribution of ROC AUC scores by
     resampling the provided true labels and predicted probabilities without
-    replacement, using 20% of the dataset each time.
+    replacement, using 20% of the dataset each time by default.
 
     Parameters:
     ----------
@@ -70,6 +71,13 @@ def bootstrap_roc_auc(
     n_bootstraps : int, optional, default=1000
         Number of bootstrap iterations to perform.
 
+    n_samples : int, optional, default=None
+        Fixed number of samples to draw (without replacement) on each
+        bootstrap iteration. Use this to match the sample size drawn from a
+        different dataset (e.g. matching the no-QC 20% sample count when
+        bootstrapping the smaller QC-filtered datasets). Defaults to 20% of
+        `y_true` when not provided.
+
     Returns:
     -------
     bootstrapped_scores : np.ndarray
@@ -79,10 +87,13 @@ def bootstrap_roc_auc(
     # Initialize list to store bootstrapped ROC AUC scores
     bootstrapped_scores = []
 
+    # Default to 20% of the dataset when an explicit sample size isn't given
+    sample_size = n_samples if n_samples is not None else int(0.20 * len(y_true))
+
     MIN_CLASSES_REQUIRED = 2
     for i in range(n_bootstraps):
         indices = resample(
-            np.arange(len(y_true)), replace=False, n_samples=int(0.20 * len(y_true))
+            np.arange(len(y_true)), replace=False, n_samples=sample_size
         )
         if len(np.unique(y_true[indices])) < MIN_CLASSES_REQUIRED:
             continue

@@ -530,6 +530,22 @@ comparison_df = pd.crosstab(
 
 print(comparison_df)
 
+# --- Failure rate (percentage) per QC method ---
+total_cells = len(idc_df)
+
+# coSMicQC failure rate
+cosmicqc_failed = (idc_df["cosmicqc_label"] == "failed_qc").sum()
+cosmicqc_failure_rate = (cosmicqc_failed / total_cells) * 100
+
+# ECOD failure rate (assumes ECOD_flag marks outliers/failures with a truthy value,
+# e.g. True/1 or "outlier" - adjust the comparison below to match your actual flag values)
+ecod_failed = idc_df["ECOD_flag"].astype(bool).sum()
+ecod_failure_rate = (ecod_failed / total_cells) * 100
+
+print(f"\nTotal cells: {total_cells}")
+print(f"coSMicQC failure rate: {cosmicqc_failed} / {total_cells} = {cosmicqc_failure_rate:.2f}%")
+print(f"ECOD failure rate: {ecod_failed} / {total_cells} = {ecod_failure_rate:.2f}%")
+
 
 # ## Step 7: Evaluate agreement between ECOD and coSMicQC on IDC plate
 
@@ -896,7 +912,12 @@ corr_mats = {"qc_subsample": corr_mat}
 
 # Count sampled cells per QC group (used for the correlation calculations)
 sampled_groups = pd.Series(cell_group_map).reindex(corr_mat.index)
-counts = sampled_groups.value_counts().reindex(["failed_both", "cosmic_only", "ecod_only"]).fillna(0).astype(int)
+counts = (
+    sampled_groups.value_counts()
+    .reindex(["failed_both", "cosmic_only", "ecod_only"])
+    .fillna(0)
+    .astype(int)
+)
 
 print("Sampled cells used for correlation (per group):")
 print(counts.to_string())
