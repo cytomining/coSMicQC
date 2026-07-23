@@ -3,7 +3,7 @@
 
 # # Generate plots for features used in perinuclear signal detector
 
-# In[ ]:
+# In[1]:
 
 
 from pathlib import Path
@@ -27,7 +27,7 @@ from sklearn.preprocessing import StandardScaler
 from cosmicqc import find_outliers
 
 
-# In[ ]:
+# In[2]:
 
 
 # Directory with data
@@ -49,7 +49,7 @@ metadata_columns = [
 ]
 
 
-# In[ ]:
+# In[3]:
 
 
 # Load in converted plate data
@@ -59,7 +59,7 @@ print(plate_df.shape)
 plate_df.head()
 
 
-# In[ ]:
+# In[4]:
 
 
 # compartment for bounding boxes
@@ -105,7 +105,7 @@ irregular_nuclei_outliers_cdf = CytoDataFrame(
 ]
 
 
-# In[ ]:
+# In[5]:
 
 
 # find irregular shaped nuclei
@@ -133,7 +133,7 @@ granularity_nuclei_outliers_cdf = CytoDataFrame(
 ]
 
 
-# In[ ]:
+# In[6]:
 
 
 # Add QC_status column to plate_df for irregular nuclei outliers only
@@ -143,7 +143,7 @@ plate_df.loc[list(irregular_nuclei_outliers.index), "QC_status"] = (
 )
 
 
-# In[ ]:
+# In[7]:
 
 
 # Z-score normalize the cytoplasm texture for plotting
@@ -194,7 +194,7 @@ p.save(
 p.show()
 
 
-# In[ ]:
+# In[8]:
 
 
 # Add QC_status column to plate_df for granularity nuclei outliers only
@@ -204,7 +204,7 @@ plate_df.loc[list(granularity_nuclei_outliers_cdf.index), "QC_status"] = (
 )
 
 
-# In[ ]:
+# In[9]:
 
 
 scaler = StandardScaler()
