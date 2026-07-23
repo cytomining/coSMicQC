@@ -217,6 +217,7 @@ def plot_cosine_heatmap(
             legend_width=28,
             legend_hpad=6,
             legend_vgap=7,
+            legend_kws={"cbar_height": 60},
         )
 
     plt.savefig(output_path, bbox_inches="tight", dpi=600, pad_inches=0.5)
@@ -423,4 +424,3 @@ p.save(
     dpi=600,
 )
 p.show()
-
