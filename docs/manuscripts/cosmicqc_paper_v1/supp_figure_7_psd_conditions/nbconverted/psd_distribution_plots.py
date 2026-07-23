@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Generate plots for features used in contamination detector
+# # Generate plots for features used in perinuclear signal detector
 
 # In[ ]:
 
@@ -26,7 +26,8 @@ from sklearn.preprocessing import StandardScaler
 
 from cosmicqc import find_outliers
 
-# In[2]:
+
+# In[ ]:
 
 
 # Directory with data
@@ -48,7 +49,7 @@ metadata_columns = [
 ]
 
 
-# In[3]:
+# In[ ]:
 
 
 # Load in converted plate data
@@ -58,7 +59,7 @@ print(plate_df.shape)
 plate_df.head()
 
 
-# In[4]:
+# In[ ]:
 
 
 # compartment for bounding boxes
@@ -104,7 +105,7 @@ irregular_nuclei_outliers_cdf = CytoDataFrame(
 ]
 
 
-# In[5]:
+# In[ ]:
 
 
 # find irregular shaped nuclei
@@ -132,7 +133,7 @@ granularity_nuclei_outliers_cdf = CytoDataFrame(
 ]
 
 
-# In[6]:
+# In[ ]:
 
 
 # Add QC_status column to plate_df for irregular nuclei outliers only
@@ -142,7 +143,7 @@ plate_df.loc[list(irregular_nuclei_outliers.index), "QC_status"] = (
 )
 
 
-# In[7]:
+# In[ ]:
 
 
 # Z-score normalize the cytoplasm texture for plotting
@@ -193,7 +194,7 @@ p.save(
 p.show()
 
 
-# In[8]:
+# In[ ]:
 
 
 # Add QC_status column to plate_df for granularity nuclei outliers only
@@ -203,7 +204,7 @@ plate_df.loc[list(granularity_nuclei_outliers_cdf.index), "QC_status"] = (
 )
 
 
-# In[9]:
+# In[ ]:
 
 
 scaler = StandardScaler()
@@ -255,3 +256,4 @@ p.save(
 
 # Show plot
 p.show()
+
