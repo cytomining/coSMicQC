@@ -6,7 +6,7 @@
 # Uses the per-compound/dose mAP scores and cell-count/MoA summary computed in `../figure_5/5.calculate_mAP.ipynb` (`../figure_5/mAP_results/merged_map_preQC_postQC.parquet` and `../figure_5/mAP_results/compound_dose_cell_counts_moa.parquet`) to rank compounds within each dose (1-6) by mAP score and visualize how those ranks shift after applying single-cell QC.
 # 
 
-# In[ ]:
+# In[1]:
 
 
 import hashlib
@@ -38,7 +38,7 @@ from plotnine.options import set_option
 # ## Helper functions
 # 
 
-# In[ ]:
+# In[2]:
 
 
 def dense_rank_by_score(df: pd.DataFrame, score_col: str) -> pd.Series:
@@ -74,7 +74,7 @@ def get_color(r: pd.Series) -> str:
 # ## Load mAP results and cell-count/MoA summary from figure_5
 # 
 
-# In[ ]:
+# In[3]:
 
 
 # Output paths for this supplementary figure
@@ -119,7 +119,7 @@ set_option("figure_size", (14, 4))
 # ## Plot mAP ranks
 # 
 
-# In[ ]:
+# In[4]:
 
 
 # Establish a deterministic row order so that any downstream tie-breaking
@@ -219,6 +219,15 @@ n_compounds_per_dose = (
     .to_dict()
 )
 
+# Explicit y-axis bounds so the reversed scale starts at rank 1 (top) and
+# ends at the true max rank present in the plotted data (bottom), rather
+# than plotnine's default expansion pulling the axis down toward/through 0.
+max_rank = int(merged_map_long["rank"].max())
+
+# Round-number breaks like before (100, 200, 300...), but swap the leading
+# 0 for 1 so the top of the axis is labeled correctly
+y_breaks = [1] + list(range(100, max_rank + 1, 100))
+
 p = (
     ggplot(
         merged_map_long,
@@ -242,7 +251,12 @@ p = (
         name="",
         limits=(-0.3, 1.3),
     )
-    + scale_y_reverse(name="Rank\n(1 = highest)")
+    + scale_y_reverse(
+        name="Rank\n(1 = highest)",
+        limits=(max_rank, 1),
+        breaks=y_breaks,
+        expand=(0, 20),
+    )
     + facet_wrap(
         "~Metadata_dose_recode",
         nrow=1,
@@ -275,7 +289,7 @@ print(
 )
 
 
-# In[ ]:
+# In[5]:
 
 
 # Compounds that moved from OUTSIDE the top 20 pre-QC (preQC_rank > 20) into
@@ -308,7 +322,7 @@ moved_into_top20[
 ]
 
 
-# In[ ]:
+# In[6]:
 
 
 # Compounds that moved from INSIDE the top 20 pre-QC (preQC_rank <= 20) to
@@ -337,7 +351,7 @@ left_top20_postQC[
 ]
 
 
-# In[ ]:
+# In[7]:
 
 
 # Export the compound/dose pairs that were top-20 pre-QC but left the top 20
@@ -351,7 +365,7 @@ left_top20_postQC[["Metadata_broad_sample", "Metadata_dose_recode"]].to_csv(
 # # Sort by ranks pre- and post-QC
 # 
 
-# In[ ]:
+# In[8]:
 
 
 # Print for dose recode 4 the sample, ranks, mAP scores, p-values, and cell
@@ -376,7 +390,7 @@ merged_map_sorted.loc[
 # ## Find the compounds in the top-20 ranking pre- and post-QC and find rescued compounds
 # 
 
-# In[ ]:
+# In[9]:
 
 
 # Step 1: Identify compounds within the top 20 RANK VALUES per dose (not a
@@ -485,7 +499,7 @@ rank_change[
 ].head(10)
 
 
-# In[ ]:
+# In[10]:
 
 
 # Step 8: Plot per dose
@@ -534,7 +548,7 @@ for dose, df_dose in rank_change.groupby("Metadata_dose_recode"):
 # ## Go over most rescued compounds
 # 
 
-# In[ ]:
+# In[11]:
 
 
 # Only include compounds that were NOT in the top 20 pre-QC and moved INTO
@@ -559,7 +573,7 @@ for sample in broad_samples:
     print(sample)
 
 
-# In[ ]:
+# In[12]:
 
 
 # Export the rescued compound/dose pairs (moved from outside the top 20
@@ -571,7 +585,7 @@ improved_compounds[["Metadata_broad_sample", "Metadata_dose_recode"]].to_csv(
 )
 
 
-# In[ ]:
+# In[13]:
 
 
 # For each of the compounds at their respective dose, get the pre-QC rank
@@ -602,7 +616,7 @@ print(
 )
 
 
-# In[ ]:
+# In[14]:
 
 
 # Calculate total passed and failed cells per sample and dose (loaded above)
@@ -659,7 +673,7 @@ print(improved_compounds.shape)
 improved_compounds.head(10)
 
 
-# In[ ]:
+# In[15]:
 
 
 # Number of unique compounds that improved in rank after QC (across all
@@ -682,7 +696,7 @@ print(
 improved_per_moa
 
 
-# In[ ]:
+# In[16]:
 
 
 # Compounds that improved in rank at more than one dose, and their MoA
