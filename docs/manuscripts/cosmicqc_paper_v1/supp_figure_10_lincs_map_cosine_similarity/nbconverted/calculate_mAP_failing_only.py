@@ -36,39 +36,133 @@ from tqdm import tqdm
 
 
 # Perform mean average precision calculation
-def get_mean_average_precision(  # noqa: PLR0913
-    activity_df: pd.DataFrame,
+def compute_activity_ap(
+    treatment_df: pd.DataFrame,
     pos_sameby: list,
     pos_diffby: list,
     neg_sameby: list,
     neg_diffby: list,
-    seed: int = 0,
 ) -> pd.DataFrame:
-    """Calculate mean average precision for activity data.
+    """Compute per-profile average precision (AP) for one compound/dose group.
 
     Args:
-        activity_df (pd.DataFrame): Activity data.
+        treatment_df (pd.DataFrame): Rows for a single compound/dose group plus
+            the post-QC DMSO wells it should be compared against.
         pos_sameby (list): Positive samples to compare.
         pos_diffby (list): Positive samples to compare.
         neg_sameby (list): Negative samples to compare.
         neg_diffby (list): Negative samples to compare.
-        seed (int, optional): Random seed for reproducibility. Defaults to 0.
 
     Returns:
-        pd.DataFrame: Mean average precision results.
+        pd.DataFrame: Per-profile AP scores (DMSO query rows dropped).
     """
-    metadata = activity_df.filter(regex="^Metadata")
-    profiles = activity_df.filter(regex="^(?!Metadata)").values
+    metadata = treatment_df.filter(regex="^Metadata")
+    profiles = treatment_df.filter(regex="^(?!Metadata)").values
 
     activity_ap = map.average_precision(
         metadata, profiles, pos_sameby, pos_diffby, neg_sameby, neg_diffby
     )
+    return activity_ap.query("Metadata_broad_sample != 'DMSO'")
 
+
+def compute_map_scores(  # noqa: PLR0913
+    df_activity: pd.DataFrame,
+    pos_sameby: list,
+    pos_diffby: list,
+    neg_sameby: list,
+    neg_diffby: list,
+    min_replicates: int,
+    seed: int = 0,
+) -> pd.DataFrame:
+    """Calculate mAP scores for every failing-cell compound/dose group vs. its own on-plate post-QC DMSO wells.
+
+    Mirrors figure_5's ``compute_map_scores`` exactly (same-plate DMSO
+    restriction per compound/dose group, and a single batched
+    ``map.mean_average_precision`` call across every group so the FDR
+    correction reflects the true number of tests) so that these failing-cell
+    mAP scores are directly comparable ("apples to apples") to the pre-/
+    post-QC mAP scores computed there. The only difference is the comparison
+    pool: only-failing-cell profiles are compared against post-QC (passing)
+    DMSO wells, and "DMSO_failing" rows (failing DMSO cells) are excluded
+    entirely - they are never scored as a treatment nor used as reference.
+
+    Args:
+        df_activity (pd.DataFrame): Activity data (failing-cell treatment
+            profiles + post-QC DMSO + DMSO_failing) with reference index
+            assigned.
+        pos_sameby (list): Positive samples to compare.
+        pos_diffby (list): Positive samples to compare.
+        neg_sameby (list): Negative samples to compare.
+        neg_diffby (list): Negative samples to compare.
+        min_replicates (int): Minimum replicate wells (and minimum distinct
+            plates) required per compound/dose group for positive pairing.
+        seed (int, optional): Random seed for the null distribution. Defaults to 0.
+
+    Returns:
+        pd.DataFrame: One row per compound/dose group with mAP scores, p-values,
+            and average proportion of failed single cells.
+    """
+    non_dmso = df_activity[
+        ~df_activity["Metadata_broad_sample"].isin(["DMSO", "DMSO_failing"])
+    ]
+
+    list_of_ap = []
+    failed_prop_records = []
+    for (treatment, dose), group_df in non_dmso.groupby(
+        ["Metadata_broad_sample", "Metadata_dose_recode"]
+    ):
+        dose_plates = group_df["Metadata_Plate"].unique()
+        unique_pos_diffby = group_df[pos_diffby].drop_duplicates()
+        if (
+            group_df.shape[0] < min_replicates
+            or unique_pos_diffby.shape[0] < min_replicates
+        ):
+            print(
+                f"Skipping {treatment} (dose {dose}): not enough replicates or "
+                f"not enough unique '{pos_diffby}' values for positive pairs."
+            )
+            continue
+
+        # Compare this compound/dose group only to post-QC DMSO wells from
+        # the same plate(s) its own failing-cell replicates were run on
+        treatment_df = df_activity[
+            (
+                (df_activity["Metadata_broad_sample"] == treatment)
+                & (df_activity["Metadata_dose_recode"] == dose)
+            )
+            | (
+                (df_activity["Metadata_broad_sample"] == "DMSO")
+                & (df_activity["Metadata_Plate"].isin(dose_plates))
+            )
+        ]
+
+        list_of_ap.append(
+            compute_activity_ap(
+                treatment_df, pos_sameby, pos_diffby, neg_sameby, neg_diffby
+            )
+        )
+        failed_prop_records.append(
+            {
+                "Metadata_broad_sample": treatment,
+                "Metadata_dose_recode": dose,
+                "Metadata_avg_prop_failed_single_cells": (
+                    group_df["Metadata_sc_count_failed_qc"]
+                    / group_df["Metadata_sc_count"]
+                ).mean(),
+            }
+        )
+
+    all_ap = pd.concat(list_of_ap, ignore_index=True)
     activity_map = map.mean_average_precision(
-        activity_ap, pos_sameby, seed=seed, null_size=10000, threshold=0.05
+        all_ap, pos_sameby, seed=seed, null_size=10000, threshold=0.05
     )
     activity_map["-log10(p-value)"] = -activity_map["corrected_p_value"].apply(np.log10)
-    return activity_map
+
+    return activity_map.merge(
+        pd.DataFrame(failed_prop_records),
+        on=["Metadata_broad_sample", "Metadata_dose_recode"],
+        how="left",
+    )
 
 
 # Calculate proportion of points above, below, and equal to y=x per dose
@@ -322,91 +416,14 @@ if os.path.exists(postqc_map_file):
     print("Loaded failing-vs-postQC mAP results from file.")
 
 else:
-    list_of_dfs_map_postQC = []
-
-    # Isolate post-QC DMSO reference pool from unified dataframe
-    postqc_dmso = map_df_activity[
-        map_df_activity["Metadata_broad_sample"] == "DMSO"
-    ].copy()
-
-    # Loop over failing-cell compounds only
-    failing_treatments = (
-        map_df_activity.loc[
-            map_df_activity["Metadata_broad_sample"].str.contains("DMSO") == False,
-            "Metadata_broad_sample",
-        ].unique()
+    final_map_postQC = compute_map_scores(
+        map_df_activity,
+        pos_sameby,
+        pos_diffby,
+        neg_sameby,
+        neg_diffby,
+        MIN_REPLICATES,
     )
-
-    for treatment in failing_treatments:
-
-        if treatment in ["DMSO", "DMSO_failing"]:
-            continue
-
-        # Failing treatment subset from unified dataframe
-        treatment_df = map_df_activity[
-            map_df_activity["Metadata_broad_sample"] == treatment
-        ].copy()
-
-        # Attach ONLY post-QC DMSO controls
-        treatment_df = pd.concat(
-            [treatment_df, postqc_dmso],
-            ignore_index=True
-        )
-
-        treatment_plates = treatment_df["Metadata_Plate"].unique()
-
-        treatment_df = treatment_df[
-            treatment_df["Metadata_Plate"].isin(treatment_plates)
-        ]
-
-        # replicate check (failing only)
-        n_replicates = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ].shape[0]
-
-        unique_pos_diffby = treatment_df[
-            treatment_df["Metadata_broad_sample"] == treatment
-        ][pos_diffby].drop_duplicates()
-
-        if n_replicates < MIN_REPLICATES or unique_pos_diffby.shape[0] < MIN_REPLICATES:
-            print(
-                f"Skipping treatment {treatment}: not enough failing replicates or "
-                f"not enough unique '{pos_diffby}' values for positive pairs."
-            )
-            continue
-
-        # FIX 5: failed-cell proportion (only failing subset)
-        failed_cells = (
-            treatment_df[
-                treatment_df["Metadata_broad_sample"] == treatment
-            ]
-            .assign(
-                Metadata_failed_prop=lambda x: (
-                    x["Metadata_sc_count_failed_qc"] / x["Metadata_sc_count"]
-                )
-            )
-            .groupby("Metadata_dose_recode")["Metadata_failed_prop"]
-            .mean()
-        )
-
-        # mAP calculation on unified space (post-QC DMSO + failing compounds)
-        treatment_map = get_mean_average_precision(
-            treatment_df,
-            pos_sameby,
-            pos_diffby,
-            neg_sameby,
-            neg_diffby
-        )
-
-        # attach QC metric
-        treatment_map["Metadata_avg_prop_failed_single_cells"] = (
-            treatment_map["Metadata_dose_recode"].map(failed_cells)
-        )
-
-        list_of_dfs_map_postQC.append(treatment_map)
-
-    # concatenate results
-    final_map_postQC = pd.concat(list_of_dfs_map_postQC, ignore_index=True)
     final_map_postQC["QC_status"] = "failing_vs_postQC_controls"
 
     # save
@@ -581,93 +598,4 @@ passed = paired_map["mean_average_precision_passed"]
 print(f"n paired compound+dose conditions: {len(paired_map)}")
 print(f"median: failed={failed.median():.4f}, passed={passed.median():.4f}")
 print(f"mean:   failed={failed.mean():.4f}, passed={passed.mean():.4f}")
-
-
-# In[12]:
-
-
-# `failed cells` and `passed cells` are two mAP scores computed for the SAME
-# compound+dose condition. Only the cells feeding the aggregate profile differ, but the
-# compound+dose identity (and any shared, condition-level signal) is
-# identical across the pair. That makes this a matched-pairs design, not two
-# independent samples: a rank-sum test (Mann-Whitney U) ignores the pairing
-# and is not the appropriate primary test here. The matched-pairs analogue is
-# the Wilcoxon signed-rank test on the per-condition differences
-# (failed cells - passed cells).
-#
-# At n ~ 8e3 pairs, the p-value underflows double precision and prints as
-# exactly 0.0 either way, which is never literally true for a continuous test
-# statistic. We recompute it in log-space from the normal approximation so
-# we can report an actual (if extreme) order of magnitude instead of "p = 0".
-# The variance term includes scipy's tie correction (sum(t_i**3 - t_i) over
-# groups of tied |diff| values) so the z/p-value matches what
-# scipy.stats.wilcoxon computes internally when differences repeat; with no
-# ties this reduces exactly to the untied n(n+1)(2n+1)/24 formula.
-stat, p = wilcoxon(failed, passed, alternative="greater", zero_method="wilcox")
-
-diff = (failed - passed).to_numpy()
-diff_nz = diff[diff != 0]
-n = len(diff_nz)
-abs_diff = np.abs(diff_nz)
-ranks = pd.Series(abs_diff).rank()  # average ranks for ties, matches scipy's approach
-
-# Sum of signed ranks (positive differences)
-T = ranks[diff_nz > 0].sum()
-
-mean_T = n * (n + 1) / 4
-
-# Tie correction: group tied |diff| values and compute sum(t_i^3 - t_i)
-_, counts = np.unique(abs_diff, return_counts=True)
-tie_correction = np.sum(counts**3 - counts)
-
-var_T = (n * (n + 1) * (2 * n + 1) - tie_correction / 2) / 24
-se_T = np.sqrt(var_T)
-
-z = (T - mean_T) / se_T
-log10_p = norm.logsf(z) / np.log(10)  # for alternative="greater"
-
-print(f"Wilcoxon signed-rank statistic = {stat:.0f}")
-print(f"n pairs (nonzero differences) = {n}")
-print(f"z = {z:.2f}")
-print(f"p-value (scipy, underflows past ~1e-308): {p:.3e}")
-print(f"p-value (normal approximation, log-space): < 1e{np.ceil(log10_p):.0f}")
-
-
-# In[13]:
-
-
-def cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
-    """
-    Calculate Cliff's delta, a non-parametric effect size
-    measure for two independent samples.
-
-    Args:
-        x (np.ndarray): First sample.
-        y (np.ndarray): Second sample.
-
-    Returns:
-        float: Cliff's delta value, ranging from -1 to 1.
-    """
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    gt = np.sum(x[:, None] > y)
-    lt = np.sum(x[:, None] < y)
-
-    return (gt - lt) / (len(x) * len(y))
-
-
-# Cliff's delta treats `failed` and `passed` as independent samples -- kept
-# here for comparability with the original (unpaired) framing.
-delta = cliffs_delta(failed, passed)
-print(f"Cliff's delta (unpaired framing) = {delta:.3f}")
-
-# Matched-pairs rank-biserial correlation, the effect-size analogue of the
-# Wilcoxon signed-rank test above. Computed from the signed-rank sums:
-# W+ (already computed as T in the previous cell) and W- (sum of ranks for
-# negative differences).
-w_plus = T
-w_minus = ranks[diff_nz < 0].sum()
-rank_biserial = (w_plus - w_minus) / (w_plus + w_minus)
-print(f"Matched rank-biserial correlation (paired framing) = {rank_biserial:.4f}")
 

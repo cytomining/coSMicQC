@@ -3,7 +3,7 @@
 
 # # Create visualizations of mAP vs cosine similarity vs single cell counts (post-QC)
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -26,6 +26,7 @@ from plotnine import (
     theme,
     theme_bw,
 )
+from scipy.stats import ttest_ind
 
 
 # In[2]:
@@ -148,4 +149,32 @@ p_density = (
 )
 p_density.save(f"{figure_dir}/cosine_similarity_by_mAP_direction_density.png", dpi=600)
 p_density.show()
+
+
+# In[5]:
+
+
+# Per-dose t-test comparing mean cosine similarity change between compounds
+# with increased vs decreased mAP
+ttest_results = []
+for dose, group in merged_map_cosine_sc_counts_filtered.groupby("Metadata_dose_recode"):
+    increased = group.loc[
+        group["mAP_direction"] == "Increased", "mean_pairwise_cosine_similarity_change"
+    ]
+    decreased = group.loc[
+        group["mAP_direction"] == "Decreased", "mean_pairwise_cosine_similarity_change"
+    ]
+    tstat, pval = ttest_ind(increased, decreased, equal_var=False)
+    ttest_results.append(
+        {
+            "Metadata_dose_recode": dose,
+            "n_increased": increased.shape[0],
+            "n_decreased": decreased.shape[0],
+            "tstat": tstat,
+            "pvalue": pval,
+        }
+    )
+
+ttest_results_df = pd.DataFrame(ttest_results).sort_values("Metadata_dose_recode")
+ttest_results_df
 
