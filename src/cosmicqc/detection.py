@@ -80,7 +80,7 @@ class PerinuclearSignalDetector:
             Indicates if partial abnormal signal is detected in the texture feature.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, PLR0917
         self,
         dataframe: pd.DataFrame,
         nucleus_channel_naming: str = "DNA",

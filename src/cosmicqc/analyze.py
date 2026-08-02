@@ -227,7 +227,7 @@ def _build_filter_display_options(
     }
 
 
-def identify_outliers(  # noqa: PLR0913
+def identify_outliers(  # noqa: PLR0913, PLR0917
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: IdentifyOutliersFeatureThresholdInput,
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
@@ -503,7 +503,7 @@ def find_outliers(
     return result
 
 
-def label_outliers(  # noqa: PLR0913
+def label_outliers(  # noqa: PLR0913, PLR0917
     df: Union[CytoDataFrame, pd.DataFrame, str],
     feature_thresholds: LabelOutliersFeatureThresholdInput = None,
     feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,
