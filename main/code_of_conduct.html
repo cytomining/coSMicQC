@@ -1,0 +1,437 @@
+<!-- extends sphinx page to include docs version warnings if not viewing latest released documentation -->
+<!-- referenced from: https://github.com/wagtail/sphinx-wagtail-theme/blob/main/sphinx_wagtail_theme/layout.html
+ in order to preload plotly javascript dependency for rendering --><!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Contributor Covenant Code of Conduct &mdash; coSMicQC  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=9cdaa676" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=76a74e97" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="coSMicQC  documentation" href="#" />
+            <link rel="prev" title="Contributing" href="contributing.html" />
+    <!-- line added for plotly compatibility in cosmicqc -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="https://cytomining.github.io/coSMicQC"
+                        title="coSMicQC logo"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/just-icon.png" width="45" height="59" alt="coSMicQC logo"
+                            class="logo-img"
+                        />
+                        coSMicQC
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://github.com/cytomining/coSMicQC"><span class='fab fa-github'></span> GitHub Repository</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/perinuclear_signal_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">PerinuclearSignalDetector</span></code> in action</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="presentations.html">Presentations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="presentations/sbi2-2024.html">SBI2 Annual Confrerence 2024 Poster</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributor Covenant Code of Conduct</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="contributing.html"
+                          title="previous chapter">Contributing</a></p>
+  </div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
+
+<h4>Versions</h4>
+<select name="versions" id="versions" onchange="redirectToPage()">
+    <option value="../v0.0.11/index.html">v0.0.11</option>
+    <option value="../v0.1.0/index.html">v0.1.0</option>
+    <option value="../v0.1.1/index.html">v0.1.1</option>
+    <option value="../v0.1.2/index.html">v0.1.2</option>
+    <option value="../v0.1.3/index.html">v0.1.3</option>
+    <option value="../v0.1.4/index.html">v0.1.4</option>
+    <option value="../v0.1.5/index.html">v0.1.5</option>
+    <option value="../v1.0.0/index.html">v1.0.0</option>
+    <option value="../v1.0.1/index.html">v1.0.1</option>
+    <option value="../v1.0.2/index.html">v1.0.2</option>
+    <option value="../v1.0.3/index.html">v1.0.3</option>
+    <option value="../v1.1.0/index.html">v1.1.0</option>
+    <option value="code_of_conduct.html">main</option>
+</select>
+<script>
+/**
+ * Redirects the browser to the URL corresponding to the selected option in the dropdown.
+ *
+ * This function is triggered when the user changes the selection in the dropdown menu. It
+ * retrieves the selected option's value (which is a URL) and sets `window.location.href`
+ * to that URL, causing the browser to navigate to the new page.
+ */
+function redirectToPage() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the value of the selected option (the URL to redirect to)
+    var selectedValue = selectElement.value;
+
+    // If a valid option is selected (non-empty), redirect the browser to the URL
+    if (selectedValue) {
+        window.location.href = selectedValue;
+    }
+}
+
+/**
+ * Sets the default selection of the dropdown menu based on the current URL.
+ *
+ * This function checks the current page URL and compares it with the values (URLs) of the
+ * options in the dropdown menu. If the current URL contains "index.html" and matches an
+ * option's value, that option is selected as the default.
+ * This function runs automatically when the page loads.
+ */
+ function setDefaultSelection() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the current page URL
+    var currentUrl = window.location.href;
+
+    // Loop through all options in the dropdown
+    for (var i = 0; i < selectElement.options.length; i++) {
+        var option = selectElement.options[i];
+        var optionUrl = option.value;
+
+        // If the current URL includes "index.html" and matches the option's value, select that option
+        if (optionUrl == "index.html") {
+            selectElement.selectedIndex = i;  // Set the selected index to the matching option
+            break;  // Exit the loop after finding the match
+        }
+    }
+}
+
+// Automatically call setDefaultSelection() when the page finishes loading
+window.onload = setDefaultSelection;
+
+</script>
+
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Contributor Covenant Code of Conduct</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/cytomining/coSMicQC/tree/main/docs/srccode_of_conduct.md" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/code_of_conduct.md.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+
+<p style="background:#E7C3EB;padding:5px 10px;">
+
+You're reading the documentation for a development version.
+For the latest released version, please have a look at <a href="../v1.1.0/index.html">v1.1.0</a>.
+
+</p>
+</span>
+
+
+    <section id="contributor-covenant-code-of-conduct">
+<h1>Contributor Covenant Code of Conduct<a class="headerlink" href="#contributor-covenant-code-of-conduct" title="Link to this heading">¶</a></h1>
+<section id="our-pledge">
+<h2>Our Pledge<a class="headerlink" href="#our-pledge" title="Link to this heading">¶</a></h2>
+<p>We as members, contributors, and leaders pledge to make participation in our
+community a harassment-free experience for everyone, regardless of age, body
+size, visible or invisible disability, ethnicity, sex characteristics, gender
+identity and expression, level of experience, education, socioeconomic status,
+nationality, personal appearance, race, caste, color, religion, or sexual
+identity and orientation.</p>
+<p>We pledge to act and interact in ways that contribute to an open, welcoming,
+diverse, inclusive, and healthy community.</p>
+</section>
+<section id="our-standards">
+<h2>Our Standards<a class="headerlink" href="#our-standards" title="Link to this heading">¶</a></h2>
+<p>Examples of behavior that contributes to a positive environment for our
+community include:</p>
+<ul class="simple">
+<li><p>Demonstrating empathy and kindness toward other people</p></li>
+<li><p>Being respectful of differing opinions, viewpoints, and experiences</p></li>
+<li><p>Giving and gracefully accepting constructive feedback</p></li>
+<li><p>Accepting responsibility and apologizing to those affected by our mistakes,
+and learning from the experience</p></li>
+<li><p>Focusing on what is best not just for us as individuals, but for the overall
+community</p></li>
+</ul>
+<p>Examples of unacceptable behavior include:</p>
+<ul class="simple">
+<li><p>The use of sexualized language or imagery, and sexual attention or advances of
+any kind</p></li>
+<li><p>Trolling, insulting or derogatory comments, and personal or political attacks</p></li>
+<li><p>Public or private harassment</p></li>
+<li><p>Publishing others’ private information, such as a physical or email address,
+without their explicit permission</p></li>
+<li><p>Other conduct which could reasonably be considered inappropriate in a
+professional setting</p></li>
+</ul>
+</section>
+<section id="enforcement-responsibilities">
+<h2>Enforcement Responsibilities<a class="headerlink" href="#enforcement-responsibilities" title="Link to this heading">¶</a></h2>
+<p>Community leaders are responsible for clarifying and enforcing our standards of
+acceptable behavior and will take appropriate and fair corrective action in
+response to any behavior that they deem inappropriate, threatening, offensive,
+or harmful.</p>
+<p>Community leaders have the right and responsibility to remove, edit, or reject
+comments, commits, code, wiki edits, issues, and other contributions that are
+not aligned to this Code of Conduct, and will communicate reasons for moderation
+decisions when appropriate.</p>
+</section>
+<section id="scope">
+<h2>Scope<a class="headerlink" href="#scope" title="Link to this heading">¶</a></h2>
+<p>This Code of Conduct applies within all community spaces, and also applies when
+an individual is officially representing the community in public spaces.
+Examples of representing our community include using an official email address,
+posting via an official social media account, or acting as an appointed
+representative at an online or offline event.</p>
+</section>
+<section id="enforcement">
+<h2>Enforcement<a class="headerlink" href="#enforcement" title="Link to this heading">¶</a></h2>
+<p>Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported to community leaders responsible for enforcement.
+Please open a <a class="reference external" href="https://github.com/cytomining/coSMicQC/security/advisories/new">new security advisory notice</a> (using defaults or “n/a” where unable to fill in the form) to privately notify us of any incidents of this nature.
+All complaints will be reviewed and investigated promptly and fairly.</p>
+<p>All community leaders are obligated to respect the privacy and security of the
+reporter of any incident.</p>
+</section>
+<section id="enforcement-guidelines">
+<h2>Enforcement Guidelines<a class="headerlink" href="#enforcement-guidelines" title="Link to this heading">¶</a></h2>
+<p>Community leaders will follow these Community Impact Guidelines in determining
+the consequences for any action they deem in violation of this Code of Conduct:</p>
+<section id="correction">
+<h3>1. Correction<a class="headerlink" href="#correction" title="Link to this heading">¶</a></h3>
+<p><strong>Community Impact</strong>: Use of inappropriate language or other behavior deemed
+unprofessional or unwelcome in the community.</p>
+<p><strong>Consequence</strong>: A private, written warning from community leaders, providing
+clarity around the nature of the violation and an explanation of why the
+behavior was inappropriate. A public apology may be requested.</p>
+</section>
+<section id="warning">
+<h3>2. Warning<a class="headerlink" href="#warning" title="Link to this heading">¶</a></h3>
+<p><strong>Community Impact</strong>: A violation through a single incident or series of
+actions.</p>
+<p><strong>Consequence</strong>: A warning with consequences for continued behavior. No
+interaction with the people involved, including unsolicited interaction with
+those enforcing the Code of Conduct, for a specified period of time. This
+includes avoiding interactions in community spaces as well as external channels
+like social media. Violating these terms may lead to a temporary or permanent
+ban.</p>
+</section>
+<section id="temporary-ban">
+<h3>3. Temporary Ban<a class="headerlink" href="#temporary-ban" title="Link to this heading">¶</a></h3>
+<p><strong>Community Impact</strong>: A serious violation of community standards, including
+sustained inappropriate behavior.</p>
+<p><strong>Consequence</strong>: A temporary ban from any sort of interaction or public
+communication with the community for a specified period of time. No public or
+private interaction with the people involved, including unsolicited interaction
+with those enforcing the Code of Conduct, is allowed during this period.
+Violating these terms may lead to a permanent ban.</p>
+</section>
+<section id="permanent-ban">
+<h3>4. Permanent Ban<a class="headerlink" href="#permanent-ban" title="Link to this heading">¶</a></h3>
+<p><strong>Community Impact</strong>: Demonstrating a pattern of violation of community
+standards, including sustained inappropriate behavior, harassment of an
+individual, or aggression toward or disparagement of classes of individuals.</p>
+<p><strong>Consequence</strong>: A permanent ban from any sort of public interaction within the
+community.</p>
+</section>
+</section>
+<section id="attribution">
+<h2>Attribution<a class="headerlink" href="#attribution" title="Link to this heading">¶</a></h2>
+<p>This Code of Conduct is adapted from the <a class="reference external" href="https://www.contributor-covenant.org">Contributor Covenant</a>,
+version 2.1, available at
+<a class="reference external" href="https://www.contributor-covenant.org/version/2/1/code_of_conduct.html">https://www.contributor-covenant.org/version/2/1/code_of_conduct.html</a>.</p>
+<p>Community Impact Guidelines were inspired by
+<a class="reference external" href="https://github.com/mozilla/diversity">Mozilla’s code of conduct enforcement ladder</a>.</p>
+<p>For answers to common questions about this code of conduct, see the FAQ at
+<a class="reference external" href="https://www.contributor-covenant.org/faq">https://www.contributor-covenant.org/faq</a>. Translations are available at
+<a class="reference external" href="https://www.contributor-covenant.org/translations">https://www.contributor-covenant.org/translations</a>.</p>
+</section>
+</section>
+
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="contributing.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Contributing
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Contributor Covenant Code of Conduct</a><ul>
+<li><a class="reference internal" href="#our-pledge">Our Pledge</a></li>
+<li><a class="reference internal" href="#our-standards">Our Standards</a></li>
+<li><a class="reference internal" href="#enforcement-responsibilities">Enforcement Responsibilities</a></li>
+<li><a class="reference internal" href="#scope">Scope</a></li>
+<li><a class="reference internal" href="#enforcement">Enforcement</a></li>
+<li><a class="reference internal" href="#enforcement-guidelines">Enforcement Guidelines</a><ul>
+<li><a class="reference internal" href="#correction">1. Correction</a></li>
+<li><a class="reference internal" href="#warning">2. Warning</a></li>
+<li><a class="reference internal" href="#temporary-ban">3. Temporary Ban</a></li>
+<li><a class="reference internal" href="#permanent-ban">4. Permanent Ban</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#attribution">Attribution</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://www.cytomininglab.com/">Way Lab</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://github.com/cytomining/coSMicQC">coSMicQC GitHub Repository</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Cytomining Community
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.6.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 8.2.3
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9bcbadda"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

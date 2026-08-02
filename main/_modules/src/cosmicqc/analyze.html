@@ -1,0 +1,1011 @@
+<!-- extends sphinx page to include docs version warnings if not viewing latest released documentation -->
+<!-- referenced from: https://github.com/wagtail/sphinx-wagtail-theme/blob/main/sphinx_wagtail_theme/layout.html
+ in order to preload plotly javascript dependency for rendering --><!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>src.cosmicqc.analyze &mdash; coSMicQC  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="../../../_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dist/theme.css?v=9cdaa676" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=76a74e97" />
+            <link rel="index" title="Index" href="../../../genindex.html" />
+            <link rel="search" title="Search" href="../../../search.html" />
+            <link rel="top" title="coSMicQC  documentation" href="#" />
+            <link rel="up" title="Module code" href="../../index.html" />
+    <!-- line added for plotly compatibility in cosmicqc -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript" src="../../../_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="https://cytomining.github.io/coSMicQC"
+                        title="coSMicQC logo"
+                        class="logo navbar-brand"
+                    >
+                        <img src="../../../_static/just-icon.png" width="45" height="59" alt="coSMicQC logo"
+                            class="logo-img"
+                        />
+                        coSMicQC
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://github.com/cytomining/coSMicQC"><span class='fab fa-github'></span> GitHub Repository</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="../../../search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/perinuclear_signal_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">PerinuclearSignalDetector</span></code> in action</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../presentations.html">Presentations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../presentations/sbi2-2024.html">SBI2 Annual Confrerence 2024 Poster</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../python-api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
+
+<h4>Versions</h4>
+<select name="versions" id="versions" onchange="redirectToPage()">
+    <option value="../../../../v0.0.11/index.html">v0.0.11</option>
+    <option value="../../../../v0.1.0/index.html">v0.1.0</option>
+    <option value="../../../../v0.1.1/index.html">v0.1.1</option>
+    <option value="../../../../v0.1.2/index.html">v0.1.2</option>
+    <option value="../../../../v0.1.3/index.html">v0.1.3</option>
+    <option value="../../../../v0.1.4/index.html">v0.1.4</option>
+    <option value="../../../../v0.1.5/index.html">v0.1.5</option>
+    <option value="../../../../v1.0.0/index.html">v1.0.0</option>
+    <option value="../../../../v1.0.1/index.html">v1.0.1</option>
+    <option value="../../../../v1.0.2/index.html">v1.0.2</option>
+    <option value="../../../../v1.0.3/index.html">v1.0.3</option>
+    <option value="../../../../v1.1.0/index.html">v1.1.0</option>
+    <option value="analyze.html">main</option>
+</select>
+<script>
+/**
+ * Redirects the browser to the URL corresponding to the selected option in the dropdown.
+ *
+ * This function is triggered when the user changes the selection in the dropdown menu. It
+ * retrieves the selected option's value (which is a URL) and sets `window.location.href`
+ * to that URL, causing the browser to navigate to the new page.
+ */
+function redirectToPage() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the value of the selected option (the URL to redirect to)
+    var selectedValue = selectElement.value;
+
+    // If a valid option is selected (non-empty), redirect the browser to the URL
+    if (selectedValue) {
+        window.location.href = selectedValue;
+    }
+}
+
+/**
+ * Sets the default selection of the dropdown menu based on the current URL.
+ *
+ * This function checks the current page URL and compares it with the values (URLs) of the
+ * options in the dropdown menu. If the current URL contains "index.html" and matches an
+ * option's value, that option is selected as the default.
+ * This function runs automatically when the page loads.
+ */
+ function setDefaultSelection() {
+    // Get the <select> element by its ID
+    var selectElement = document.getElementById("versions");
+    // Get the current page URL
+    var currentUrl = window.location.href;
+
+    // Loop through all options in the dropdown
+    for (var i = 0; i < selectElement.options.length; i++) {
+        var option = selectElement.options[i];
+        var optionUrl = option.value;
+
+        // If the current URL includes "index.html" and matches the option's value, select that option
+        if (optionUrl == "index.html") {
+            selectElement.selectedIndex = i;  // Set the selected index to the matching option
+            break;  // Exit the loop after finding the match
+        }
+    }
+}
+
+// Automatically call setDefaultSelection() when the page finishes loading
+window.onload = setDefaultSelection;
+
+</script>
+
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="../../../index.html">Docs</a></li>
+            <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+        <li class="breadcrumb-item active" aria-current="page">src.cosmicqc.analyze</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/cytomining/coSMicQC/tree/main/docs/src_modules/src/cosmicqc/analyze" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+
+<p style="background:#E7C3EB;padding:5px 10px;">
+
+You're reading the documentation for a development version.
+For the latest released version, please have a look at <a href="../../../../v1.1.0/index.html">v1.1.0</a>.
+
+</p>
+</span>
+
+
+    <h1>Source code for src.cosmicqc.analyze</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for detecting various quality control aspects from source data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cytodataframe.frame</span><span class="w"> </span><span class="kn">import</span> <span class="n">CytoDataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">zscore</span> <span class="k">as</span> <span class="n">scipy_zscore</span>
+
+<span class="n">DEFAULT_QC_THRESHOLD_FILE</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="si">!s}</span><span class="s2">/data/qc_nuclei_thresholds_default.yml&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># `label_outliers` and the helper accept raw caller input, including `None` to mean</span>
+<span class="c1"># &quot;load all named conditions from the thresholds file&quot;.</span>
+<span class="n">LabelOutliersFeatureThresholdInput</span> <span class="o">=</span> <span class="n">Optional</span><span class="p">[</span>
+    <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="nb">str</span><span class="p">]</span>
+<span class="p">]</span>
+<span class="c1"># `identify_outliers` only accepts concrete threshold input.</span>
+<span class="n">IdentifyOutliersFeatureThresholdInput</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="nb">str</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="_warn_if_inline_thresholds_ignore_file">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze._warn_if_inline_thresholds_ignore_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_inline_thresholds_ignore_file</span><span class="p">(</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">LabelOutliersFeatureThresholdInput</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Warn when inline thresholds override a non-default thresholds file.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">feature_thresholds_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="n">feature_thresholds_file</span> <span class="o">!=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;Non-string `feature_thresholds` were provided, so &quot;</span>
+                <span class="s2">&quot;`feature_thresholds_file` will be ignored.&quot;</span>
+            <span class="p">),</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_convert_feature_threshold_input_to_named_threshold_dicts">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze._convert_feature_threshold_input_to_named_threshold_dicts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_convert_feature_threshold_input_to_named_threshold_dicts</span><span class="p">(</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">LabelOutliersFeatureThresholdInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert feature threshold input into named threshold dictionaries</span>
+<span class="sd">    for processing.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        feature_thresholds_file: str</span>
+<span class="sd">            Path to the YAML file containing threshold definitions.</span>
+<span class="sd">        feature_thresholds: LabelOutliersFeatureThresholdInput</span>
+<span class="sd">            If you do not provide feature_thresholds, the function will default to using</span>
+<span class="sd">            the default YAML file.</span>
+<span class="sd">            - None: Use all thresholds from the file (only applicable to</span>
+<span class="sd">            `label_outliers`).</span>
+<span class="sd">            - str: Named threshold set from the file.</span>
+<span class="sd">            - Dict[str, float]: Single unnamed threshold set.</span>
+<span class="sd">            - Dict[str, Dict[str, float]]: Multiple named threshold sets.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[Tuple[str, Dict[str, float]]]: A list of (name, thresholds_dict) tuples.</span>
+<span class="sd">        If a single unnamed threshold dictionary is provided as input, it will be</span>
+<span class="sd">        returned with the name &quot;custom&quot;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the input format is invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If feature_thresholds is None, return all thresholds from the YAML</span>
+    <span class="c1"># file (default or specified) -&gt; only used in label_outliers</span>
+    <span class="k">if</span> <span class="n">feature_thresholds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">read_thresholds_set_from_file</span><span class="p">(</span>
+                <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="c1"># If feature_thresholds is a string, treat it as a key to look up in the YAML file</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="n">feature_thresholds</span><span class="p">,</span>
+                <span class="n">read_thresholds_set_from_file</span><span class="p">(</span>
+                    <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+                    <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="c1"># If feature_thresholds is a dict, determine if it&#39;s single or multiple conditions</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="c1"># Warn user if they provided inline thresholds that will override the file</span>
+        <span class="n">_warn_if_inline_thresholds_ignore_file</span><span class="p">(</span>
+            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+            <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Check that the dict is not empty to avoid silent failures later</span>
+        <span class="k">if</span> <span class="n">feature_thresholds</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_thresholds cannot be empty.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If all values are dicts, treat as multiple conditions</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">feature_thresholds</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+        <span class="c1"># If all values are numeric, treat as a single unnamed condition</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">feature_thresholds</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="p">[(</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span> <span class="n">feature_thresholds</span><span class="p">)]</span>
+
+    <span class="c1"># If we reach here, the input format is invalid or unexpected</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid feature_thresholds format.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_create_condition_map">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze._create_condition_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_condition_map</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">CytoDataFrame</span><span class="p">,</span>
+    <span class="n">outlier_df</span><span class="p">:</span> <span class="n">CytoDataFrame</span><span class="p">,</span>
+    <span class="n">thresholds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">name_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create boolean outlier conditions and z-score column names for one threshold set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: CytoDataFrame</span>
+<span class="sd">            Source data used to calculate z-scores.</span>
+<span class="sd">        outlier_df: CytoDataFrame</span>
+<span class="sd">            Working dataframe where z-score columns are stored.</span>
+<span class="sd">        thresholds: Dict[str, float]</span>
+<span class="sd">            Dictionary of feature thresholds.</span>
+<span class="sd">        name_prefix: str</span>
+<span class="sd">            Prefix to use when naming z-score columns.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a feature in thresholds does not exist in the DataFrame.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[List[pd.Series], Dict[str, str]]</span>
+<span class="sd">            A list of boolean condition series and a mapping of features to their</span>
+<span class="sd">            z-score column names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Keep track of z-score column names for each feature</span>
+    <span class="n">zscore_columns</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Loop through each feature and threshold to create z-score columns and conditions</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="p">:</span>
+        <span class="c1"># Check that the feature exists in the DataFrame before attempting to create</span>
+        <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Feature &#39;</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">&#39; does not exist in the DataFrame.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set the name for the z-score column for this feature and prefix</span>
+        <span class="n">zscore_col</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">_zscore&quot;</span>
+
+        <span class="c1"># Reuse any z-score column that has already been computed for this prefix.</span>
+        <span class="k">if</span> <span class="n">zscore_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outlier_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">outlier_df</span><span class="p">[</span><span class="n">zscore_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy_zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
+
+        <span class="c1"># Store the z-score column name for this feature to use when creating conditions</span>
+        <span class="n">zscore_columns</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore_col</span>
+
+    <span class="c1"># Create a boolean condition for each feature based on the specified threshold.</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="n">outlier_df</span><span class="p">[</span><span class="n">zscore_columns</span><span class="p">[</span><span class="n">feature</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+            <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">else</span> <span class="n">outlier_df</span><span class="p">[</span><span class="n">zscore_columns</span><span class="p">[</span><span class="n">feature</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature</span><span class="p">,</span> <span class="n">threshold</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">zscore_columns</span></div>
+
+
+
+<div class="viewcode-block" id="_build_filter_display_options">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze._build_filter_display_options">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_filter_display_options</span><span class="p">(</span>
+    <span class="n">threshold_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="n">source_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">existing_display_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build display options for thresholded columns in CytoDataFrame plots.</span>
+
+<span class="sd">    Thresholds are provided to coSMicQC as z-scores, but CytoDataFrame plot lines</span>
+<span class="sd">    should use feature-scale values. We therefore convert each z-score threshold to</span>
+<span class="sd">    the corresponding feature value using ``mean + z * std``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        threshold_sets: List[Dict[str, float]]</span>
+<span class="sd">            One or more threshold mappings from feature name to z-score threshold.</span>
+<span class="sd">        source_df: pd.DataFrame</span>
+<span class="sd">            DataFrame containing feature columns used to compute feature-scale</span>
+<span class="sd">            thresholds.</span>
+<span class="sd">        existing_display_options: Optional[Dict[str, object]]</span>
+<span class="sd">            Existing plot display options to preserve and extend.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict[str, object]</span>
+<span class="sd">            Display options including ``filter_columns`` and</span>
+<span class="sd">            ``filter_plot_thresholds`` for threshold overlays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filter_plot_thresholds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span><span class="p">,</span> <span class="n">zscore_threshold</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">feature_series</span> <span class="o">=</span> <span class="n">source_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span>
+            <span class="n">feature_mean</span> <span class="o">=</span> <span class="n">feature_series</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">feature_std</span> <span class="o">=</span> <span class="n">feature_series</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">feature_mean</span><span class="p">):</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zscore_threshold</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">feature_std</span><span class="p">)</span> <span class="ow">or</span> <span class="n">feature_std</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">feature_mean</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">filter_plot_thresholds</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">feature_mean</span> <span class="o">+</span> <span class="p">(</span><span class="n">zscore_threshold</span> <span class="o">*</span> <span class="n">feature_std</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="o">**</span><span class="p">(</span><span class="n">existing_display_options</span> <span class="ow">or</span> <span class="p">{}),</span>
+        <span class="s2">&quot;filter_columns&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">filter_plot_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="s2">&quot;filter_plot_thresholds&quot;</span><span class="p">:</span> <span class="n">filter_plot_thresholds</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="identify_outliers">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.identify_outliers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">identify_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CytoDataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">IdentifyOutliersFeatureThresholdInput</span><span class="p">,</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
+    <span class="n">condition_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_threshold_scores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">export_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+    <span class="n">CytoDataFrame</span><span class="p">,</span>
+<span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function uses z-scoring to format the data for detecting outlier</span>
+<span class="sd">    nuclei or cells using specific CellProfiler features.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: Union[CytoDataFrame, pd.DataFrame, str]</span>
+<span class="sd">            Input dataframe or file path.</span>
+<span class="sd">        feature_thresholds: IdentifyOutliersFeatureThresholdInput</span>
+<span class="sd">            Either:</span>
+<span class="sd">            1. {feature: threshold}</span>
+<span class="sd">            2. {condition_name: {feature: threshold}}</span>
+<span class="sd">            3. string key from a YAML file</span>
+<span class="sd">        include_threshold_scores: bool</span>
+<span class="sd">            Whether to include z-score columns in the output.</span>
+<span class="sd">        condition_name: Optional[str]</span>
+<span class="sd">            Optional explicit name to use for CQC columns when</span>
+<span class="sd">            `feature_thresholds` is a single dict (only features and thresholds).</span>
+<span class="sd">            Default name is &quot;custom&quot; if not provided.</span>
+<span class="sd">        export_path: Optional[str]</span>
+<span class="sd">            If provided, export the result.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[pd.Series, CytoDataFrame]</span>
+<span class="sd">            Return shape depends on whether one or multiple conditions are provided:</span>
+
+<span class="sd">            - Single condition:</span>
+<span class="sd">                Returns a boolean `pd.Series` if `include_threshold_scores` is False.</span>
+<span class="sd">                Returns a `CytoDataFrame` with z-score columns and the outlier column</span>
+<span class="sd">                if `include_threshold_scores` is True.</span>
+
+<span class="sd">            - Multiple conditions via `Dict[str, Dict[str, float]]`:</span>
+<span class="sd">                Returns a `CytoDataFrame`.</span>
+<span class="sd">                If `include_threshold_scores` is False, it contains one outlier</span>
+<span class="sd">                column per condition.</span>
+<span class="sd">                If `include_threshold_scores` is True, it contains the per-condition</span>
+<span class="sd">                z-score columns plus one outlier column per condition.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert input to CytoDataFrame if not already one</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># Create a copy of the dataframe to avoid modifying the original</span>
+    <span class="n">outlier_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Determine the key for naming if feature_thresholds is a string</span>
+    <span class="n">thresholds_key</span> <span class="o">=</span> <span class="n">feature_thresholds</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">_warn_if_inline_thresholds_ignore_file</span><span class="p">(</span>
+        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+        <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Read thresholds from file if a string key is provided</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">feature_thresholds</span> <span class="o">=</span> <span class="n">read_thresholds_set_from_file</span><span class="p">(</span>
+            <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Confirm that if a dict is provided, it is not empty to avoid silent failures later</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">feature_thresholds</span> <span class="o">==</span> <span class="p">{}:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_thresholds cannot be empty.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Handle multiple conditions if feature_thresholds is a dict of dicts</span>
+    <span class="k">if</span> <span class="n">feature_thresholds</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="c1"># We have multiple named conditions, so combine the per-condition results</span>
+        <span class="c1"># into a single CytoDataFrame.</span>
+        <span class="n">result_frames</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Loop through each condition set and create the corresponding outlier columns</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">feature_thresholds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Set name prefix for this condition</span>
+            <span class="n">name_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Metadata_cqc_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Create the condition map for this set of thresholds</span>
+            <span class="n">conditions</span><span class="p">,</span> <span class="n">zscore_columns</span> <span class="o">=</span> <span class="n">_create_condition_map</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                <span class="n">outlier_df</span><span class="o">=</span><span class="n">outlier_df</span><span class="p">,</span>
+                <span class="n">thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span>
+                <span class="n">name_prefix</span><span class="o">=</span><span class="n">name_prefix</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Combine conditions with AND logic to determine overall outlier status</span>
+            <span class="c1"># for this condition set</span>
+            <span class="n">is_outlier_series</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">and_</span><span class="p">,</span> <span class="n">conditions</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_prefix</span><span class="si">}</span><span class="s2">_is_outlier&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># If we want to include threshold scores, we either return just the boolean</span>
+            <span class="c1"># series or a DataFrame with z-scores and the boolean column</span>
+            <span class="k">if</span> <span class="n">include_threshold_scores</span><span class="p">:</span>
+                <span class="n">result_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">outlier_df</span><span class="p">[[</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">zscore_columns</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">is_outlier_series</span><span class="o">.</span><span class="n">name</span><span class="p">]]</span>
+                    <span class="k">if</span> <span class="n">is_outlier_series</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">outlier_df</span><span class="o">.</span><span class="n">columns</span>
+                    <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">outlier_df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">zscore_columns</span><span class="o">.</span><span class="n">values</span><span class="p">())],</span> <span class="n">is_outlier_series</span><span class="p">],</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">is_outlier_series</span><span class="o">.</span><span class="n">to_frame</span><span class="p">())</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">result_frames</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">data_context_dir</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">[</span><span class="s2">&quot;data_context_dir&quot;</span><span class="p">],</span>
+            <span class="n">data_mask_context_dir</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">[</span><span class="s2">&quot;data_mask_context_dir&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">export_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">export_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="c1"># If we have a single condition (either from a dict or from a string key),</span>
+    <span class="c1"># we create one set of columns</span>
+    <span class="n">name_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Metadata_cqc_</span><span class="si">{</span><span class="n">condition_name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">thresholds_key</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;custom&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Create the condition map for this set of thresholds</span>
+    <span class="n">conditions</span><span class="p">,</span> <span class="n">zscore_columns</span> <span class="o">=</span> <span class="n">_create_condition_map</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">outlier_df</span><span class="o">=</span><span class="n">outlier_df</span><span class="p">,</span>
+        <span class="n">thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+        <span class="n">name_prefix</span><span class="o">=</span><span class="n">name_prefix</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Combine conditions with AND logic to determine overall outlier status</span>
+    <span class="c1"># for this condition set</span>
+    <span class="n">is_outlier_series</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">and_</span><span class="p">,</span> <span class="n">conditions</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_prefix</span><span class="si">}</span><span class="s2">_is_outlier&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># If we want to include threshold scores, we either return just the boolean series</span>
+    <span class="c1"># or a DataFrame with z-scores and the boolean column</span>
+    <span class="k">if</span> <span class="n">include_threshold_scores</span><span class="p">:</span>
+        <span class="n">zscore_df</span> <span class="o">=</span> <span class="n">outlier_df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">zscore_columns</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">zscore_df</span><span class="p">,</span> <span class="n">is_outlier_series</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">data_context_dir</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">[</span><span class="s2">&quot;data_context_dir&quot;</span><span class="p">],</span>
+            <span class="n">data_mask_context_dir</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">[</span><span class="s2">&quot;data_mask_context_dir&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">is_outlier_series</span>
+
+    <span class="c1"># Export if export_path is provided</span>
+    <span class="k">if</span> <span class="n">export_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">export_df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="k">else</span> <span class="n">result</span>
+        <span class="n">export_df</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">export_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="find_outliers">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.find_outliers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_outliers</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CytoDataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
+    <span class="n">export_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CytoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function uses identify_outliers to return a dataframe</span>
+<span class="sd">    with only the outliers and provided metadata columns.</span>
+
+<span class="sd">    NOTE: This function can only be used with a single set of feature thresholds</span>
+<span class="sd">    for finding what outliers look like in the data. For multiple sets of</span>
+<span class="sd">    feature thresholds, use label_outliers instead and filter the results for</span>
+<span class="sd">    the condition(s) of interest.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: Union[CytoDataFrame, pd.DataFrame, str]</span>
+<span class="sd">            DataFrame or file string-based filepath of a</span>
+<span class="sd">            Parquet, CSV, or TSV file with CytoTable output or similar data.</span>
+<span class="sd">        metadata_columns: List[str]</span>
+<span class="sd">            List of metadata columns that should be outputted with the outlier data.</span>
+<span class="sd">        feature_thresholds: Dict[str, float]</span>
+<span class="sd">            One of two options:</span>
+<span class="sd">            A dictionary with the feature name(s) as the key(s) and their assigned</span>
+<span class="sd">            threshold for identifying outliers. Positive int for the threshold</span>
+<span class="sd">            will detect outliers &quot;above&quot; than the mean, negative int will detect</span>
+<span class="sd">            outliers &quot;below&quot; the mean.</span>
+<span class="sd">            Or a string which is a named key reference found within</span>
+<span class="sd">            the feature_thresholds_file yaml file.</span>
+<span class="sd">        feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE,</span>
+<span class="sd">            An optional feature thresholds file where thresholds may be</span>
+<span class="sd">            defined within a file.</span>
+<span class="sd">        export_path: Optional[str] = None</span>
+<span class="sd">            An optional path to export the data using CytoDataFrame export</span>
+<span class="sd">            capabilities. If None no export is performed.</span>
+<span class="sd">            Note: compatible exports are CSV&#39;s, TSV&#39;s, and parquet.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CytoDataFrame:</span>
+<span class="sd">            Outlier data frame for the given conditions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_warn_if_inline_thresholds_ignore_file</span><span class="p">(</span>
+        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+        <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">input_display_options</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">CytoDataFrame</span><span class="p">)</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="c1"># Convert input to CytoDataFrame if it&#39;s a file path or a pandas DataFrame</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">feature_thresholds</span> <span class="o">=</span> <span class="n">read_thresholds_set_from_file</span><span class="p">(</span>
+            <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Determine the required columns for processing and output</span>
+    <span class="n">required_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="n">metadata_columns</span>
+
+    <span class="c1"># Ensure the DataFrame contains the required columns and convert to CytoDataFrame.</span>
+    <span class="c1"># Keep projected attrs so we can preserve them even if downstream ops</span>
+    <span class="c1"># (e.g., dropna) return a pandas.DataFrame.</span>
+    <span class="n">projected_df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)[</span><span class="n">required_columns</span><span class="p">]</span>
+    <span class="n">projected_custom_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">projected_df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">projected_df</span>
+
+    <span class="c1"># Check for NaN values in the required feature columns and warn if any are found</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Warning: NaN values found in the DataFrame. &quot;</span>
+            <span class="s2">&quot;These will be dropped before processing.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_thresholds</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="c1"># Use identify_outliers to get a boolean mask of outliers based on the</span>
+    <span class="c1"># provided thresholds</span>
+    <span class="n">outliers_mask</span> <span class="o">=</span> <span class="n">identify_outliers</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Filter the original DataFrame to return only the outliers along with the</span>
+    <span class="c1"># specified metadata columns</span>
+    <span class="n">outliers_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">outliers_mask</span><span class="p">]</span>
+
+    <span class="c1"># Print summary statistics about the outliers found</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;Number of outliers:&quot;</span><span class="p">,</span>
+        <span class="n">outliers_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">outliers_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Outliers Range:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feature_thresholds</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2"> Min:&quot;</span><span class="p">,</span> <span class="n">outliers_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2"> Max:&quot;</span><span class="p">,</span> <span class="n">outliers_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+    <span class="c1"># Select only the required columns for output (metadata + features)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">outliers_df</span><span class="p">[</span><span class="n">required_columns</span><span class="p">]</span>
+    <span class="n">custom_attrs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">CytoDataFrame</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">projected_custom_attrs</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">input_display_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">custom_attrs</span><span class="p">[</span><span class="s2">&quot;display_options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_display_options</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="o">**</span><span class="n">custom_attrs</span><span class="p">)</span>
+
+    <span class="c1"># Export if export_path is provided</span>
+    <span class="k">if</span> <span class="n">export_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">export_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="label_outliers">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.label_outliers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">label_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CytoDataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">LabelOutliersFeatureThresholdInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
+    <span class="n">include_threshold_scores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">export_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">export_as_annotations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">annotation_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CytoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function labels outliers in the input dataframe based on specified</span>
+<span class="sd">    feature thresholds and exports the whole dataframe or an annotations file with</span>
+<span class="sd">    just metadata and outlier labels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: Union[CytoDataFrame, pd.DataFrame, str]</span>
+<span class="sd">            DataFrame or file path (Parquet, CSV, or TSV).</span>
+
+<span class="sd">        feature_thresholds: LabelOutliersFeatureThresholdInput</span>
+<span class="sd">            Defines one or more QC conditions.</span>
+
+<span class="sd">            - Single condition:</span>
+<span class="sd">                {&quot;feature&quot;: threshold}</span>
+
+<span class="sd">            - Multiple conditions:</span>
+<span class="sd">                {</span>
+<span class="sd">                    &quot;undersegmented_cells&quot;: {&quot;feature1&quot;: -1, &quot;feature2&quot;: -1},</span>
+<span class="sd">                    &quot;oversegmented_nuclei&quot;: {&quot;feature3&quot;: 2},</span>
+<span class="sd">                }</span>
+
+<span class="sd">            - String:</span>
+<span class="sd">                Named condition from the feature_thresholds_file.</span>
+
+<span class="sd">            - None:</span>
+<span class="sd">                Run all conditions defined in the thresholds file.</span>
+
+<span class="sd">        feature_thresholds_file: Optional[str] = DEFAULT_QC_THRESHOLD_FILE</span>
+<span class="sd">            YAML file containing named threshold conditions.</span>
+
+<span class="sd">        include_threshold_scores: bool = False</span>
+<span class="sd">            If True, include per-feature z-score columns in the output.</span>
+
+<span class="sd">        export_path: Optional[str] = None</span>
+<span class="sd">            Path to export results.</span>
+
+<span class="sd">        export_as_annotations: bool = False</span>
+<span class="sd">            If True, export only metadata + QC columns (annotations file).</span>
+<span class="sd">            If False, export the full dataset.</span>
+<span class="sd">        annotation_metadata_columns: Optional[List[str]] = None</span>
+<span class="sd">            Metadata columns to include when `export_as_annotations=True`.</span>
+<span class="sd">            If annotation export is requested, these columns are required and</span>
+<span class="sd">            will be written alongside the generated `Metadata_cqc_*` columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CytoDataFrame:</span>
+<span class="sd">            Either the full dataframe or only metadata with added QC columns:</span>
+
+<span class="sd">            - Metadata_cqc_&lt;condition&gt;_is_outlier</span>
+<span class="sd">            - (optional) Metadata_cqc_&lt;condition&gt;_&lt;feature&gt;_zscore if</span>
+<span class="sd">            include_threshold_scores=True</span>
+
+<span class="sd">            When ``export_as_annotations=True``, the exported file contains only</span>
+<span class="sd">            `annotation_metadata_columns` plus QC-related columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert input to CytoDataFrame if it&#39;s a file path or a pandas DataFrame</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">CytoDataFrame</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># Keep track of custom attributes to preserve them in the output</span>
+    <span class="n">custom_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">_custom_attrs</span><span class="p">)</span>
+
+    <span class="c1"># Convert feature_thresholds input into a list of (name, thresholds) tuples</span>
+    <span class="c1"># for consistent processing</span>
+    <span class="n">threshold_sets</span> <span class="o">=</span> <span class="n">_convert_feature_threshold_input_to_named_threshold_dicts</span><span class="p">(</span>
+        <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
+        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Start with the original dataframe and iteratively add outlier columns</span>
+    <span class="c1"># for each condition</span>
+    <span class="n">base_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Metadata_cqc_&quot;</span><span class="p">)],</span>
+        <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">base_df</span><span class="p">]</span>
+
+    <span class="c1"># Loop through each set of thresholds and identify outliers</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">:</span>
+        <span class="n">detected</span> <span class="o">=</span> <span class="n">identify_outliers</span><span class="p">(</span>
+            <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+            <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span>
+            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+            <span class="n">condition_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">include_threshold_scores</span><span class="o">=</span><span class="n">include_threshold_scores</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If the result is a Series, convert it to a DataFrame for</span>
+        <span class="c1"># consistent concatenation</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="n">condition_df</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">condition_df</span> <span class="o">=</span> <span class="n">detected</span>
+
+        <span class="c1"># Append the condition DataFrame to the results list for later concatenation</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">condition_df</span><span class="p">)</span>
+
+    <span class="c1"># Concatenate all results along the columns, ensuring we don&#39;t duplicate columns</span>
+    <span class="n">clean_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">))]</span>
+
+    <span class="c1"># Create the final result DataFrame by concatenating the original data</span>
+    <span class="c1"># with the new outlier columns</span>
+    <span class="n">custom_attrs</span><span class="p">[</span><span class="s2">&quot;display_options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_filter_display_options</span><span class="p">(</span>
+        <span class="n">threshold_sets</span><span class="o">=</span><span class="p">[</span><span class="n">thresholds</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">],</span>
+        <span class="n">source_df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">existing_display_options</span><span class="o">=</span><span class="n">custom_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_options&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">CytoDataFrame</span><span class="p">(</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">clean_results</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">custom_attrs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Export if export_path is provided</span>
+    <span class="k">if</span> <span class="n">export_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">export_df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># If exporting as annotations, filter to only metadata and CQC columns</span>
+        <span class="k">if</span> <span class="n">export_as_annotations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">annotation_metadata_columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;`annotation_metadata_columns` must be provided when &quot;</span>
+                    <span class="s2">&quot;`export_as_annotations=True`.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Check that all specified annotation metadata columns are present in the df</span>
+            <span class="n">missing_metadata_cols</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">col</span>
+                <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">annotation_metadata_columns</span>
+                <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">export_df</span><span class="o">.</span><span class="n">columns</span>
+            <span class="p">]</span>
+            <span class="c1"># Raise error if any specified metadata columns are missing</span>
+            <span class="k">if</span> <span class="n">missing_metadata_cols</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The following annotation metadata columns were not found in the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;dataframe: </span><span class="si">{</span><span class="n">missing_metadata_cols</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Set CQC columns as those that start with &quot;Metadata_cqc_&quot; to capture</span>
+            <span class="c1"># the outlier labels and z-score columns</span>
+            <span class="n">cqc_cols</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">export_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Metadata_cqc_&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="c1"># Filter the export_df to only include metadata and CQC columns</span>
+            <span class="n">export_df</span> <span class="o">=</span> <span class="n">export_df</span><span class="p">[</span><span class="n">annotation_metadata_columns</span> <span class="o">+</span> <span class="n">cqc_cols</span><span class="p">]</span>
+
+        <span class="c1"># Use CytoDataFrame export capabilities to export the result</span>
+        <span class="n">CytoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">export_df</span><span class="p">,</span> <span class="o">**</span><span class="n">custom_attrs</span><span class="p">)</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">export_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="read_thresholds_set_from_file">
+<a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.read_thresholds_set_from_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_thresholds_set_from_file</span><span class="p">(</span>
+    <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads a set of feature thresholds from a specified file.</span>
+
+<span class="sd">    This function takes the path to a feature thresholds file and a</span>
+<span class="sd">    specific feature threshold string, reads the file, and returns</span>
+<span class="sd">    the thresholds set from the file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        feature_thresholds_file (str):</span>
+<span class="sd">            The path to the file containing feature thresholds.</span>
+<span class="sd">        feature_thresholds (Optional str, default None):</span>
+<span class="sd">            A string specifying the feature thresholds.</span>
+<span class="sd">            If we have None, return all thresholds.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary containing the processed feature thresholds.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        LookupError: If the file does not contain the specified feature_thresholds key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Read the thresholds from the specified YAML file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">feature_thresholds_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1"># If feature_thresholds is None, return all thresholds from the file</span>
+    <span class="k">if</span> <span class="n">feature_thresholds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">thresholds</span><span class="p">[</span><span class="s2">&quot;thresholds&quot;</span><span class="p">]</span>
+
+    <span class="c1"># If feature_thresholds is a string, look it up in the thresholds and</span>
+    <span class="c1"># return the corresponding set</span>
+    <span class="k">if</span> <span class="n">feature_thresholds</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="p">[</span><span class="s2">&quot;thresholds&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to find threshold set by name </span><span class="si">{</span><span class="n">feature_thresholds</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; within </span><span class="si">{</span><span class="n">feature_thresholds_file</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">thresholds</span><span class="p">[</span><span class="s2">&quot;thresholds&quot;</span><span class="p">][</span><span class="n">feature_thresholds</span><span class="p">]</span></div>
+
+</pre></div>
+
+</main>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://www.cytomininglab.com/">Way Lab</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://github.com/cytomining/coSMicQC">coSMicQC GitHub Repository</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Cytomining Community
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.6.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 8.2.3
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="../../../_static/dist/theme.js"></script>
+        <script type="text/javascript" src="../../../_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="../../../_static/searchtools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("../../../searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
