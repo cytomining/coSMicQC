@@ -1271,7 +1271,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "def plot_hvplot_scatter(\n",
+    "def plot_hvplot_scatter(  # noqa: PLR0917\n",
     "    embeddings: np.ndarray,\n",
     "    title: str,\n",
     "    filename: str,\n",

@@ -457,7 +457,7 @@ For the latest released version, please have a look at <a href="../../../../v1.1
 
 <div class="viewcode-block" id="identify_outliers">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.identify_outliers">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">identify_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">identify_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913, PLR0917</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CytoDataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">IdentifyOutliersFeatureThresholdInput</span><span class="p">,</span>
     <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
@@ -739,7 +739,7 @@ For the latest released version, please have a look at <a href="../../../../v1.1
 
 <div class="viewcode-block" id="label_outliers">
 <a class="viewcode-back" href="../../../python-api.html#src.cosmicqc.analyze.label_outliers">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">label_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">label_outliers</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913, PLR0917</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CytoDataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">feature_thresholds</span><span class="p">:</span> <span class="n">LabelOutliersFeatureThresholdInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">feature_thresholds_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_QC_THRESHOLD_FILE</span><span class="p">,</span>
