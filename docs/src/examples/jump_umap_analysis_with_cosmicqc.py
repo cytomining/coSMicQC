@@ -117,7 +117,7 @@ def generate_umap_embeddings(
 # In[3]:
 
 
-def plot_hvplot_scatter(
+def plot_hvplot_scatter(  # noqa: PLR0917
     embeddings: np.ndarray,
     title: str,
     filename: str,
