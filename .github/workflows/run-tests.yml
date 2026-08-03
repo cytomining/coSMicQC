@@ -23,11 +23,11 @@ jobs:
       - name: Fetch tags
         run: git fetch --all --tags
       - name: Python setup
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
       - name: Install environment
         run: uv sync
       # run pre-commit
@@ -59,11 +59,11 @@ jobs:
       - name: Fetch tags
         run: git fetch --all --tags
       - name: Python setup
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v9.0.0
       - name: Run pytest
         # run all tests except those marked generate_report_image.
         # uv installs only the default `dev` group here (not `docs`), so the
