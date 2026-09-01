@@ -29,7 +29,7 @@ dependencies = [
   # used for CLI generation
   "fire>=0.6,<0.8",
   # sub-dependency which required lock for numpy installation with py313
-  "llvmlite==0.49.0",
+  "llvmlite==0.49",
   "matplotlib>=3.10.3,<4",
   # used for data management
   "pandas>=2.2.2,<3",
