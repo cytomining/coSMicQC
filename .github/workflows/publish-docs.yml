@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           # docs publish runs are one-off; skip cache upload
           enable-cache: false
