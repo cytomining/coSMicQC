@@ -24,7 +24,7 @@ classifiers = [
 dynamic = [ "version" ]
 dependencies = [
   # used for assisting single-cell profile and image analysis
-  "cytodataframe>=0.0.25; python_version<'3.11'",
+  "cytodataframe>=0.0.25,<0.4; python_version<'3.11'",
   "cytodataframe>=0.3,<0.4; python_version>='3.11'",
   # used for CLI generation
   "fire>=0.6,<0.8",
