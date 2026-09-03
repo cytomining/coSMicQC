@@ -1,14 +1,11 @@
-<!-- extends sphinx page to include docs version warnings if not viewing latest released documentation -->
 <!-- referenced from: https://github.com/wagtail/sphinx-wagtail-theme/blob/main/sphinx_wagtail_theme/layout.html
  in order to preload plotly javascript dependency for rendering --><!DOCTYPE html>
 <html class="no-js" lang="en">
 <head>
     <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>Examples &mdash; coSMicQC  documentation</title>
+        <title>Search &mdash; coSMicQC  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=9cdaa676" />
@@ -16,10 +13,8 @@
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="_static/custom.css?v=76a74e97" />
             <link rel="index" title="Index" href="genindex.html" />
-            <link rel="search" title="Search" href="search.html" />
+            <link rel="search" title="Search" href="#" />
             <link rel="top" title="coSMicQC  documentation" href="#" />
-            <link rel="next" title="coSMicQC in a nutshell" href="examples/cosmicqc_in_a_nutshell.html" />
-            <link rel="prev" title="Single cell Morphology Quality Control" href="index.html" />
     <!-- line added for plotly compatibility in cosmicqc -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
 </head>
@@ -62,7 +57,7 @@
             <aside class="col-12 col-lg-3 sidebar-container">
                 <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
 <div id="searchbox" class="searchbox mb-6 px-1" role="search">
-    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+    <form id="search-form" action="#" autocomplete="off" method="get" role="search">
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
@@ -75,8 +70,8 @@
 </div><div class="site-toc">
     <nav class="toc mt-3" aria-label="Main menu">
         <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/perinuclear_signal_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">PerinuclearSignalDetector</span></code> in action</a></li>
@@ -97,17 +92,7 @@
             <span class="sr-only">Toggle menu contents</span>
         </button>
     </template>
-</div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter">Single cell Morphology Quality Control</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="examples/cosmicqc_in_a_nutshell.html"
-                          title="next chapter"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></p>
-  </div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
+</div><!-- displays and adds docs version selection functionality in sidebar within rendered docs -->
 
 <h4>Versions</h4>
 <select name="versions" id="versions" onchange="redirectToPage()">
@@ -123,7 +108,7 @@
     <option value="../v1.0.2/index.html">v1.0.2</option>
     <option value="../v1.0.3/index.html">v1.0.3</option>
     <option value="../v1.1.0/index.html">v1.1.0</option>
-    <option value="examples.html">main</option>
+    <option value="search.html">v1.1.1</option>
 </select>
 <script>
 /**
@@ -188,7 +173,7 @@ window.onload = setDefaultSelection;
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Examples</li>
+        <li class="breadcrumb-item active" aria-current="page">Search</li>
     </ol>
 </nav>
                     </div>
@@ -200,15 +185,6 @@ window.onload = setDefaultSelection;
                             <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
                             <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
                         </button>
-    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/cytomining/coSMicQC/tree/main/docs/srcexamples.md" rel="nofollow">
-        <span class="btn-icon"><span class="fab fa-github"></span></span>
-        <span class="btn-text">Edit on GitHub</span>
-    </a>
-    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/examples.md.txt" rel="nofollow">
-        <span class="btn-icon"><span class="fas fa-code"></span></span>
-        <span class="btn-text">View source</span>
-    </a>
-                        
                     </div>
                 </header>
                 <div class="row" >
@@ -220,44 +196,21 @@ window.onload = setDefaultSelection;
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
 
-<p style="background:#E7C3EB;padding:5px 10px;">
-
-You're reading the documentation for a development version.
-For the latest released version, please have a look at <a href="../v1.1.0/index.html">v1.1.0</a>.
-
-</p>
-</span>
-
-
-    <section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">List of examples</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="examples/cosmicqc_in_a_nutshell.html"><code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html">JUMP UMAP analysis with coSMicQC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#outline">Outline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#define-utility-functions-for-use-within-this-notebook">Define utility functions for use within this notebook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#merge-single-cell-compartment-data-into-one-table">Merge single-cell compartment data into one table</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#process-merged-single-cell-data-using-cosmicqc">Process merged single-cell data using coSMicQC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/jump_umap_analysis_with_cosmicqc.html#prepare-data-for-analysis-with-pycytominer">Prepare data for analysis with pycytominer</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples/perinuclear_signal_detector_in_action.html"><code class="docutils literal notranslate"><span class="pre">PerinuclearSignalDetector</span></code> in action</a></li>
-</ul>
-</div>
-</section>
-
+    <noscript>
+        <div id="fallback" class="admonition warning">
+            <p class="last">
+                Please activate JavaScript to enable the search
+                functionality.
+            </p>
+        </div>
+    </noscript>
+    
+    <div id="search-results">
+        
+    </div>
 
 </main>
-                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
-    <a class="float-left" href="index.html" title="Previous">
-        <span aria-hidden="true">←&nbsp;</span>Single cell Morphology Quality Control
-    </a>
-    <a class="float-right" href="examples/cosmicqc_in_a_nutshell.html" title="Next">
-        <code class="docutils literal notranslate"><span class="pre">coSMicQC</span></code> in a nutshell <span aria-hidden="true">&nbsp;→</span>
-    </a>
-</nav>
+                        
                     </div>
                     
                 </div>
