@@ -1,0 +1,14 @@
+# Constrain the sdist to what's needed to build and describe the package.
+# setuptools_scm's file-finder adds every git-tracked file to the sdist by
+# default; docs/, tests/, and media/ carry large notebooks, images, and
+# fixture data that push the tarball past PyPI's 100 MB per-file limit, so
+# prune them here.
+include LICENSE
+include README.md
+include CITATION.cff
+
+prune docs
+prune tests
+prune media
+prune scripts
+prune .github
