@@ -56,7 +56,7 @@ dev = [
   # added to generate test coverage reports
   "coverage>=7.6,<8",
   # added for preparing data for cosmicqc in examples
-  "cytotable>=0.0.10,<1.2.6",
+  "cytotable>=0.0.10,<1.2.7",
   # added to avoid warnings from datashader implementation
   "dask[dataframe]>=2024.8,<2027",
   # used for visualization options with hvplot
@@ -69,7 +69,7 @@ dev = [
   # added for compatibility in notebooks with umap-learn dependency tqdm
   "ipywidgets>=8.1.5,<9",
   # used for example notebook formatting
-  "isort>=5.13.2,<9",
+  "isort>=5.13.2,<10",
   # used for example notebook work
   "jupyterlab>=4.2.3,<5",
   # used for example notebook formatting
