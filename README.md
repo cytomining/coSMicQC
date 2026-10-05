@@ -52,7 +52,7 @@ Please confer with our docsite for more comprehensive information about the proj
 
 ## System Requirements
 
-- Python: `>=3.10` (tested through 3.13).
+- Python: `>=3.11` (tested through 3.13).
 - RAM/CPU: standard laptop/desktop is sufficient for typical plate-sized datasets; larger screens benefit from more RAM/cores for faster QC/plotting.
 - OS: Linux, macOS, and Windows are supported via Python; CI tests run on GitHub Actions.
 
