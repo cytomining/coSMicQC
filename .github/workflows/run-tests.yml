@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.2
       - name: Install environment
         run: uv sync
       # run pre-commit
@@ -40,7 +40,7 @@ jobs:
           # still runs locally to keep the README TOC current.
           SKIP: readme-toc
       # run pre-commit ci lite for automated fixes
-      - uses: pre-commit-ci/lite-action@v1.1.0
+      - uses: pre-commit-ci/lite-action@v1.2.0
         if: ${{ !cancelled() && steps.pre_commit.outcome == 'failure' }}
   run_tests:
     strategy:
@@ -63,7 +63,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.2
       - name: Run pytest
         # run all tests except those marked generate_report_image.
         # uv installs only the default `dev` group here (not `docs`), so the
