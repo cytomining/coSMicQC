@@ -269,6 +269,7 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
     feature_thresholds="large_nuclei",
+    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 
 
@@ -281,6 +282,7 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
     feature_thresholds="elongated_nuclei",
+    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 
 
@@ -293,6 +295,7 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
     feature_thresholds="small_and_low_formfactor_nuclei",
+    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 
 
@@ -303,6 +306,7 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
 df_labeled_outliers = cosmicqc.analyze.label_outliers(
     df=df_merged_single_cells,
     include_threshold_scores=True,
+    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 # show added columns
 df_labeled_outliers[

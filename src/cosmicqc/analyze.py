@@ -14,7 +14,12 @@ from cytodataframe.frame import CytoDataFrame
 from scipy.stats import zscore as scipy_zscore
 
 DEFAULT_QC_THRESHOLD_FILE = (
-    f"{pathlib.Path(__file__).parent!s}/data/qc_nuclei_thresholds_default.yml"
+    f"{pathlib.Path(__file__).parent!s}/data/qc_thresholds_default.yml"
+)
+# Threshold sets that were the defaults before the segmentation-focused defaults
+# (small_and_low_formfactor_nuclei, elongated_nuclei, large_nuclei).
+LEGACY_QC_THRESHOLD_FILE = (
+    f"{pathlib.Path(__file__).parent!s}/data/qc_nuclei_thresholds_legacy.yml"
 )
 
 # `label_outliers` and the helper accept raw caller input, including `None` to mean
@@ -465,10 +470,12 @@ def find_outliers(
 
     # Use identify_outliers to get a boolean mask of outliers based on the
     # provided thresholds
+    # (thresholds are already resolved to a dict, so no file is needed and
+    # passing one would trigger a spurious "file will be ignored" warning)
     outliers_mask = identify_outliers(
         df=df,
         feature_thresholds=feature_thresholds,
-        feature_thresholds_file=feature_thresholds_file,
+        feature_thresholds_file=None,
     )
     # Filter the original DataFrame to return only the outliers along with the
     # specified metadata columns
@@ -591,10 +598,12 @@ def label_outliers(  # noqa: PLR0913, PLR0917
 
     # Loop through each set of thresholds and identify outliers
     for name, thresholds in threshold_sets:
+        # (thresholds are already resolved to a dict, so no file is needed and
+        # passing one would trigger a spurious "file will be ignored" warning)
         detected = identify_outliers(
             df=df,
             feature_thresholds=thresholds,
-            feature_thresholds_file=feature_thresholds_file,
+            feature_thresholds_file=None,
             condition_name=name,
             include_threshold_scores=include_threshold_scores,
         )

@@ -1,4 +1,7 @@
-# defines threshold sets for running qc procedures as part of this project.
+# Legacy threshold sets used as the coSMicQC defaults before the
+# segmentation-focused defaults in qc_thresholds_default.yml.
+# Use these by passing
+# feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE.
 versions:
   cellprofiler: ">=4.2.4"
 thresholds:

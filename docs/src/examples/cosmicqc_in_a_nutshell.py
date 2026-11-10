@@ -88,9 +88,13 @@ cosmicqc.analyze.find_outliers(
 
 # create a labeled dataset which includes z-scores and whether those scores
 # are interpreted as outliers or inliers. We use pre-defined threshold sets
-# loaded from defaults (cosmicqc can accept user-defined thresholds too!).
+# loaded from the bundled legacy thresholds file (cosmicqc can accept
+# user-defined thresholds too!).
 labeled_scdf = cosmicqc.analyze.label_outliers(
-    df=scdf, include_threshold_scores=True, feature_thresholds="large_nuclei"
+    df=scdf,
+    include_threshold_scores=True,
+    feature_thresholds="large_nuclei",
+    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 labeled_scdf
 
