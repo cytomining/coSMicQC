@@ -13,7 +13,7 @@ jobs:
     # we avoid running duplicative
     # pre-commit checks for dependabot PRs
     if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       # checks out the repo
       - uses: actions/checkout@v7
@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         python_version: ["3.11", "3.12", "3.13"]
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-26.04, macos-26]
     runs-on: ${{ matrix.os }}
     env:
       OS: ${{ matrix.os }}
