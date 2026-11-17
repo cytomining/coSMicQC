@@ -302,32 +302,23 @@ def test_read_thresholds_set_from_file():
         "cells_multiple_nuclei": {"Cells_Intensity_IntegratedIntensity_DNA": 3.0},
     }
 
-    # test legacy threshold sets
     assert analyze.read_thresholds_set_from_file(
-        feature_thresholds="small_and_low_formfactor_nuclei",
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
-    ) == {"Nuclei_AreaShape_Area": -1, "Nuclei_AreaShape_FormFactor": -1}
-
-    assert analyze.read_thresholds_set_from_file(
-        feature_thresholds="elongated_nuclei",
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
-    ) == {"Nuclei_AreaShape_Eccentricity": 2}
-
-    assert analyze.read_thresholds_set_from_file(
-        feature_thresholds="large_nuclei",
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
-    ) == {"Nuclei_AreaShape_Area": 2, "Nuclei_AreaShape_FormFactor": -2}
-
-    assert analyze.read_thresholds_set_from_file(
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+        feature_thresholds="clustered_nuclei",
+        feature_thresholds_file=analyze.DEFAULT_QC_THRESHOLD_FILE,
     ) == {
-        "small_and_low_formfactor_nuclei": {
-            "Nuclei_AreaShape_Area": -1,
-            "Nuclei_AreaShape_FormFactor": -1,
-        },
-        "elongated_nuclei": {"Nuclei_AreaShape_Eccentricity": 2},
-        "large_nuclei": {"Nuclei_AreaShape_Area": 2, "Nuclei_AreaShape_FormFactor": -2},
+        "Nuclei_Intensity_MassDisplacement_DNA": 0.1,
+        "Nuclei_Intensity_IntegratedIntensity_DNA": 1.5,
     }
+
+    assert analyze.read_thresholds_set_from_file(
+        feature_thresholds="low_solidity_nuclei",
+        feature_thresholds_file=analyze.DEFAULT_QC_THRESHOLD_FILE,
+    ) == {"Nuclei_AreaShape_Solidity": -2.0}
+
+    assert analyze.read_thresholds_set_from_file(
+        feature_thresholds="cells_multiple_nuclei",
+        feature_thresholds_file=analyze.DEFAULT_QC_THRESHOLD_FILE,
+    ) == {"Cells_Intensity_IntegratedIntensity_DNA": 3.0}
 
 
 def test_convert_feature_threshold_input_to_named_threshold_dicts_none(
@@ -494,7 +485,7 @@ def test_create_condition_map_raises_for_missing_feature():
 
 
 def test_find_outliers_dict_and_default_config_cfret(
-    cytotable_CFReT_data_df: pd.DataFrame,
+    cytotable_CFReT_data_dna_df: pd.DataFrame,
 ):
     """
     Testing find_outliers with dictionary vs yaml threshold sets
@@ -511,17 +502,16 @@ def test_find_outliers_dict_and_default_config_cfret(
     # test that the output is the same from dict vs yaml
     pd.testing.assert_frame_equal(
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
+            df=cytotable_CFReT_data_dna_df,
             feature_thresholds={
-                "Nuclei_AreaShape_Area": -1,
-                "Nuclei_AreaShape_FormFactor": -1,
+                "Nuclei_Intensity_MassDisplacement_DNA": 0.1,
+                "Nuclei_Intensity_IntegratedIntensity_DNA": 1.5,
             },
             metadata_columns=metadata_columns,
         ),
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
-            feature_thresholds="small_and_low_formfactor_nuclei",
-            feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+            df=cytotable_CFReT_data_dna_df,
+            feature_thresholds="clustered_nuclei",
             metadata_columns=metadata_columns,
         ),
     )
@@ -529,16 +519,15 @@ def test_find_outliers_dict_and_default_config_cfret(
     # test that the output is the same from dict vs yaml
     pd.testing.assert_frame_equal(
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
+            df=cytotable_CFReT_data_dna_df,
             feature_thresholds={
-                "Nuclei_AreaShape_Eccentricity": 2,
+                "Nuclei_AreaShape_Solidity": -2.0,
             },
             metadata_columns=metadata_columns,
         ),
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
-            feature_thresholds="elongated_nuclei",
-            feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+            df=cytotable_CFReT_data_dna_df,
+            feature_thresholds="low_solidity_nuclei",
             metadata_columns=metadata_columns,
         ),
     )
@@ -546,17 +535,15 @@ def test_find_outliers_dict_and_default_config_cfret(
     # test that the output is the same from dict vs yaml
     pd.testing.assert_frame_equal(
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
+            df=cytotable_CFReT_data_dna_df,
             feature_thresholds={
-                "Nuclei_AreaShape_Area": 2,
-                "Nuclei_AreaShape_FormFactor": -2,
+                "Cells_Intensity_IntegratedIntensity_DNA": 3.0,
             },
             metadata_columns=metadata_columns,
         ),
         analyze.find_outliers(
-            df=cytotable_CFReT_data_df,
-            feature_thresholds="large_nuclei",
-            feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+            df=cytotable_CFReT_data_dna_df,
+            feature_thresholds="cells_multiple_nuclei",
             metadata_columns=metadata_columns,
         ),
     )
@@ -614,7 +601,7 @@ def test_find_outliers_retains_custom_attrs_with_dropna_path(
 def test_label_outliers(
     basic_outlier_dataframe: pd.DataFrame,
     basic_outlier_csv: str,
-    cytotable_CFReT_data_df: pd.DataFrame,
+    cytotable_CFReT_data_dna_df: pd.DataFrame,
 ):
     """
     Tests label_outliers
@@ -712,9 +699,8 @@ def test_label_outliers(
 
     # test single-column result
     test_df = analyze.label_outliers(
-        df=cytotable_CFReT_data_df,
-        feature_thresholds="large_nuclei",
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+        df=cytotable_CFReT_data_dna_df,
+        feature_thresholds="low_solidity_nuclei",
         include_threshold_scores=True,
     )
 
@@ -728,9 +714,8 @@ def test_label_outliers(
     # test full dataset
     pd.testing.assert_frame_equal(
         analyze.label_outliers(
-            df=cytotable_CFReT_data_df,
+            df=cytotable_CFReT_data_dna_df,
             include_threshold_scores=True,
-            feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
         ),
         pd.read_parquet(
             path="tests/data/coSMicQC/output_data/test_label_outliers_output.parquet"
@@ -741,7 +726,7 @@ def test_label_outliers(
 def test_identify_outliers(
     basic_outlier_dataframe: pd.DataFrame,
     basic_outlier_csv: str,
-    cytotable_CFReT_data_df: pd.DataFrame,
+    cytotable_CFReT_data_dna_df: pd.DataFrame,
 ):
     """
     Tests identify_outliers helper function
@@ -794,9 +779,8 @@ def test_identify_outliers(
 
     pd.testing.assert_frame_equal(
         analyze.identify_outliers(
-            df=cytotable_CFReT_data_df,
-            feature_thresholds="large_nuclei",
-            feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+            df=cytotable_CFReT_data_dna_df,
+            feature_thresholds="clustered_nuclei",
             include_threshold_scores=True,
         ),
         pd.read_parquet(
@@ -805,16 +789,15 @@ def test_identify_outliers(
     )
 
     identified_df = analyze.identify_outliers(
-        df=cytotable_CFReT_data_df,
-        feature_thresholds="large_nuclei",
-        feature_thresholds_file=analyze.LEGACY_QC_THRESHOLD_FILE,
+        df=cytotable_CFReT_data_dna_df,
+        feature_thresholds="clustered_nuclei",
     )
     pd.testing.assert_series_equal(
         identified_df,
         pd.read_parquet(
             "tests/data/coSMicQC/output_data/test_identifier_outliers_output.parquet",
-            columns=["Metadata_cqc_large_nuclei_is_outlier"],
-        )["Metadata_cqc_large_nuclei_is_outlier"],
+            columns=["Metadata_cqc_clustered_nuclei_is_outlier"],
+        )["Metadata_cqc_clustered_nuclei_is_outlier"],
         check_names=False,
     )
 
@@ -1081,19 +1064,21 @@ def test_label_outliers_annotation_export_requires_metadata_columns(
         )
 
 
-def test_label_outliers_default_thresholds(cytotable_CFReT_data_df: pd.DataFrame):
+def test_label_outliers_default_thresholds(
+    cytotable_CFReT_data_df: pd.DataFrame,
+    cytotable_CFReT_data_dna_df: pd.DataFrame,
+):
     """
     Test that the default threshold sets run end to end and are each applied.
 
-    The CFReT data names its nuclear stain channel "Hoechst", so we rename it to
-    "DNA" to match the feature names in the default thresholds file.
+    The CFReT data names its nuclear stain channel "Hoechst", so the
+    cytotable_CFReT_data_dna_df fixture renames it to "DNA" to match the
+    feature names in the default thresholds file.
     """
 
-    df = cytotable_CFReT_data_df.rename(
-        columns=lambda col: col.replace("_Hoechst", "_DNA")
+    result = analyze.label_outliers(
+        df=cytotable_CFReT_data_dna_df, include_threshold_scores=True
     )
-
-    result = analyze.label_outliers(df=df, include_threshold_scores=True)
 
     for condition in [
         "clustered_nuclei",

@@ -23,9 +23,9 @@ import holoviews
 import hvplot.pandas
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import pycytominer
 import umap
+from bokeh.palettes import Greens9
 from cytotable.convert import convert
 from IPython.display import HTML, Image
 from parsl.config import Config
@@ -252,9 +252,10 @@ df_merged_single_cells = pd.read_parquet(
     path=merged_single_cells,
     columns=[
         *metadata_cols,
-        "Nuclei_AreaShape_Area",
-        "Nuclei_AreaShape_FormFactor",
-        "Nuclei_AreaShape_Eccentricity",
+        "Nuclei_Intensity_MassDisplacement_DNA",
+        "Nuclei_Intensity_IntegratedIntensity_DNA",
+        "Nuclei_AreaShape_Solidity",
+        "Cells_Intensity_IntegratedIntensity_DNA",
     ],
 )
 df_merged_single_cells.head()
@@ -264,12 +265,11 @@ df_merged_single_cells.head()
 
 
 # label outliers within the dataset
-print("Large nuclei outliers:")
+print("Clustered nuclei outliers:")
 df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
-    feature_thresholds="large_nuclei",
-    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
+    feature_thresholds="clustered_nuclei",
 )
 
 
@@ -277,12 +277,11 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
 
 
 # label outliers within the dataset
-print("Elongated nuclei outliers:")
+print("Low solidity nuclei outliers:")
 df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
-    feature_thresholds="elongated_nuclei",
-    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
+    feature_thresholds="low_solidity_nuclei",
 )
 
 
@@ -290,12 +289,11 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
 
 
 # label outliers within the dataset
-print("Small and low formfactor nuclei outliers:")
+print("Cells with multiple nuclei outliers:")
 df_labeled_outliers = cosmicqc.analyze.find_outliers(
     df=df_merged_single_cells,
     metadata_columns=metadata_cols,
-    feature_thresholds="small_and_low_formfactor_nuclei",
-    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
+    feature_thresholds="cells_multiple_nuclei",
 )
 
 
@@ -306,7 +304,6 @@ df_labeled_outliers = cosmicqc.analyze.find_outliers(
 df_labeled_outliers = cosmicqc.analyze.label_outliers(
     df=df_merged_single_cells,
     include_threshold_scores=True,
-    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
 )
 # show added columns
 df_labeled_outliers[
@@ -546,7 +543,7 @@ plot_hvplot_scatter(
         := f"./images/umap_with_all_outliers_{example_plate}.png"
     ),
     bgcolor="white",
-    cmap=px.colors.sequential.Greens[4:],
+    cmap=list(reversed(Greens9))[4:],
     clabel="density of single cells",
 )
 # conserve filespace by displaying export instead of dynamic plot
@@ -570,16 +567,15 @@ plot_hvplot_scatter(
 # In[25]:
 
 
-# show small and low formfactor nuclei outliers within the data
+# show clustered nuclei outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
-    title=f"UMAP of JUMP small and low formfactor nuclei outliers within {example_plate}",
+    title=f"UMAP of JUMP clustered nuclei outliers within {example_plate}",
     filename=(
-        plot_image
-        := f"./images/umap_small_and_low_formfactor_nuclei_outliers_{example_plate}.png"
+        plot_image := f"./images/umap_clustered_nuclei_outliers_{example_plate}.png"
     ),
     color_dataframe=df_features_with_cqc_outlier_data,
-    color_column="cqc.small_and_low_formfactor_nuclei.is_outlier",
+    color_column="cqc.clustered_nuclei.is_outlier",
     clabel="density of single cells classified as outliers",
 )
 # conserve filespace by displaying export instead of dynamic plot
@@ -589,15 +585,15 @@ Image(plot_image)
 # In[26]:
 
 
-# show elongated nuclei outliers within the data
+# show low solidity nuclei outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
-    title=f"UMAP of JUMP elongated nuclei outliers within {example_plate}",
+    title=f"UMAP of JUMP low solidity nuclei outliers within {example_plate}",
     filename=(
-        plot_image := f"./images/umap_elongated_nuclei_outliers_{example_plate}.png"
+        plot_image := f"./images/umap_low_solidity_nuclei_outliers_{example_plate}.png"
     ),
     color_dataframe=df_features_with_cqc_outlier_data,
-    color_column="cqc.elongated_nuclei.is_outlier",
+    color_column="cqc.low_solidity_nuclei.is_outlier",
     clabel="density of single cells classified as outliers",
 )
 # conserve filespace by displaying export instead of dynamic plot
@@ -607,13 +603,16 @@ Image(plot_image)
 # In[27]:
 
 
-# show small and large nuclei outliers within the data
+# show cells with multiple nuclei outliers within the data
 plot_hvplot_scatter(
     embeddings=embeddings_with_outliers,
-    title=f"UMAP of JUMP large nuclei outliers within {example_plate}",
-    filename=(plot_image := f"./images/umap_large_nuclei_outliers_{example_plate}.png"),
+    title=f"UMAP of JUMP cells with multiple nuclei outliers within {example_plate}",
+    filename=(
+        plot_image
+        := f"./images/umap_cells_multiple_nuclei_outliers_{example_plate}.png"
+    ),
     color_dataframe=df_features_with_cqc_outlier_data,
-    color_column="cqc.large_nuclei.is_outlier",
+    color_column="cqc.cells_multiple_nuclei.is_outlier",
     clabel="density of single cells classified as outliers",
 )
 # conserve filespace by displaying export instead of dynamic plot
@@ -743,7 +742,7 @@ plot_hvplot_scatter(
         := f"./images/umap_without_outliers_{example_plate}.png"
     ),
     bgcolor="white",
-    cmap=px.colors.sequential.Greens[4:],
+    cmap=list(reversed(Greens9))[4:],
     clabel="density of single cells",
 )
 # conserve filespace by displaying export instead of dynamic plot

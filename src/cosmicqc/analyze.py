@@ -16,11 +16,6 @@ from scipy.stats import zscore as scipy_zscore
 DEFAULT_QC_THRESHOLD_FILE = (
     f"{pathlib.Path(__file__).parent!s}/data/qc_thresholds_default.yml"
 )
-# Threshold sets that were the defaults before the segmentation-focused defaults
-# (small_and_low_formfactor_nuclei, elongated_nuclei, large_nuclei).
-LEGACY_QC_THRESHOLD_FILE = (
-    f"{pathlib.Path(__file__).parent!s}/data/qc_nuclei_thresholds_legacy.yml"
-)
 
 # `label_outliers` and the helper accept raw caller input, including `None` to mean
 # "load all named conditions from the thresholds file".

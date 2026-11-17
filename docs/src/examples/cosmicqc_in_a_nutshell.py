@@ -36,10 +36,14 @@ image_context_dir = pathlib.Path(data_path).parent / "Plate_2_images"
 mask_context_dir = pathlib.Path(data_path).parent / "Plate_2_masks"
 
 # create a cosmicqc CytoDataFrame (single-cell DataFrame)
+# (image files are found through the context directories above, so we ignore
+# the dataset's image path columns, which point to the original
+# acquisition locations)
 scdf = CytoDataFrame(
     data=data_path,
     data_context_dir=image_context_dir,
     data_mask_context_dir=mask_context_dir,
+    display_options={"ignore_image_path_columns": True},
 )
 
 # display the dataframe
@@ -88,13 +92,9 @@ cosmicqc.analyze.find_outliers(
 
 # create a labeled dataset which includes z-scores and whether those scores
 # are interpreted as outliers or inliers. We use pre-defined threshold sets
-# loaded from the bundled legacy thresholds file (cosmicqc can accept
-# user-defined thresholds too!).
+# loaded from defaults (cosmicqc can accept user-defined thresholds too!).
 labeled_scdf = cosmicqc.analyze.label_outliers(
-    df=scdf,
-    include_threshold_scores=True,
-    feature_thresholds="large_nuclei",
-    feature_thresholds_file=cosmicqc.analyze.LEGACY_QC_THRESHOLD_FILE,
+    df=scdf, include_threshold_scores=True, feature_thresholds="low_solidity_nuclei"
 )
 labeled_scdf
 
@@ -104,11 +104,13 @@ labeled_scdf
 
 # show cropped images through CytoDataFrame from the dataset to help analyze outliers
 # labeled_scdf._enbable_debug_mode()
-labeled_scdf.sort_values(by="Metadata_cqc_large_nuclei_is_outlier", ascending=False)[
+labeled_scdf.sort_values(
+    by="Metadata_cqc_low_solidity_nuclei_is_outlier", ascending=False
+)[
     [
         "Metadata_ImageNumber",
         "Metadata_Cells_Number_Object_Number",
-        "Metadata_cqc_large_nuclei_is_outlier",
+        "Metadata_cqc_low_solidity_nuclei_is_outlier",
         "Image_FileName_GFP",
         "Image_FileName_RFP",
         "Image_FileName_DAPI",
