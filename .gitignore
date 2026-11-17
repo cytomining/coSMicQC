@@ -150,3 +150,8 @@ docs/jupyter_execute
 # ignore vscode files
 .vscode/
 settings.json
+
+# parsl run logs (e.g. from CytoTable in the JUMP example)
+runinfo/
+# CytoTable download cache from the JUMP example
+sqlite_s3_cache/

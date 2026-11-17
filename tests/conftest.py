@@ -20,6 +20,17 @@ def fixture_cytotable_CFReT_df():
     )
 
 
+@pytest.fixture(name="cytotable_CFReT_data_dna_df")
+def fixture_cytotable_CFReT_dna_df(cytotable_CFReT_data_df: pd.DataFrame):
+    """
+    Return CytoTable CFReT_data with the nuclear stain channel renamed from
+    "Hoechst" to "DNA" so it matches the default thresholds feature names.
+    """
+    return cytotable_CFReT_data_df.rename(
+        columns=lambda col: col.replace("_Hoechst", "_DNA")
+    )
+
+
 @pytest.fixture(name="cytotable_NF1_contamination_data_df")
 def fixture_cytotable_NF1_contamination_df():
     """
