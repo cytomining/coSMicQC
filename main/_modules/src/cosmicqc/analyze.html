@@ -232,7 +232,7 @@ For the latest released version, please have a look at <a href="../../../../v1.1
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">zscore</span> <span class="k">as</span> <span class="n">scipy_zscore</span>
 
 <span class="n">DEFAULT_QC_THRESHOLD_FILE</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="si">!s}</span><span class="s2">/data/qc_nuclei_thresholds_default.yml&quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="si">!s}</span><span class="s2">/data/qc_thresholds_default.yml&quot;</span>
 <span class="p">)</span>
 
 <span class="c1"># `label_outliers` and the helper accept raw caller input, including `None` to mean</span>
@@ -700,10 +700,12 @@ For the latest released version, please have a look at <a href="../../../../v1.1
 
     <span class="c1"># Use identify_outliers to get a boolean mask of outliers based on the</span>
     <span class="c1"># provided thresholds</span>
+    <span class="c1"># (thresholds are already resolved to a dict, so no file is needed and</span>
+    <span class="c1"># passing one would trigger a spurious &quot;file will be ignored&quot; warning)</span>
     <span class="n">outliers_mask</span> <span class="o">=</span> <span class="n">identify_outliers</span><span class="p">(</span>
         <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
         <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">feature_thresholds</span><span class="p">,</span>
-        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+        <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Filter the original DataFrame to return only the outliers along with the</span>
     <span class="c1"># specified metadata columns</span>
@@ -829,10 +831,12 @@ For the latest released version, please have a look at <a href="../../../../v1.1
 
     <span class="c1"># Loop through each set of thresholds and identify outliers</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">thresholds</span> <span class="ow">in</span> <span class="n">threshold_sets</span><span class="p">:</span>
+        <span class="c1"># (thresholds are already resolved to a dict, so no file is needed and</span>
+        <span class="c1"># passing one would trigger a spurious &quot;file will be ignored&quot; warning)</span>
         <span class="n">detected</span> <span class="o">=</span> <span class="n">identify_outliers</span><span class="p">(</span>
             <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
             <span class="n">feature_thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span>
-            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="n">feature_thresholds_file</span><span class="p">,</span>
+            <span class="n">feature_thresholds_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">condition_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
             <span class="n">include_threshold_scores</span><span class="o">=</span><span class="n">include_threshold_scores</span><span class="p">,</span>
         <span class="p">)</span>

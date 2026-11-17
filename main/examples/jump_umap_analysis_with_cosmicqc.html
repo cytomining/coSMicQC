@@ -235,6 +235,13 @@ For the latest released version, please have a look at <a href="../../v1.1.2/ind
 
     <section id="jump-umap-analysis-with-cosmicqc">
 <h1>JUMP UMAP analysis with coSMicQC<a class="headerlink" href="#jump-umap-analysis-with-cosmicqc" title="Link to this heading">¶</a></h1>
+<blockquote>
+<div><p><strong>Note: static example from an older version of coSMicQC.</strong>
+The saved outputs and images in this notebook were generated with coSMicQC v0.0.11 (September 2024).
+It is no longer maintained and does not run end to end with the current version of coSMicQC
+(for example, outlier columns are now named <code class="docutils literal notranslate"><span class="pre">Metadata_cqc_&lt;set&gt;_is_outlier</span></code>, not <code class="docutils literal notranslate"><span class="pre">cqc.&lt;set&gt;.is_outlier</span></code>).
+This example is likely to be deprecated; see <a class="reference external" href="https://github.com/cytomining/coSMicQC/issues/387">#387</a>.</p>
+</div></blockquote>
 <p>This notebook analyzes <a class="reference external" href="https://jump-cellpainting.broadinstitute.org/">JUMP</a> data (<code class="docutils literal notranslate"><span class="pre">cpg0000-jump-pilot</span></code>) by leveraging <a class="reference external" href="https://arxiv.org/abs/1802.03426">UMAP</a> and <a class="reference external" href="https://github.com/cytomining/coSMicQC">coSMicQC</a>.</p>
 <section id="outline">
 <h2>Outline<a class="headerlink" href="#outline" title="Link to this heading">¶</a></h2>
@@ -252,9 +259,9 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hvplot.pandas</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pycytominer</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">umap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bokeh.palettes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Greens9</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cytotable.convert</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">Image</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">parsl.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
@@ -278,21 +285,35 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>%opts magic unavailable (pyparsing cannot be imported)
-%compositor magic unavailable (pyparsing cannot be imported)
-</pre></div>
-</div>
-<script type="application/javascript">(function(root) {
+<div class="output text_html"><script type="esms-options">{"shimMode": true}</script><style>*[data-root-id],
+*[data-root-id] > * {
+  box-sizing: border-box;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
+}
+
+/* Override VSCode background color */
+.cell-output-ipywidget-background:has(
+  > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
+),
+.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
+  background-color: transparent !important;
+}
+</style></div><script type="application/javascript">(function(root) {
   function now() {
     return new Date();
   }
 
-  var force = true;
-  var py_version = '3.4.3'.replace('rc', '-rc.').replace('.dev', '-dev.');
-  var reloading = false;
-  var Bokeh = root.Bokeh;
+  const force = true;
+  const version = '3.9.0'.replace('rc', '-rc.').replace('.dev', '-dev.');
+  const reloading = false;
+  const Bokeh = root.Bokeh;
+  const BK_RE = /^https:\/\/cdn\.bokeh\.org\/bokeh\/(release|dev)\/bokeh-/;
+  const PN_RE = /^https:\/\/cdn\.holoviz\.org\/panel\/[^/]+\/dist\/panel/i;
 
-  if (typeof (root._bokeh_timeout) === "undefined" || force) {
+  // Set a timeout for this load but only if we are not already initializing
+  if (typeof (root._bokeh_timeout) === "undefined" || (force || !root._bokeh_is_initializing)) {
     root._bokeh_timeout = Date.now() + 5000;
     root._bokeh_failed_load = false;
   }
@@ -309,7 +330,7 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
     console.debug("Bokeh: all callbacks have finished");
   }
 
-  function load_libs(css_urls, js_urls, js_modules, js_exports, callback) {
+  function load_libs(css_urls, js_urls, js_modules, js_exports, Bokeh, callback) {
     if (css_urls == null) css_urls = [];
     if (js_urls == null) js_urls = [];
     if (js_modules == null) js_modules = [];
@@ -318,15 +339,13 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
     root._bokeh_onload_callbacks.push(callback);
 
     if (root._bokeh_is_loading > 0) {
+      // Don't load bokeh if it is still initializing
       console.debug("Bokeh: BokehJS is being loaded, scheduling callback at", now());
       return null;
-    }
-    if (js_urls.length === 0 && js_modules.length === 0 && Object.keys(js_exports).length === 0) {
+    } else if (js_urls.length === 0 && js_modules.length === 0 && Object.keys(js_exports).length === 0) {
+      // There is nothing to load
       run_callbacks();
       return null;
-    }
-    if (!reloading) {
-      console.debug("Bokeh: BokehJS not loaded, scheduling load and callback at", now());
     }
 
     function on_load() {
@@ -338,11 +357,12 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
     }
     window._bokeh_on_load = on_load
 
-    function on_error() {
-      console.error("failed to load " + url);
+    function on_error(e) {
+      const src_el = e.srcElement
+      console.error("failed to load " + (src_el.href || src_el.src));
     }
 
-    var skip = [];
+    const skip = [];
     if (window.requirejs) {
       window.requirejs.config({'packages': {}, 'paths': {}, 'shim': {}});
       root._bokeh_is_loading = css_urls.length + 0;
@@ -350,19 +370,20 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
       root._bokeh_is_loading = css_urls.length + js_urls.length + js_modules.length + Object.keys(js_exports).length;
     }
 
-    var existing_stylesheets = []
-    var links = document.getElementsByTagName('link')
-    for (var i = 0; i < links.length; i++) {
-      var link = links[i]
+    const existing_stylesheets = []
+    const links = document.getElementsByTagName('link')
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i]
       if (link.href != null) {
-	existing_stylesheets.push(link.href)
+        existing_stylesheets.push(link.href)
       }
     }
-    for (var i = 0; i < css_urls.length; i++) {
-      var url = css_urls[i];
-      if (existing_stylesheets.indexOf(url) !== -1) {
-	on_load()
-	continue;
+    for (let i = 0; i < css_urls.length; i++) {
+      const url = css_urls[i];
+      const escaped = encodeURI(url)
+      if (existing_stylesheets.indexOf(escaped) !== -1) {
+        on_load()
+        continue;
       }
       const element = document.createElement("link");
       element.onload = on_load;
@@ -373,22 +394,26 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
       console.debug("Bokeh: injecting link tag for BokehJS stylesheet: ", url);
       document.body.appendChild(element);
     }    var existing_scripts = []
-    var scripts = document.getElementsByTagName('script')
-    for (var i = 0; i < scripts.length; i++) {
+    const scripts = document.getElementsByTagName('script')
+    for (let i = 0; i < scripts.length; i++) {
       var script = scripts[i]
       if (script.src != null) {
-	existing_scripts.push(script.src)
+        existing_scripts.push(script.src)
       }
     }
-    for (var i = 0; i < js_urls.length; i++) {
-      var url = js_urls[i];
-      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+    for (let i = 0; i < js_urls.length; i++) {
+      const url = js_urls[i];
+      const escaped = encodeURI(url)
+      const shouldSkip = skip.includes(escaped) || existing_scripts.includes(escaped)
+      const isBokehOrPanel = BK_RE.test(escaped) || PN_RE.test(escaped)
+      const missingOrBroken = Bokeh == null || Bokeh.Panel == null || (Bokeh.version != version && !Bokeh.versions?.has(version)) || Bokeh.versions?.get(version)?.Panel == null;
+      if (shouldSkip && !(isBokehOrPanel && missingOrBroken)) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
-      var element = document.createElement('script');
+      const element = document.createElement('script');
       element.onload = on_load;
       element.onerror = on_error;
       element.async = false;
@@ -396,13 +421,14 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
       console.debug("Bokeh: injecting script tag for BokehJS library: ", url);
       document.head.appendChild(element);
     }
-    for (var i = 0; i < js_modules.length; i++) {
-      var url = js_modules[i];
-      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+    for (let i = 0; i < js_modules.length; i++) {
+      const url = js_modules[i];
+      const escaped = encodeURI(url)
+      if (skip.indexOf(escaped) !== -1 || existing_scripts.indexOf(escaped) !== -1) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
       var element = document.createElement('script');
       element.onload = on_load;
@@ -414,12 +440,13 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
       document.head.appendChild(element);
     }
     for (const name in js_exports) {
-      var url = js_exports[name];
-      if (skip.indexOf(url) >= 0 || root[name] != null) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+      const url = js_exports[name];
+      const escaped = encodeURI(url)
+      if (skip.indexOf(escaped) >= 0 || root[name] != null) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
       var element = document.createElement('script');
       element.onerror = on_error;
@@ -444,11 +471,11 @@ Afterwards, we use UMAP to demonstrate patterns within the data.</p>
     document.body.appendChild(element);
   }
 
-  var js_urls = ["https://cdn.bokeh.org/bokeh/release/bokeh-3.4.3.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.4.3.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.4.3.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.4.3.min.js", "https://cdn.holoviz.org/panel/1.4.5/dist/panel.min.js"];
-  var js_modules = [];
-  var js_exports = {};
-  var css_urls = [];
-  var inline_js = [    function(Bokeh) {
+  const js_urls = ["https://cdn.holoviz.org/panel/1.8.10/dist/bundled/reactiveesm/es-module-shims@^1.10.0/dist/es-module-shims.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-3.9.0.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.9.0.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.9.0.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.9.0.min.js", "https://cdn.holoviz.org/panel/1.8.10/dist/panel.min.js"];
+  const js_modules = [];
+  const js_exports = {};
+  const css_urls = [];
+  const inline_js = [    function(Bokeh) {
       Bokeh.set_log_level("info");
     },
 function(Bokeh) {} // ensure no trailing comma for IE
@@ -456,32 +483,22 @@ function(Bokeh) {} // ensure no trailing comma for IE
 
   function run_inline_js() {
     if ((root.Bokeh !== undefined) || (force === true)) {
-      for (var i = 0; i < inline_js.length; i++) {
-	try {
+      for (let i = 0; i < inline_js.length; i++) {
+        try {
           inline_js[i].call(root, root.Bokeh);
-	} catch(e) {
-	  if (!reloading) {
-	    throw e;
-	  }
-	}
+        } catch(e) {
+          if (!reloading) {
+            throw e;
+          }
+        }
       }
-      // Cache old bokeh versions
-      if (Bokeh != undefined && !reloading) {
-	var NewBokeh = root.Bokeh;
-	if (Bokeh.versions === undefined) {
-	  Bokeh.versions = new Map();
-	}
-	if (NewBokeh.version !== Bokeh.version) {
-	  Bokeh.versions.set(NewBokeh.version, NewBokeh)
-	}
-	root.Bokeh = Bokeh;
-      }} else if (Date.now() < root._bokeh_timeout) {
+    } else if (Date.now() < root._bokeh_timeout) {
       setTimeout(run_inline_js, 100);
     } else if (!root._bokeh_failed_load) {
       console.log("Bokeh: BokehJS failed to load within specified timeout.");
       root._bokeh_failed_load = true;
     }
-    root._bokeh_is_initializing = false
+    root._bokeh_is_initializing = false;
   }
 
   function load_or_wait() {
@@ -493,22 +510,40 @@ function(Bokeh) {} // ensure no trailing comma for IE
     // that we do not start loading a newer (Panel>=1.0 and Bokeh>3) version
     // before older versions are fully initialized.
     if (root._bokeh_is_initializing && Date.now() > root._bokeh_timeout) {
+      // If the timeout and bokeh was not successfully loaded we reset
+      // everything and try loading again
+      root._bokeh_timeout = Date.now() + 5000;
       root._bokeh_is_initializing = false;
       root._bokeh_onload_callbacks = undefined;
+      root._bokeh_is_loading = 0;
       console.log("Bokeh: BokehJS was loaded multiple times but one version failed to initialize.");
       load_or_wait();
     } else if (root._bokeh_is_initializing || (typeof root._bokeh_is_initializing === "undefined" && root._bokeh_onload_callbacks !== undefined)) {
       setTimeout(load_or_wait, 100);
     } else {
-      root._bokeh_is_initializing = true
-      root._bokeh_onload_callbacks = []
-      var bokeh_loaded = Bokeh != null && (Bokeh.version === py_version || (Bokeh.versions !== undefined && Bokeh.versions.has(py_version)));
+      root._bokeh_is_initializing = true;
+      root._bokeh_onload_callbacks = [];
+      const bokeh_loaded = Bokeh != null && ((Bokeh.version === version && Bokeh.Panel) || (Bokeh.versions?.has(version) && Bokeh.versions.get(version)?.Panel));
       if (!reloading && !bokeh_loaded) {
-	root.Bokeh = undefined;
+        if (root.Bokeh) {
+          root.Bokeh = undefined;
+        }
+        console.debug("Bokeh: BokehJS not loaded, scheduling load and callback at", now());
       }
-      load_libs(css_urls, js_urls, js_modules, js_exports, function() {
-	console.debug("Bokeh: BokehJS plotting callback run at", now());
-	run_inline_js();
+      load_libs(css_urls, js_urls, js_modules, js_exports, Bokeh, function() {
+        console.debug("Bokeh: BokehJS plotting callback run at", now());
+        run_inline_js();
+        if (Bokeh != undefined && !reloading) {
+          const NewBokeh = root.Bokeh;
+          if (Bokeh.versions === undefined) {
+            Bokeh.versions = new Map();
+          }
+          if (NewBokeh.version !== Bokeh.version) {
+            Bokeh[NewBokeh.version] = NewBokeh;
+            Bokeh.versions.set(NewBokeh.version, NewBokeh);
+          }
+          root.Bokeh = Bokeh;
+        }
       });
     }
   }
@@ -539,7 +574,6 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
           var messages = comm.messages[Symbol.asyncIterator]();
           function processIteratorResult(result) {
             var message = result.value;
-            console.log(message)
             var content = {data: message.data, comm_id};
             var buffers = []
             for (var buffer of message.buffers || []) {
@@ -566,7 +600,22 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
         }
       } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
         var comm = window.PyViz.kernels[plot_id].connectToComm(comm_id);
-        comm.open();
+        let retries = 0;
+        const open = () => {
+          if (comm.active) {
+            comm.open();
+          } else if (retries > 3) {
+            console.warn('Comm target never activated')
+          } else {
+            retries += 1
+            setTimeout(open, 500)
+          }
+        }
+        if (comm.active) {
+          comm.open();
+        } else {
+          setTimeout(open, 500)
+        }
         if (msg_handler) {
           comm.onMsg = msg_handler;
         }
@@ -586,7 +635,7 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
             }
             return messages.next().then(processIteratorResult);
           }
-        }) 
+        })
         var sendClosure = (data, metadata, buffers, disposeOnDone) => {
           return comm_promise.then((comm) => {
             comm.send(data, metadata, buffers, disposeOnDone);
@@ -754,32 +803,17 @@ if (window.Jupyter !== undefined) {
   } catch(err) {
   }
 }
-</script><div class="output text_html"><style>*[data-root-id],
-*[data-root-id] > * {
-  box-sizing: border-box;
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
-  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
-}
-
-/* Override VSCode background color */
-.cell-output-ipywidget-background:has(
-    > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
-  ),
-.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
-  background-color: transparent !important;
-}
-</style></div><div class="output text_html"><div id='p1002'>
-  <div id="f697bbb6-1ae6-4b91-a420-350fba66acea" data-root-id="p1002" style="display: contents;"></div>
+</script><div class="output text_html"><div id='2cee48fc-065f-4085-b89c-5a5128ac2438'>
+  <div id="d919bedc-55f5-4f5f-9239-c722694866d0" data-root-id="2cee48fc-065f-4085-b89c-5a5128ac2438" style="display: contents;"></div>
 </div>
 <script type="application/javascript">(function(root) {
-  var docs_json = {"625f384b-7302-4e3d-a936-25240ff54147":{"version":"3.4.3","title":"Bokeh Application","roots":[{"type":"object","name":"panel.models.browser.BrowserInfo","id":"p1002"},{"type":"object","name":"panel.models.comm_manager.CommManager","id":"p1003","attributes":{"plot_id":"p1002","comm_id":"c2bee21e6616495d81043725a1425ffb","client_comm_id":"4f447acc1b49428096d0330176a4f12a"}}],"defs":[{"type":"model","name":"ReactiveHTML1"},{"type":"model","name":"FlexBox1","properties":[{"name":"align_content","kind":"Any","default":"flex-start"},{"name":"align_items","kind":"Any","default":"flex-start"},{"name":"flex_direction","kind":"Any","default":"row"},{"name":"flex_wrap","kind":"Any","default":"wrap"},{"name":"gap","kind":"Any","default":""},{"name":"justify_content","kind":"Any","default":"flex-start"}]},{"type":"model","name":"FloatPanel1","properties":[{"name":"config","kind":"Any","default":{"type":"map"}},{"name":"contained","kind":"Any","default":true},{"name":"position","kind":"Any","default":"right-top"},{"name":"offsetx","kind":"Any","default":null},{"name":"offsety","kind":"Any","default":null},{"name":"theme","kind":"Any","default":"primary"},{"name":"status","kind":"Any","default":"normalized"}]},{"type":"model","name":"GridStack1","properties":[{"name":"mode","kind":"Any","default":"warn"},{"name":"ncols","kind":"Any","default":null},{"name":"nrows","kind":"Any","default":null},{"name":"allow_resize","kind":"Any","default":true},{"name":"allow_drag","kind":"Any","default":true},{"name":"state","kind":"Any","default":[]}]},{"type":"model","name":"drag1","properties":[{"name":"slider_width","kind":"Any","default":5},{"name":"slider_color","kind":"Any","default":"black"},{"name":"value","kind":"Any","default":50}]},{"type":"model","name":"click1","properties":[{"name":"terminal_output","kind":"Any","default":""},{"name":"debug_name","kind":"Any","default":""},{"name":"clears","kind":"Any","default":0}]},{"type":"model","name":"FastWrapper1","properties":[{"name":"object","kind":"Any","default":null},{"name":"style","kind":"Any","default":null}]},{"type":"model","name":"NotificationAreaBase1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0}]},{"type":"model","name":"NotificationArea1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"notifications","kind":"Any","default":[]},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0},{"name":"types","kind":"Any","default":[{"type":"map","entries":[["type","warning"],["background","#ffc107"],["icon",{"type":"map","entries":[["className","fas fa-exclamation-triangle"],["tagName","i"],["color","white"]]}]]},{"type":"map","entries":[["type","info"],["background","#007bff"],["icon",{"type":"map","entries":[["className","fas fa-info-circle"],["tagName","i"],["color","white"]]}]]}]}]},{"type":"model","name":"Notification","properties":[{"name":"background","kind":"Any","default":null},{"name":"duration","kind":"Any","default":3000},{"name":"icon","kind":"Any","default":null},{"name":"message","kind":"Any","default":""},{"name":"notification_type","kind":"Any","default":null},{"name":"_destroyed","kind":"Any","default":false}]},{"type":"model","name":"TemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"BootstrapTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"TemplateEditor1","properties":[{"name":"layout","kind":"Any","default":[]}]},{"type":"model","name":"MaterialTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"copy_to_clipboard1","properties":[{"name":"fill","kind":"Any","default":"none"},{"name":"value","kind":"Any","default":null}]}]}};
-  var render_items = [{"docid":"625f384b-7302-4e3d-a936-25240ff54147","roots":{"p1002":"f697bbb6-1ae6-4b91-a420-350fba66acea"},"root_ids":["p1002"]}];
+  var docs_json = {"b7ed816b-6219-4173-bd7f-d1ed16e65024":{"version":"3.9.0","title":"Bokeh Application","config":{"type":"object","name":"DocumentConfig","id":"fb8a08dd-92ae-4de3-b7cd-0b366f6e4a6b","attributes":{"notifications":{"type":"object","name":"Notifications","id":"68a9627e-3b29-4ae8-8553-c3703d947ff6"}}},"roots":[{"type":"object","name":"panel.models.browser.BrowserInfo","id":"2cee48fc-065f-4085-b89c-5a5128ac2438"},{"type":"object","name":"panel.models.comm_manager.CommManager","id":"aec689a5-6acc-4c88-a31c-c8b3ed09a804","attributes":{"plot_id":"2cee48fc-065f-4085-b89c-5a5128ac2438","comm_id":"02d66be47afe4d4a8fca2ba6810f05ac","client_comm_id":"6c2b2f925ded4a858e8003f12a7d141a"}}],"defs":[{"type":"model","name":"ReactiveHTML1"},{"type":"model","name":"FlexBox1","properties":[{"name":"align_content","kind":"Any","default":"flex-start"},{"name":"align_items","kind":"Any","default":"flex-start"},{"name":"flex_direction","kind":"Any","default":"row"},{"name":"flex_wrap","kind":"Any","default":"wrap"},{"name":"gap","kind":"Any","default":""},{"name":"justify_content","kind":"Any","default":"flex-start"}]},{"type":"model","name":"FloatPanel1","properties":[{"name":"config","kind":"Any","default":{"type":"map"}},{"name":"contained","kind":"Any","default":true},{"name":"position","kind":"Any","default":"right-top"},{"name":"offsetx","kind":"Any","default":null},{"name":"offsety","kind":"Any","default":null},{"name":"theme","kind":"Any","default":"primary"},{"name":"status","kind":"Any","default":"normalized"}]},{"type":"model","name":"GridStack1","properties":[{"name":"ncols","kind":"Any","default":null},{"name":"nrows","kind":"Any","default":null},{"name":"allow_resize","kind":"Any","default":true},{"name":"allow_drag","kind":"Any","default":true},{"name":"state","kind":"Any","default":[]}]},{"type":"model","name":"drag1","properties":[{"name":"slider_width","kind":"Any","default":5},{"name":"slider_color","kind":"Any","default":"black"},{"name":"start","kind":"Any","default":0},{"name":"end","kind":"Any","default":100},{"name":"value","kind":"Any","default":50}]},{"type":"model","name":"click1","properties":[{"name":"terminal_output","kind":"Any","default":""},{"name":"debug_name","kind":"Any","default":""},{"name":"clears","kind":"Any","default":0}]},{"type":"model","name":"ReactiveESM1","properties":[{"name":"esm_constants","kind":"Any","default":{"type":"map"}}]},{"type":"model","name":"JSComponent1","properties":[{"name":"esm_constants","kind":"Any","default":{"type":"map"}}]},{"type":"model","name":"ReactComponent1","properties":[{"name":"use_shadow_dom","kind":"Any","default":true},{"name":"esm_constants","kind":"Any","default":{"type":"map"}}]},{"type":"model","name":"AnyWidgetComponent1","properties":[{"name":"use_shadow_dom","kind":"Any","default":true},{"name":"esm_constants","kind":"Any","default":{"type":"map"}}]},{"type":"model","name":"FastWrapper1","properties":[{"name":"object","kind":"Any","default":null},{"name":"style","kind":"Any","default":null}]},{"type":"model","name":"NotificationArea1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"max_notifications","kind":"Any","default":5},{"name":"notifications","kind":"Any","default":[]},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0},{"name":"types","kind":"Any","default":[{"type":"map","entries":[["type","warning"],["background","#ffc107"],["icon",{"type":"map","entries":[["className","fas fa-exclamation-triangle"],["tagName","i"],["color","white"]]}]]},{"type":"map","entries":[["type","info"],["background","#007bff"],["icon",{"type":"map","entries":[["className","fas fa-info-circle"],["tagName","i"],["color","white"]]}]]}]}]},{"type":"model","name":"Notification","properties":[{"name":"background","kind":"Any","default":null},{"name":"duration","kind":"Any","default":3000},{"name":"icon","kind":"Any","default":null},{"name":"message","kind":"Any","default":""},{"name":"notification_type","kind":"Any","default":null},{"name":"_rendered","kind":"Any","default":false},{"name":"_destroyed","kind":"Any","default":false}]},{"type":"model","name":"TemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"BootstrapTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"TemplateEditor1","properties":[{"name":"layout","kind":"Any","default":[]}]},{"type":"model","name":"MaterialTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"request_value1","properties":[{"name":"fill","kind":"Any","default":"none"},{"name":"_synced","kind":"Any","default":null},{"name":"_request_sync","kind":"Any","default":0}]},{"type":"model","name":"holoviews.plotting.bokeh.raster.HoverModel","properties":[{"name":"xy","kind":"Any","default":null},{"name":"data","kind":"Any","default":null}]}]}};
+  var render_items = [{"docid":"b7ed816b-6219-4173-bd7f-d1ed16e65024","roots":{"2cee48fc-065f-4085-b89c-5a5128ac2438":"d919bedc-55f5-4f5f-9239-c722694866d0"},"root_ids":["2cee48fc-065f-4085-b89c-5a5128ac2438"]}];
   var docs = Object.values(docs_json)
   if (!docs) {
     return
   }
-  const py_version = docs[0].version.replace('rc', '-rc.').replace('.dev', '-dev.')
+  const version = docs[0].version.replace('rc', '-rc.').replace('.dev', '-dev.')
   async function embed_document(root) {
     var Bokeh = get_bokeh(root)
     await Bokeh.embed.embed_items_notebook(docs_json, render_items);
@@ -801,12 +835,12 @@ if (window.Jupyter !== undefined) {
   function get_bokeh(root) {
     if (root.Bokeh === undefined) {
       return null
-    } else if (root.Bokeh.version !== py_version) {
-      if (root.Bokeh.versions === undefined || !root.Bokeh.versions.has(py_version)) {
+    } else if (root.Bokeh.version !== version) {
+      if (root.Bokeh.versions === undefined || !root.Bokeh.versions.has(version)) {
 	return null
       }
-      return root.Bokeh.versions.get(py_version);
-    } else if (root.Bokeh.version === py_version) {
+      return root.Bokeh.versions.get(version);
+    } else if (root.Bokeh.version === version) {
       return root.Bokeh
     }
     return null
@@ -838,17 +872,39 @@ if (window.Jupyter !== undefined) {
       }
     }, 25, root)
   }
-})(window);</script></div><script type="application/javascript">(function(root) {
+})(window);</script></div><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jenna/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/google/api_core/_python_version_support.py:263: FutureWarning: You are using a Python version (3.11.9) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+</pre></div>
+</div>
+<div class="output text_html"><script type="esms-options">{"shimMode": true}</script><style>*[data-root-id],
+*[data-root-id] > * {
+  box-sizing: border-box;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
+}
+
+/* Override VSCode background color */
+.cell-output-ipywidget-background:has(
+  > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
+),
+.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
+  background-color: transparent !important;
+}
+</style></div><script type="application/javascript">(function(root) {
   function now() {
     return new Date();
   }
 
-  var force = true;
-  var py_version = '3.4.3'.replace('rc', '-rc.').replace('.dev', '-dev.');
-  var reloading = true;
-  var Bokeh = root.Bokeh;
+  const force = false;
+  const version = '3.9.0'.replace('rc', '-rc.').replace('.dev', '-dev.');
+  const reloading = true;
+  const Bokeh = root.Bokeh;
+  const BK_RE = /^https:\/\/cdn\.bokeh\.org\/bokeh\/(release|dev)\/bokeh-/;
+  const PN_RE = /^https:\/\/cdn\.holoviz\.org\/panel\/[^/]+\/dist\/panel/i;
 
-  if (typeof (root._bokeh_timeout) === "undefined" || force) {
+  // Set a timeout for this load but only if we are not already initializing
+  if (typeof (root._bokeh_timeout) === "undefined" || (force || !root._bokeh_is_initializing)) {
     root._bokeh_timeout = Date.now() + 5000;
     root._bokeh_failed_load = false;
   }
@@ -865,7 +921,7 @@ if (window.Jupyter !== undefined) {
     console.debug("Bokeh: all callbacks have finished");
   }
 
-  function load_libs(css_urls, js_urls, js_modules, js_exports, callback) {
+  function load_libs(css_urls, js_urls, js_modules, js_exports, Bokeh, callback) {
     if (css_urls == null) css_urls = [];
     if (js_urls == null) js_urls = [];
     if (js_modules == null) js_modules = [];
@@ -874,15 +930,13 @@ if (window.Jupyter !== undefined) {
     root._bokeh_onload_callbacks.push(callback);
 
     if (root._bokeh_is_loading > 0) {
+      // Don't load bokeh if it is still initializing
       console.debug("Bokeh: BokehJS is being loaded, scheduling callback at", now());
       return null;
-    }
-    if (js_urls.length === 0 && js_modules.length === 0 && Object.keys(js_exports).length === 0) {
+    } else if (js_urls.length === 0 && js_modules.length === 0 && Object.keys(js_exports).length === 0) {
+      // There is nothing to load
       run_callbacks();
       return null;
-    }
-    if (!reloading) {
-      console.debug("Bokeh: BokehJS not loaded, scheduling load and callback at", now());
     }
 
     function on_load() {
@@ -894,11 +948,12 @@ if (window.Jupyter !== undefined) {
     }
     window._bokeh_on_load = on_load
 
-    function on_error() {
-      console.error("failed to load " + url);
+    function on_error(e) {
+      const src_el = e.srcElement
+      console.error("failed to load " + (src_el.href || src_el.src));
     }
 
-    var skip = [];
+    const skip = [];
     if (window.requirejs) {
       window.requirejs.config({'packages': {}, 'paths': {}, 'shim': {}});
       root._bokeh_is_loading = css_urls.length + 0;
@@ -906,19 +961,20 @@ if (window.Jupyter !== undefined) {
       root._bokeh_is_loading = css_urls.length + js_urls.length + js_modules.length + Object.keys(js_exports).length;
     }
 
-    var existing_stylesheets = []
-    var links = document.getElementsByTagName('link')
-    for (var i = 0; i < links.length; i++) {
-      var link = links[i]
+    const existing_stylesheets = []
+    const links = document.getElementsByTagName('link')
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i]
       if (link.href != null) {
-	existing_stylesheets.push(link.href)
+        existing_stylesheets.push(link.href)
       }
     }
-    for (var i = 0; i < css_urls.length; i++) {
-      var url = css_urls[i];
-      if (existing_stylesheets.indexOf(url) !== -1) {
-	on_load()
-	continue;
+    for (let i = 0; i < css_urls.length; i++) {
+      const url = css_urls[i];
+      const escaped = encodeURI(url)
+      if (existing_stylesheets.indexOf(escaped) !== -1) {
+        on_load()
+        continue;
       }
       const element = document.createElement("link");
       element.onload = on_load;
@@ -929,22 +985,26 @@ if (window.Jupyter !== undefined) {
       console.debug("Bokeh: injecting link tag for BokehJS stylesheet: ", url);
       document.body.appendChild(element);
     }    var existing_scripts = []
-    var scripts = document.getElementsByTagName('script')
-    for (var i = 0; i < scripts.length; i++) {
+    const scripts = document.getElementsByTagName('script')
+    for (let i = 0; i < scripts.length; i++) {
       var script = scripts[i]
       if (script.src != null) {
-	existing_scripts.push(script.src)
+        existing_scripts.push(script.src)
       }
     }
-    for (var i = 0; i < js_urls.length; i++) {
-      var url = js_urls[i];
-      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+    for (let i = 0; i < js_urls.length; i++) {
+      const url = js_urls[i];
+      const escaped = encodeURI(url)
+      const shouldSkip = skip.includes(escaped) || existing_scripts.includes(escaped)
+      const isBokehOrPanel = BK_RE.test(escaped) || PN_RE.test(escaped)
+      const missingOrBroken = Bokeh == null || Bokeh.Panel == null || (Bokeh.version != version && !Bokeh.versions?.has(version)) || Bokeh.versions?.get(version)?.Panel == null;
+      if (shouldSkip && !(isBokehOrPanel && missingOrBroken)) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
-      var element = document.createElement('script');
+      const element = document.createElement('script');
       element.onload = on_load;
       element.onerror = on_error;
       element.async = false;
@@ -952,13 +1012,14 @@ if (window.Jupyter !== undefined) {
       console.debug("Bokeh: injecting script tag for BokehJS library: ", url);
       document.head.appendChild(element);
     }
-    for (var i = 0; i < js_modules.length; i++) {
-      var url = js_modules[i];
-      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+    for (let i = 0; i < js_modules.length; i++) {
+      const url = js_modules[i];
+      const escaped = encodeURI(url)
+      if (skip.indexOf(escaped) !== -1 || existing_scripts.indexOf(escaped) !== -1) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
       var element = document.createElement('script');
       element.onload = on_load;
@@ -970,12 +1031,13 @@ if (window.Jupyter !== undefined) {
       document.head.appendChild(element);
     }
     for (const name in js_exports) {
-      var url = js_exports[name];
-      if (skip.indexOf(url) >= 0 || root[name] != null) {
-	if (!window.requirejs) {
-	  on_load();
-	}
-	continue;
+      const url = js_exports[name];
+      const escaped = encodeURI(url)
+      if (skip.indexOf(escaped) >= 0 || root[name] != null) {
+        if (!window.requirejs) {
+          on_load();
+        }
+        continue;
       }
       var element = document.createElement('script');
       element.onerror = on_error;
@@ -1000,11 +1062,11 @@ if (window.Jupyter !== undefined) {
     document.body.appendChild(element);
   }
 
-  var js_urls = [];
-  var js_modules = [];
-  var js_exports = {};
-  var css_urls = [];
-  var inline_js = [    function(Bokeh) {
+  const js_urls = ["https://cdn.holoviz.org/panel/1.8.10/dist/bundled/reactiveesm/es-module-shims@^1.10.0/dist/es-module-shims.min.js"];
+  const js_modules = [];
+  const js_exports = {};
+  const css_urls = [];
+  const inline_js = [    function(Bokeh) {
       Bokeh.set_log_level("info");
     },
 function(Bokeh) {} // ensure no trailing comma for IE
@@ -1012,32 +1074,22 @@ function(Bokeh) {} // ensure no trailing comma for IE
 
   function run_inline_js() {
     if ((root.Bokeh !== undefined) || (force === true)) {
-      for (var i = 0; i < inline_js.length; i++) {
-	try {
+      for (let i = 0; i < inline_js.length; i++) {
+        try {
           inline_js[i].call(root, root.Bokeh);
-	} catch(e) {
-	  if (!reloading) {
-	    throw e;
-	  }
-	}
+        } catch(e) {
+          if (!reloading) {
+            throw e;
+          }
+        }
       }
-      // Cache old bokeh versions
-      if (Bokeh != undefined && !reloading) {
-	var NewBokeh = root.Bokeh;
-	if (Bokeh.versions === undefined) {
-	  Bokeh.versions = new Map();
-	}
-	if (NewBokeh.version !== Bokeh.version) {
-	  Bokeh.versions.set(NewBokeh.version, NewBokeh)
-	}
-	root.Bokeh = Bokeh;
-      }} else if (Date.now() < root._bokeh_timeout) {
+    } else if (Date.now() < root._bokeh_timeout) {
       setTimeout(run_inline_js, 100);
     } else if (!root._bokeh_failed_load) {
       console.log("Bokeh: BokehJS failed to load within specified timeout.");
       root._bokeh_failed_load = true;
     }
-    root._bokeh_is_initializing = false
+    root._bokeh_is_initializing = false;
   }
 
   function load_or_wait() {
@@ -1049,22 +1101,40 @@ function(Bokeh) {} // ensure no trailing comma for IE
     // that we do not start loading a newer (Panel>=1.0 and Bokeh>3) version
     // before older versions are fully initialized.
     if (root._bokeh_is_initializing && Date.now() > root._bokeh_timeout) {
+      // If the timeout and bokeh was not successfully loaded we reset
+      // everything and try loading again
+      root._bokeh_timeout = Date.now() + 5000;
       root._bokeh_is_initializing = false;
       root._bokeh_onload_callbacks = undefined;
+      root._bokeh_is_loading = 0;
       console.log("Bokeh: BokehJS was loaded multiple times but one version failed to initialize.");
       load_or_wait();
     } else if (root._bokeh_is_initializing || (typeof root._bokeh_is_initializing === "undefined" && root._bokeh_onload_callbacks !== undefined)) {
       setTimeout(load_or_wait, 100);
     } else {
-      root._bokeh_is_initializing = true
-      root._bokeh_onload_callbacks = []
-      var bokeh_loaded = Bokeh != null && (Bokeh.version === py_version || (Bokeh.versions !== undefined && Bokeh.versions.has(py_version)));
+      root._bokeh_is_initializing = true;
+      root._bokeh_onload_callbacks = [];
+      const bokeh_loaded = Bokeh != null && ((Bokeh.version === version && Bokeh.Panel) || (Bokeh.versions?.has(version) && Bokeh.versions.get(version)?.Panel));
       if (!reloading && !bokeh_loaded) {
-	root.Bokeh = undefined;
+        if (root.Bokeh) {
+          root.Bokeh = undefined;
+        }
+        console.debug("Bokeh: BokehJS not loaded, scheduling load and callback at", now());
       }
-      load_libs(css_urls, js_urls, js_modules, js_exports, function() {
-	console.debug("Bokeh: BokehJS plotting callback run at", now());
-	run_inline_js();
+      load_libs(css_urls, js_urls, js_modules, js_exports, Bokeh, function() {
+        console.debug("Bokeh: BokehJS plotting callback run at", now());
+        run_inline_js();
+        if (Bokeh != undefined && !reloading) {
+          const NewBokeh = root.Bokeh;
+          if (Bokeh.versions === undefined) {
+            Bokeh.versions = new Map();
+          }
+          if (NewBokeh.version !== Bokeh.version) {
+            Bokeh[NewBokeh.version] = NewBokeh;
+            Bokeh.versions.set(NewBokeh.version, NewBokeh);
+          }
+          root.Bokeh = Bokeh;
+        }
       });
     }
   }
@@ -1095,7 +1165,6 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
           var messages = comm.messages[Symbol.asyncIterator]();
           function processIteratorResult(result) {
             var message = result.value;
-            console.log(message)
             var content = {data: message.data, comm_id};
             var buffers = []
             for (var buffer of message.buffers || []) {
@@ -1122,7 +1191,22 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
         }
       } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
         var comm = window.PyViz.kernels[plot_id].connectToComm(comm_id);
-        comm.open();
+        let retries = 0;
+        const open = () => {
+          if (comm.active) {
+            comm.open();
+          } else if (retries > 3) {
+            console.warn('Comm target never activated')
+          } else {
+            retries += 1
+            setTimeout(open, 500)
+          }
+        }
+        if (comm.active) {
+          comm.open();
+        } else {
+          setTimeout(open, 500)
+        }
         if (msg_handler) {
           comm.onMsg = msg_handler;
         }
@@ -1142,7 +1226,7 @@ if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
             }
             return messages.next().then(processIteratorResult);
           }
-        }) 
+        })
         var sendClosure = (data, metadata, buffers, disposeOnDone) => {
           return comm_promise.then((comm) => {
             comm.send(data, metadata, buffers, disposeOnDone);
@@ -1310,22 +1394,7 @@ if (window.Jupyter !== undefined) {
   } catch(err) {
   }
 }
-</script><div class="output text_html"><style>*[data-root-id],
-*[data-root-id] > * {
-  box-sizing: border-box;
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
-  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
-}
-
-/* Override VSCode background color */
-.cell-output-ipywidget-background:has(
-    > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
-  ),
-.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
-  background-color: transparent !important;
-}
-</style></div></div>
+</script></div>
 </div>
 </section>
 <section id="define-utility-functions-for-use-within-this-notebook">
@@ -1508,13 +1577,339 @@ if (window.Jupyter !== undefined) {
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;pyarrow._parquet.FileMetaData object at 0x724121c0ade0&gt;
-  created_by: parquet-cpp-arrow version 16.1.0
-  num_columns: 5804
-  num_rows: 279789
-  num_row_groups: 14
-  format_version: 2.6
-  serialized_size: 12762532
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">line</span> <span class="mi">4</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># check if we already have prepared data</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span>     <span class="c1"># process BR00117012.sqlite using CytoTable to prepare data</span>
+<span class="ne">----&gt; </span><span class="mi">4</span>     <span class="n">merged_single_cells</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>         <span class="n">source_path</span><span class="o">=</span><span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>             <span class="s2">&quot;s3://cellpainting-gallery/cpg0000-jump-pilot/source_4/workspace&quot;</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span>             <span class="s2">&quot;/backend/2020_11_04_CPJUMP1/BR00117012/BR00117012.sqlite&quot;</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>         <span class="p">),</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>         <span class="n">dest_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.parquet&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span>         <span class="n">dest_datatype</span><span class="o">=</span><span class="s2">&quot;parquet&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span>         <span class="n">source_datatype</span><span class="o">=</span><span class="s2">&quot;sqlite&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span>         <span class="n">chunk_size</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span>         <span class="n">preset</span><span class="o">=</span><span class="s2">&quot;cellprofiler_sqlite_cpg0016_jump&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span>         <span class="c1"># allows AWS S3 requests without login</span>
+<span class="g g-Whitespace">     </span><span class="mi">15</span>         <span class="n">no_sign_request</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span>         <span class="c1"># use explicit cache to avoid temp cache removal</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span>         <span class="n">local_cache_dir</span><span class="o">=</span><span class="s2">&quot;./sqlite_s3_cache/&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">18</span>         <span class="n">parsl_config</span><span class="o">=</span><span class="n">Config</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">19</span>             <span class="n">executors</span><span class="o">=</span><span class="p">[</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;tpe_for_jump_processing&quot;</span><span class="p">)]</span>
+<span class="g g-Whitespace">     </span><span class="mi">20</span>         <span class="p">),</span>
+<span class="g g-Whitespace">     </span><span class="mi">21</span>         <span class="n">sort_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">22</span>     <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">23</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">24</span>     <span class="n">merged_single_cells</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.parquet&quot;</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/convert.py:1853,</span> in <span class="ni">convert</span><span class="nt">(source_path, dest_path, dest_datatype, dest_backend, image_dir, include_source_images, mask_dir, outline_dir, segmentation_file_regex, source_datatype, metadata, compartments, identifying_columns, concat, join, joins, chunk_size, infer_common_schema, drop_null, data_type_cast_map, add_tablenumber, page_keys, bbox_column_map, sort_output, preset, parsl_config, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1842</span>         <span class="k">raise</span> <span class="n">CytoTableException</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1843</span>             <span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1844</span>                 <span class="s2">&quot;When using join=True one must pass a &#39;join&#39; pagination key &quot;</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1849</span>             <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1850</span>         <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1852</span>     <span class="c1"># send sources to be written to parquet if selected</span>
+<span class="ne">-&gt; </span><span class="mi">1853</span>     <span class="n">output</span> <span class="o">=</span> <span class="n">_run_export_workflow</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1854</span>         <span class="n">source_path</span><span class="o">=</span><span class="n">source_path</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1855</span>         <span class="n">dest_path</span><span class="o">=</span><span class="n">dest_path</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1856</span>         <span class="n">dest_datatype</span><span class="o">=</span><span class="n">dest_datatype</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1857</span>         <span class="n">source_datatype</span><span class="o">=</span><span class="n">source_datatype</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1858</span>         <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1859</span>         <span class="n">compartments</span><span class="o">=</span><span class="n">compartments</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1860</span>         <span class="n">identifying_columns</span><span class="o">=</span><span class="n">identifying_columns</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1861</span>         <span class="n">concat</span><span class="o">=</span><span class="n">concat</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1862</span>         <span class="n">join</span><span class="o">=</span><span class="n">join</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1863</span>         <span class="n">joins</span><span class="o">=</span><span class="n">joins</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1864</span>         <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1865</span>         <span class="n">infer_common_schema</span><span class="o">=</span><span class="n">infer_common_schema</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1866</span>         <span class="n">drop_null</span><span class="o">=</span><span class="n">drop_null</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1867</span>         <span class="n">data_type_cast_map</span><span class="o">=</span><span class="n">data_type_cast_map</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1868</span>         <span class="n">add_tablenumber</span><span class="o">=</span><span class="n">add_tablenumber</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1869</span>         <span class="n">sort_output</span><span class="o">=</span><span class="n">sort_output</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1870</span>         <span class="n">page_keys</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">page_keys</span><span class="p">),</span>
+<span class="g g-Whitespace">   </span><span class="mi">1871</span>         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1872</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1874</span>     <span class="k">return</span> <span class="n">output</span>
+<span class="g g-Whitespace">   </span><span class="mi">1875</span> <span class="k">finally</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1876</span>     <span class="c1"># cleanup Parsl executor and related only if this call loaded it</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/convert.py:1309,</span> in <span class="ni">_run_export_workflow</span><span class="nt">(source_path, dest_path, source_datatype, metadata, compartments, identifying_columns, concat, join, joins, chunk_size, infer_common_schema, drop_null, sort_output, page_keys, dest_datatype, data_type_cast_map, add_tablenumber, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1242</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">   </span><span class="mi">1243</span><span class="sd"> Export data to various formats (e.g., parquet) based on configuration.</span>
+<span class="g g-Whitespace">   </span><span class="mi">1244</span><span class="sd"> </span>
+<span class="sd">   (...)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1305</span><span class="sd">         for non-NPZ source data, since pagination requires a key column.</span>
+<span class="g g-Whitespace">   </span><span class="mi">1306</span><span class="sd"> &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">   </span><span class="mi">1308</span> <span class="c1"># gather sources to be processed</span>
+<span class="ne">-&gt; </span><span class="mi">1309</span> <span class="n">sources</span> <span class="o">=</span> <span class="n">_gather_sources</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1310</span>     <span class="n">source_path</span><span class="o">=</span><span class="n">source_path</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1311</span>     <span class="n">source_datatype</span><span class="o">=</span><span class="n">source_datatype</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1312</span>     <span class="n">targets</span><span class="o">=</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1313</span>         <span class="nb">list</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">compartments</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1314</span>         <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">compartments</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="g g-Whitespace">   </span><span class="mi">1315</span>         <span class="k">else</span> <span class="p">[]</span>
+<span class="g g-Whitespace">   </span><span class="mi">1316</span>     <span class="p">),</span>
+<span class="g g-Whitespace">   </span><span class="mi">1317</span>     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1318</span> <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1320</span> <span class="c1"># expand the destination path</span>
+<span class="g g-Whitespace">   </span><span class="mi">1321</span> <span class="n">expanded_dest_path</span> <span class="o">=</span> <span class="n">_expand_path</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">dest_path</span><span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/sources.py:369,</span> in <span class="ni">_gather_sources</span><span class="nt">(source_path, source_datatype, targets, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">366</span> <span class="n">built_path</span> <span class="o">=</span> <span class="n">_build_path</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">source_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">368</span> <span class="c1"># gather filepaths which will be used as the basis for this work</span>
+<span class="ne">--&gt; </span><span class="mi">369</span> <span class="n">sources</span> <span class="o">=</span> <span class="n">_get_source_filepaths</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">370</span>     <span class="n">path</span><span class="o">=</span><span class="n">built_path</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span> <span class="n">source_datatype</span><span class="o">=</span><span class="n">source_datatype</span>
+<span class="g g-Whitespace">    </span><span class="mi">371</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">373</span> <span class="c1"># infer or validate the source datatype based on source filepaths</span>
+<span class="g g-Whitespace">    </span><span class="mi">374</span> <span class="n">source_datatype</span> <span class="o">=</span> <span class="n">_infer_source_datatype</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">375</span>     <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">,</span> <span class="n">source_datatype</span><span class="o">=</span><span class="n">source_datatype</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/sources.py:91,</span> in <span class="ni">_get_source_filepaths</span><span class="nt">(path, targets, source_datatype)</span>
+<span class="g g-Whitespace">     </span><span class="mi">88</span> <span class="n">source_datatypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;.npz&quot;</span><span class="p">,</span> <span class="s2">&quot;.sqlite&quot;</span><span class="p">]</span>  <span class="c1"># Default supported extensions</span>
+<span class="g g-Whitespace">     </span><span class="mi">90</span> <span class="c1"># Gather files from the provided path using compartments + metadata as a filter</span>
+<span class="ne">---&gt; </span><span class="mi">91</span> <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span>
+<span class="g g-Whitespace">     </span><span class="mi">92</span>     <span class="c1"># build source_paths for all files</span>
+<span class="g g-Whitespace">     </span><span class="mi">93</span>     <span class="c1"># note: builds local cache for sqlite files from cloud</span>
+<span class="g g-Whitespace">     </span><span class="mi">94</span>     <span class="p">{</span><span class="s2">&quot;source_path&quot;</span><span class="p">:</span> <span class="n">_cache_cloudpath_to_local</span><span class="p">(</span><span class="n">subpath</span><span class="p">)}</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span>     <span class="c1"># loop for navigating single file or subpaths</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span>     <span class="k">for</span> <span class="n">subpath</span> <span class="ow">in</span> <span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span>         <span class="p">(</span><span class="n">path</span><span class="p">,)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span>         <span class="c1"># used if the source path is a single file</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span>         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span>         <span class="c1"># iterates through a source directory</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span>         <span class="k">else</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span>             <span class="n">x</span>
+<span class="g g-Whitespace">    </span><span class="mi">103</span>             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cloud_glob</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">104</span>                 <span class="n">start</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">105</span>                 <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;**/*&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">106</span>                 <span class="c1"># preserve cloud client (and its cache settings) when globbing</span>
+<span class="g g-Whitespace">    </span><span class="mi">107</span>                 <span class="o">**</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">108</span>                     <span class="p">{</span><span class="s2">&quot;cp_client&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">client</span><span class="p">}</span>
+<span class="g g-Whitespace">    </span><span class="mi">109</span>                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">110</span>                     <span class="k">else</span> <span class="p">{}</span>
+<span class="g g-Whitespace">    </span><span class="mi">111</span>                 <span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">112</span>             <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">113</span>             <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">114</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">115</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">116</span>     <span class="c1"># ensure the subpaths meet certain specifications</span>
+<span class="g g-Whitespace">    </span><span class="mi">117</span>     <span class="k">if</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">118</span>         <span class="c1"># If targets are specified, only include files matching targets</span>
+<span class="g g-Whitespace">    </span><span class="mi">119</span>         <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">120</span>             <span class="n">targets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">121</span>             <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">subpath</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">122</span>             <span class="ow">or</span> <span class="n">subpath</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.sqlite&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">123</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">124</span>         <span class="c1"># Otherwise, include files matching the source_datatypes</span>
+<span class="g g-Whitespace">    </span><span class="mi">125</span>         <span class="ow">or</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">126</span>             <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">127</span>             <span class="ow">or</span> <span class="n">targets</span> <span class="o">==</span> <span class="p">[]</span>
+<span class="g g-Whitespace">    </span><span class="mi">128</span>             <span class="ow">and</span> <span class="n">subpath</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">source_datatypes</span>
+<span class="g g-Whitespace">    </span><span class="mi">129</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">130</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">131</span> <span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="c1"># Expand sources to include sqlite tables similarly to files (one entry per table)</span>
+<span class="g g-Whitespace">    </span><span class="mi">134</span> <span class="n">expanded_sources</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/sources.py:94,</span> in <span class="ni">&lt;listcomp&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">     </span><span class="mi">88</span> <span class="n">source_datatypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;.npz&quot;</span><span class="p">,</span> <span class="s2">&quot;.sqlite&quot;</span><span class="p">]</span>  <span class="c1"># Default supported extensions</span>
+<span class="g g-Whitespace">     </span><span class="mi">90</span> <span class="c1"># Gather files from the provided path using compartments + metadata as a filter</span>
+<span class="g g-Whitespace">     </span><span class="mi">91</span> <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span>
+<span class="g g-Whitespace">     </span><span class="mi">92</span>     <span class="c1"># build source_paths for all files</span>
+<span class="g g-Whitespace">     </span><span class="mi">93</span>     <span class="c1"># note: builds local cache for sqlite files from cloud</span>
+<span class="ne">---&gt; </span><span class="mi">94</span>     <span class="p">{</span><span class="s2">&quot;source_path&quot;</span><span class="p">:</span> <span class="n">_cache_cloudpath_to_local</span><span class="p">(</span><span class="n">subpath</span><span class="p">)}</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span>     <span class="c1"># loop for navigating single file or subpaths</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span>     <span class="k">for</span> <span class="n">subpath</span> <span class="ow">in</span> <span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span>         <span class="p">(</span><span class="n">path</span><span class="p">,)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span>         <span class="c1"># used if the source path is a single file</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span>         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span>         <span class="c1"># iterates through a source directory</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span>         <span class="k">else</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span>             <span class="n">x</span>
+<span class="g g-Whitespace">    </span><span class="mi">103</span>             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cloud_glob</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">104</span>                 <span class="n">start</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">105</span>                 <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;**/*&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">106</span>                 <span class="c1"># preserve cloud client (and its cache settings) when globbing</span>
+<span class="g g-Whitespace">    </span><span class="mi">107</span>                 <span class="o">**</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">108</span>                     <span class="p">{</span><span class="s2">&quot;cp_client&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">client</span><span class="p">}</span>
+<span class="g g-Whitespace">    </span><span class="mi">109</span>                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">110</span>                     <span class="k">else</span> <span class="p">{}</span>
+<span class="g g-Whitespace">    </span><span class="mi">111</span>                 <span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">112</span>             <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">113</span>             <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">114</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">115</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">116</span>     <span class="c1"># ensure the subpaths meet certain specifications</span>
+<span class="g g-Whitespace">    </span><span class="mi">117</span>     <span class="k">if</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">118</span>         <span class="c1"># If targets are specified, only include files matching targets</span>
+<span class="g g-Whitespace">    </span><span class="mi">119</span>         <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">120</span>             <span class="n">targets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">121</span>             <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">subpath</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">122</span>             <span class="ow">or</span> <span class="n">subpath</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.sqlite&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">123</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">124</span>         <span class="c1"># Otherwise, include files matching the source_datatypes</span>
+<span class="g g-Whitespace">    </span><span class="mi">125</span>         <span class="ow">or</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">126</span>             <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">127</span>             <span class="ow">or</span> <span class="n">targets</span> <span class="o">==</span> <span class="p">[]</span>
+<span class="g g-Whitespace">    </span><span class="mi">128</span>             <span class="ow">and</span> <span class="n">subpath</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">source_datatypes</span>
+<span class="g g-Whitespace">    </span><span class="mi">129</span>         <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">130</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">131</span> <span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="c1"># Expand sources to include sqlite tables similarly to files (one entry per table)</span>
+<span class="g g-Whitespace">    </span><span class="mi">134</span> <span class="n">expanded_sources</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cytotable/utils.py:373,</span> in <span class="ni">_cache_cloudpath_to_local</span><span class="nt">(path)</span>
+<span class="g g-Whitespace">    </span><span class="mi">365</span> <span class="k">if</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">366</span>     <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">367</span>     <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">368</span>     <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.sqlite&quot;</span><span class="p">,</span> <span class="s2">&quot;.npz&quot;</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">369</span> <span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">370</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">371</span>         <span class="c1"># update the path to be the local filepath for reference in CytoTable ops</span>
+<span class="g g-Whitespace">    </span><span class="mi">372</span>         <span class="c1"># note: incurs a data read which will trigger caching of the file</span>
+<span class="ne">--&gt; </span><span class="mi">373</span>         <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">fspath</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">374</span>     <span class="k">except</span> <span class="n">InvalidPrefixError</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">375</span>         <span class="c1"># share information about not finding a cloud path</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span>         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>             <span class="s2">&quot;Did not detect a cloud path based on prefix. Defaulting to use local path operations.&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">378</span>         <span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cloudpathlib/cloudpath.py:459,</span> in <span class="ni">CloudPath.fspath</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">457</span> <span class="nd">@property</span>
+<span class="g g-Whitespace">    </span><span class="mi">458</span> <span class="k">def</span><span class="w"> </span><span class="nf">fspath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">459</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fspath__</span><span class="p">()</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cloudpathlib/cloudpath.py:360,</span> in <span class="ni">CloudPath.__fspath__</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">358</span> <span class="k">def</span><span class="w"> </span><span class="nf">__fspath__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">359</span>     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+<span class="ne">--&gt; </span><span class="mi">360</span>         <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_cache</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">361</span>     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cloudpathlib/cloudpath.py:1495,</span> in <span class="ni">CloudPath._refresh_cache</span><span class="nt">(self, force_overwrite_from_cloud)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1488</span> <span class="k">if</span> <span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1489</span>     <span class="n">force_overwrite_from_cloud</span>
+<span class="g g-Whitespace">   </span><span class="mi">1490</span>     <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="g g-Whitespace">   </span><span class="mi">1491</span>     <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">&lt;</span> <span class="n">stats</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1492</span> <span class="p">):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1493</span>     <span class="c1"># ensure there is a home for the file</span>
+<span class="g g-Whitespace">   </span><span class="mi">1494</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">1495</span>     <span class="bp">self</span><span class="o">.</span><span class="n">download_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1497</span>     <span class="c1"># force cache time to match cloud times</span>
+<span class="g g-Whitespace">   </span><span class="mi">1498</span>     <span class="n">os</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">))</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cloudpathlib/cloudpath.py:1094,</span> in <span class="ni">CloudPath.download_to</span><span class="nt">(self, destination)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1092</span>     <span class="k">if</span> <span class="n">destination</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+<span class="g g-Whitespace">   </span><span class="mi">1093</span>         <span class="n">destination</span> <span class="o">=</span> <span class="n">destination</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+<span class="ne">-&gt; </span><span class="mi">1094</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1095</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1096</span>     <span class="n">destination</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/cloudpathlib/s3/s3client.py:155,</span> in <span class="ni">S3Client._download_file</span><span class="nt">(self, cloud_path, local_path)</span>
+<span class="g g-Whitespace">    </span><span class="mi">152</span> <span class="n">local_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">153</span> <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s3</span><span class="o">.</span><span class="n">Object</span><span class="p">(</span><span class="n">cloud_path</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">cloud_path</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">155</span> <span class="n">obj</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">156</span>     <span class="nb">str</span><span class="p">(</span><span class="n">local_path</span><span class="p">),</span> <span class="n">Config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boto3_transfer_config</span><span class="p">,</span> <span class="n">ExtraArgs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boto3_dl_extra_args</span>
+<span class="g g-Whitespace">    </span><span class="mi">157</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">158</span> <span class="k">return</span> <span class="n">local_path</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/boto3/s3/inject.py:361,</span> in <span class="ni">object_download_file</span><span class="nt">(self, Filename, ExtraArgs, Callback, Config)</span>
+<span class="g g-Whitespace">    </span><span class="mi">330</span> <span class="k">def</span><span class="w"> </span><span class="nf">object_download_file</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">331</span>     <span class="bp">self</span><span class="p">,</span> <span class="n">Filename</span><span class="p">,</span> <span class="n">ExtraArgs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Config</span><span class="o">=</span><span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">332</span> <span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">333</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;Download an S3 object to a file.</span>
+<span class="g g-Whitespace">    </span><span class="mi">334</span><span class="sd"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">335</span><span class="sd">     Usage::</span>
+<span class="sd">   (...)</span>
+<span class="g g-Whitespace">    </span><span class="mi">359</span><span class="sd">         transfer.</span>
+<span class="g g-Whitespace">    </span><span class="mi">360</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">361</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">362</span>         <span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">363</span>         <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">364</span>         <span class="n">Filename</span><span class="o">=</span><span class="n">Filename</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">365</span>         <span class="n">ExtraArgs</span><span class="o">=</span><span class="n">ExtraArgs</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">366</span>         <span class="n">Callback</span><span class="o">=</span><span class="n">Callback</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">367</span>         <span class="n">Config</span><span class="o">=</span><span class="n">Config</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">368</span>     <span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/boto3/s3/inject.py:192,</span> in <span class="ni">download_file</span><span class="nt">(self, Bucket, Key, Filename, ExtraArgs, Callback, Config)</span>
+<span class="g g-Whitespace">    </span><span class="mi">157</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Download an S3 object to a file.</span>
+<span class="g g-Whitespace">    </span><span class="mi">158</span><span class="sd"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">159</span><span class="sd"> Usage::</span>
+<span class="sd">   (...)</span>
+<span class="g g-Whitespace">    </span><span class="mi">189</span><span class="sd">     transfer.</span>
+<span class="g g-Whitespace">    </span><span class="mi">190</span><span class="sd"> &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">191</span> <span class="k">with</span> <span class="n">S3Transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Config</span><span class="p">)</span> <span class="k">as</span> <span class="n">transfer</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">192</span>     <span class="k">return</span> <span class="n">transfer</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">193</span>         <span class="n">bucket</span><span class="o">=</span><span class="n">Bucket</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">194</span>         <span class="n">key</span><span class="o">=</span><span class="n">Key</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">195</span>         <span class="n">filename</span><span class="o">=</span><span class="n">Filename</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">196</span>         <span class="n">extra_args</span><span class="o">=</span><span class="n">ExtraArgs</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">197</span>         <span class="n">callback</span><span class="o">=</span><span class="n">Callback</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">198</span>     <span class="p">)</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/boto3/s3/transfer.py:406,</span> in <span class="ni">S3Transfer.download_file</span><span class="nt">(self, bucket, key, filename, extra_args, callback)</span>
+<span class="g g-Whitespace">    </span><span class="mi">402</span> <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">download</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">403</span>     <span class="n">bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">extra_args</span><span class="p">,</span> <span class="n">subscribers</span>
+<span class="g g-Whitespace">    </span><span class="mi">404</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">405</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">406</span>     <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">407</span> <span class="c1"># This is for backwards compatibility where when retries are</span>
+<span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="c1"># exceeded we need to throw the same error from boto3 instead of</span>
+<span class="g g-Whitespace">    </span><span class="mi">409</span> <span class="c1"># s3transfer&#39;s built in RetriesExceededError as current users are</span>
+<span class="g g-Whitespace">    </span><span class="mi">410</span> <span class="c1"># catching the boto3 one instead of the s3transfer exception to do</span>
+<span class="g g-Whitespace">    </span><span class="mi">411</span> <span class="c1"># their own retries.</span>
+<span class="g g-Whitespace">    </span><span class="mi">412</span> <span class="k">except</span> <span class="n">S3TransferRetriesExceededError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/s3transfer/futures.py:106,</span> in <span class="ni">TransferFuture.result</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">104</span> <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">105</span>     <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+<span class="ne">--&gt; </span><span class="mi">106</span>     <span class="k">raise</span> <span class="n">e</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/s3transfer/futures.py:103,</span> in <span class="ni">TransferFuture.result</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span>         <span class="c1"># Usually the result() method blocks until the transfer is done,</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span>         <span class="c1"># however if a KeyboardInterrupt is raised we want want to exit</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span>         <span class="c1"># out of this and propagate the exception.</span>
+<span class="ne">--&gt; </span><span class="mi">103</span>         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinator</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">104</span>     <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">105</span>         <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+
+<span class="nn">File ~/.cache/pypoetry/virtualenvs/cosmicqc-vNopUmqk-py3.11/lib/python3.11/site-packages/s3transfer/futures.py:259,</span> in <span class="ni">TransferCoordinator.result</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">249</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Waits until TransferFuture is done and returns the result</span>
+<span class="g g-Whitespace">    </span><span class="mi">250</span><span class="sd"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">251</span><span class="sd"> If the TransferFuture succeeded, it will return the result. If the</span>
+<span class="g g-Whitespace">    </span><span class="mi">252</span><span class="sd"> TransferFuture failed, it will raise the exception associated to the</span>
+<span class="g g-Whitespace">    </span><span class="mi">253</span><span class="sd"> failure.</span>
+<span class="g g-Whitespace">    </span><span class="mi">254</span><span class="sd"> &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">255</span> <span class="c1"># Doing a wait() with no timeout cannot be interrupted in python2 but</span>
+<span class="g g-Whitespace">    </span><span class="mi">256</span> <span class="c1"># can be interrupted in python3 so we just wait with the largest</span>
+<span class="g g-Whitespace">    </span><span class="mi">257</span> <span class="c1"># possible value integer value, which is on the scale of billions of</span>
+<span class="g g-Whitespace">    </span><span class="mi">258</span> <span class="c1"># years...</span>
+<span class="ne">--&gt; </span><span class="mi">259</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done_event</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">MAXINT</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">261</span> <span class="c1"># Once done waiting, raise an exception if present or return the</span>
+<span class="g g-Whitespace">    </span><span class="mi">262</span> <span class="c1"># final result.</span>
+<span class="g g-Whitespace">    </span><span class="mi">263</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exception</span><span class="p">:</span>
+
+<span class="nn">File ~/.pyenv/versions/3.11.9/lib/python3.11/threading.py:629,</span> in <span class="ni">Event.wait</span><span class="nt">(self, timeout)</span>
+<span class="g g-Whitespace">    </span><span class="mi">627</span> <span class="n">signaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag</span>
+<span class="g g-Whitespace">    </span><span class="mi">628</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">signaled</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">629</span>     <span class="n">signaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">630</span> <span class="k">return</span> <span class="n">signaled</span>
+
+<span class="nn">File ~/.pyenv/versions/3.11.9/lib/python3.11/threading.py:327,</span> in <span class="ni">Condition.wait</span><span class="nt">(self, timeout)</span>
+<span class="g g-Whitespace">    </span><span class="mi">325</span> <span class="k">try</span><span class="p">:</span>    <span class="c1"># restore state no matter what (e.g., KeyboardInterrupt)</span>
+<span class="g g-Whitespace">    </span><span class="mi">326</span>     <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">327</span>         <span class="n">waiter</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">328</span>         <span class="n">gotit</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="g g-Whitespace">    </span><span class="mi">329</span>     <span class="k">else</span><span class="p">:</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
 </pre></div>
 </div>
 </div>
@@ -1565,136 +1960,26 @@ if (window.Jupyter !== undefined) {
     <span class="n">path</span><span class="o">=</span><span class="n">merged_single_cells</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">[</span>
         <span class="o">*</span><span class="n">metadata_cols</span><span class="p">,</span>
-        <span class="s2">&quot;Nuclei_AreaShape_Area&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Nuclei_AreaShape_FormFactor&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Nuclei_AreaShape_Eccentricity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Nuclei_Intensity_MassDisplacement_DNA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Nuclei_Intensity_IntegratedIntensity_DNA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Nuclei_AreaShape_Solidity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Cells_Intensity_IntegratedIntensity_DNA&quot;</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
 <span class="n">df_merged_single_cells</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Metadata_ImageNumber</th>
-      <th>Image_Metadata_Row</th>
-      <th>Image_Metadata_Site</th>
-      <th>Metadata_ObjectNumber</th>
-      <th>Metadata_Plate</th>
-      <th>Metadata_Well</th>
-      <th>Image_TableNumber</th>
-      <th>Nuclei_AreaShape_Area</th>
-      <th>Nuclei_AreaShape_FormFactor</th>
-      <th>Nuclei_AreaShape_Eccentricity</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>2</td>
-      <td>BR00117012</td>
-      <td>A01</td>
-      <td>35196781680809101223867031596229856156</td>
-      <td>1091</td>
-      <td>0.895393</td>
-      <td>0.694154</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>3</td>
-      <td>BR00117012</td>
-      <td>A01</td>
-      <td>35196781680809101223867031596229856156</td>
-      <td>1007</td>
-      <td>0.837631</td>
-      <td>0.819062</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>4</td>
-      <td>BR00117012</td>
-      <td>A01</td>
-      <td>35196781680809101223867031596229856156</td>
-      <td>1368</td>
-      <td>0.833197</td>
-      <td>0.820257</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>5</td>
-      <td>BR00117012</td>
-      <td>A01</td>
-      <td>35196781680809101223867031596229856156</td>
-      <td>847</td>
-      <td>0.902995</td>
-      <td>0.345575</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>6</td>
-      <td>BR00117012</td>
-      <td>A01</td>
-      <td>35196781680809101223867031596229856156</td>
-      <td>983</td>
-      <td>0.863005</td>
-      <td>0.742060</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># label outliers within the dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Large nuclei outliers:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Clustered nuclei outliers:&quot;</span><span class="p">)</span>
 <span class="n">df_labeled_outliers</span> <span class="o">=</span> <span class="n">cosmicqc</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span>
     <span class="n">df</span><span class="o">=</span><span class="n">df_merged_single_cells</span><span class="p">,</span>
     <span class="n">metadata_columns</span><span class="o">=</span><span class="n">metadata_cols</span><span class="p">,</span>
-    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;large_nuclei&quot;</span><span class="p">,</span>
+    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;clustered_nuclei&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Large nuclei outliers:
-Number of outliers: 1355 (0.48%)
-Outliers Range:
-Nuclei_AreaShape_Area Min: 1754
-Nuclei_AreaShape_Area Max: 4414
-Nuclei_AreaShape_FormFactor Min: 0.3367261940249281
-Nuclei_AreaShape_FormFactor Max: 0.7140072671383899
 </pre></div>
 </div>
 </div>
@@ -1702,21 +1987,12 @@ Nuclei_AreaShape_FormFactor Max: 0.7140072671383899
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># label outliers within the dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Elongated nuclei outliers:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Low solidity nuclei outliers:&quot;</span><span class="p">)</span>
 <span class="n">df_labeled_outliers</span> <span class="o">=</span> <span class="n">cosmicqc</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span>
     <span class="n">df</span><span class="o">=</span><span class="n">df_merged_single_cells</span><span class="p">,</span>
     <span class="n">metadata_columns</span><span class="o">=</span><span class="n">metadata_cols</span><span class="p">,</span>
-    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;elongated_nuclei&quot;</span><span class="p">,</span>
+    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;low_solidity_nuclei&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Elongated nuclei outliers:
-Number of outliers: 15 (0.01%)
-Outliers Range:
-Nuclei_AreaShape_Eccentricity Min: 0.9868108584805481
-Nuclei_AreaShape_Eccentricity Max: 0.9995098494433163
 </pre></div>
 </div>
 </div>
@@ -1724,23 +2000,12 @@ Nuclei_AreaShape_Eccentricity Max: 0.9995098494433163
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># label outliers within the dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Small and low formfactor nuclei outliers:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cells with multiple nuclei outliers:&quot;</span><span class="p">)</span>
 <span class="n">df_labeled_outliers</span> <span class="o">=</span> <span class="n">cosmicqc</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">find_outliers</span><span class="p">(</span>
     <span class="n">df</span><span class="o">=</span><span class="n">df_merged_single_cells</span><span class="p">,</span>
     <span class="n">metadata_columns</span><span class="o">=</span><span class="n">metadata_cols</span><span class="p">,</span>
-    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;small_and_low_formfactor_nuclei&quot;</span><span class="p">,</span>
+    <span class="n">feature_thresholds</span><span class="o">=</span><span class="s2">&quot;cells_multiple_nuclei&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Small and low formfactor nuclei outliers:
-Number of outliers: 6548 (2.34%)
-Outliers Range:
-Nuclei_AreaShape_Area Min: 79
-Nuclei_AreaShape_Area Max: 744
-Nuclei_AreaShape_FormFactor Min: 0.0945907341645769
-Nuclei_AreaShape_FormFactor Max: 0.7781815132858318
 </pre></div>
 </div>
 </div>
@@ -1759,94 +2024,6 @@ Nuclei_AreaShape_FormFactor Max: 0.7781815132858318
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>cqc.small_and_low_formfactor_nuclei.Z_Score.Nuclei_AreaShape_Area</th>
-      <th>cqc.small_and_low_formfactor_nuclei.Z_Score.Nuclei_AreaShape_FormFactor</th>
-      <th>cqc.small_and_low_formfactor_nuclei.is_outlier</th>
-      <th>cqc.elongated_nuclei.Z_Score.Nuclei_AreaShape_Eccentricity</th>
-      <th>cqc.elongated_nuclei.is_outlier</th>
-      <th>cqc.large_nuclei.Z_Score.Nuclei_AreaShape_Area</th>
-      <th>cqc.large_nuclei.Z_Score.Nuclei_AreaShape_FormFactor</th>
-      <th>cqc.large_nuclei.is_outlier</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.030121</td>
-      <td>0.826248</td>
-      <td>False</td>
-      <td>-0.154094</td>
-      <td>False</td>
-      <td>0.030121</td>
-      <td>0.826248</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>-0.219592</td>
-      <td>-0.073800</td>
-      <td>False</td>
-      <td>0.765830</td>
-      <td>False</td>
-      <td>-0.219592</td>
-      <td>-0.073800</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0.853580</td>
-      <td>-0.142903</td>
-      <td>False</td>
-      <td>0.774634</td>
-      <td>False</td>
-      <td>0.853580</td>
-      <td>-0.142903</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>-0.695236</td>
-      <td>0.944704</td>
-      <td>False</td>
-      <td>-2.721308</td>
-      <td>False</td>
-      <td>-0.695236</td>
-      <td>0.944704</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>-0.290938</td>
-      <td>0.321578</td>
-      <td>False</td>
-      <td>0.198723</td>
-      <td>False</td>
-      <td>-0.290938</td>
-      <td>0.321578</td>
-      <td>False</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -2457,7 +2634,7 @@ Name: count, dtype: int64
         <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_with_all_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
     <span class="p">),</span>
     <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
-    <span class="n">cmap</span><span class="o">=</span><span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">sequential</span><span class="o">.</span><span class="n">Greens</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">Greens9</span><span class="p">))[</span><span class="mi">4</span><span class="p">:],</span>
     <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
@@ -2557,67 +2734,60 @@ Name: count, dtype: int64
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show small and low formfactor nuclei outliers within the data</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show clustered nuclei outliers within the data</span>
 <span class="n">plot_hvplot_scatter</span><span class="p">(</span>
     <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings_with_outliers</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP small and low formfactor nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP clustered nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">plot_image</span> <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_clustered_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="p">),</span>
+    <span class="n">color_dataframe</span><span class="o">=</span><span class="n">df_features_with_cqc_outlier_data</span><span class="p">,</span>
+    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.clustered_nuclei.is_outlier&quot;</span><span class="p">,</span>
+    <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells classified as outliers&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">plot_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show low solidity nuclei outliers within the data</span>
+<span class="n">plot_hvplot_scatter</span><span class="p">(</span>
+    <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings_with_outliers</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP low solidity nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">plot_image</span> <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_low_solidity_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="p">),</span>
+    <span class="n">color_dataframe</span><span class="o">=</span><span class="n">df_features_with_cqc_outlier_data</span><span class="p">,</span>
+    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.low_solidity_nuclei.is_outlier&quot;</span><span class="p">,</span>
+    <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells classified as outliers&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">plot_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show cells with multiple nuclei outliers within the data</span>
+<span class="n">plot_hvplot_scatter</span><span class="p">(</span>
+    <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings_with_outliers</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP cells with multiple nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n">filename</span><span class="o">=</span><span class="p">(</span>
         <span class="n">plot_image</span>
-        <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_small_and_low_formfactor_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
+        <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_cells_multiple_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
     <span class="p">),</span>
     <span class="n">color_dataframe</span><span class="o">=</span><span class="n">df_features_with_cqc_outlier_data</span><span class="p">,</span>
-    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.small_and_low_formfactor_nuclei.is_outlier&quot;</span><span class="p">,</span>
+    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.cells_multiple_nuclei.is_outlier&quot;</span><span class="p">,</span>
     <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells classified as outliers&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
 <span class="n">Image</span><span class="p">(</span><span class="n">plot_image</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/27d64941db10e6881d14d6256805d9ddbdb62e2b68d5cb759601936dea7b8e6e.png" src="../_images/27d64941db10e6881d14d6256805d9ddbdb62e2b68d5cb759601936dea7b8e6e.png" />
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show elongated nuclei outliers within the data</span>
-<span class="n">plot_hvplot_scatter</span><span class="p">(</span>
-    <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings_with_outliers</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP elongated nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="p">(</span>
-        <span class="n">plot_image</span> <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_elongated_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
-    <span class="p">),</span>
-    <span class="n">color_dataframe</span><span class="o">=</span><span class="n">df_features_with_cqc_outlier_data</span><span class="p">,</span>
-    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.elongated_nuclei.is_outlier&quot;</span><span class="p">,</span>
-    <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells classified as outliers&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
-<span class="n">Image</span><span class="p">(</span><span class="n">plot_image</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/53742504f2e149a245f2857b658618b8f7e78243de18d762646eac8afa9fba4f.png" src="../_images/53742504f2e149a245f2857b658618b8f7e78243de18d762646eac8afa9fba4f.png" />
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show small and large nuclei outliers within the data</span>
-<span class="n">plot_hvplot_scatter</span><span class="p">(</span>
-    <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings_with_outliers</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;UMAP of JUMP large nuclei outliers within </span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="p">(</span><span class="n">plot_image</span> <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_large_nuclei_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span>
-    <span class="n">color_dataframe</span><span class="o">=</span><span class="n">df_features_with_cqc_outlier_data</span><span class="p">,</span>
-    <span class="n">color_column</span><span class="o">=</span><span class="s2">&quot;cqc.large_nuclei.is_outlier&quot;</span><span class="p">,</span>
-    <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells classified as outliers&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
-<span class="n">Image</span><span class="p">(</span><span class="n">plot_image</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/49f102fd36a45d4c71d6bbeaf16ccc8dbc23647e22316b9a3024993476ac423e.png" src="../_images/49f102fd36a45d4c71d6bbeaf16ccc8dbc23647e22316b9a3024993476ac423e.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -3075,7 +3245,7 @@ Length of dataset without outliers:  114138
         <span class="o">:=</span> <span class="sa">f</span><span class="s2">&quot;./images/umap_without_outliers_</span><span class="si">{</span><span class="n">example_plate</span><span class="si">}</span><span class="s2">.png&quot;</span>
     <span class="p">),</span>
     <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
-    <span class="n">cmap</span><span class="o">=</span><span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">sequential</span><span class="o">.</span><span class="n">Greens</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">Greens9</span><span class="p">))[</span><span class="mi">4</span><span class="p">:],</span>
     <span class="n">clabel</span><span class="o">=</span><span class="s2">&quot;density of single cells&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="c1"># conserve filespace by displaying export instead of dynamic plot</span>
