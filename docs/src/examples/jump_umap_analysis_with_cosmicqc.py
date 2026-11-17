@@ -3,6 +3,12 @@
 
 # # JUMP UMAP analysis with coSMicQC
 #
+# > **Note: static example from an older version of coSMicQC.**
+# > The saved outputs and images in this notebook were generated with coSMicQC v0.0.11 (September 2024).
+# > It is no longer maintained and does not run end to end with the current version of coSMicQC
+# > (for example, outlier columns are now named `Metadata_cqc_<set>_is_outlier`, not `cqc.<set>.is_outlier`).
+# > This example is likely to be deprecated; see [#387](https://github.com/cytomining/coSMicQC/issues/387).
+#
 # This notebook analyzes [JUMP](https://jump-cellpainting.broadinstitute.org/) data (`cpg0000-jump-pilot`) by leveraging [UMAP](https://arxiv.org/abs/1802.03426) and [coSMicQC](https://github.com/cytomining/coSMicQC).
 #
 # ## Outline
